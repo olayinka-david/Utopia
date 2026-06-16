@@ -4,14 +4,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Inter / JetBrains Mono are self-hosted via @fontsource.
-        // Neue Montreal & Satoshi are commercial; closest free self-hosted
-        // matches are used (Hanken Grotesk / Manrope). If you have the licensed
-        // font files, add them and put their names first in these stacks.
+        // All fonts are self-hosted via @fontsource under the SIL Open Font
+        // License (free for commercial use). Hanken Grotesk / Manrope stand in
+        // for the design's commercial Neue Montreal / Satoshi.
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
-        display: ["'Neue Montreal'", "'Hanken Grotesk'", "Inter", "system-ui", "sans-serif"],
-        satoshi: ["Satoshi", "Manrope", "Inter", "system-ui", "sans-serif"],
+        display: ["'Hanken Grotesk'", "Inter", "system-ui", "sans-serif"],
+        satoshi: ["Manrope", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         ink: "#101010",

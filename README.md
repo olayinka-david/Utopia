@@ -35,23 +35,36 @@ living inside their containers. They are correctly nested here:
 
 ## Assets
 
-This repo was built in an environment whose network policy blocks `figma.com`, so the
-binary 3D render PNGs could not be baked in. On-brand **SVG placeholders** ship in
-`public/assets/` so the site is complete and self-contained today.
-
-To swap in the real renders:
-
-```bash
-bash scripts/download-assets.sh      # from an environment that can reach figma.com
-```
-
-then point each `local` path in `src/assets.ts` at the downloaded `.png`.
-(Export URLs are temporary ~7 days — re-export from Figma if they 404.) Alternatively,
-export the nodes from Figma manually and drop PNGs into `public/assets/`.
+All seven 3D/raster renders are the real PNGs, stored in `public/assets/` and wired
+through `src/assets.ts`. `scripts/download-assets.sh` can re-fetch the originals from
+Figma where `figma.com` is reachable (export URLs are temporary ~7 days).
 
 ## Fonts
 
-`Inter` and `JetBrains Mono` are self-hosted via `@fontsource` (offline, durable).
-The design also uses `Neue Montreal` and `Satoshi`, which are not OFL-licensed; close
-fallbacks are configured in `tailwind.config.js`. Add the licensed font files and update
-the `display` / `satoshi` stacks to match the design exactly.
+All fonts are self-hosted via `@fontsource` under the **SIL Open Font License** (free for
+commercial use), so there are no licensing constraints and nothing loads from a third-party
+CDN at runtime:
+
+| Role | Font | Stands in for |
+| --- | --- | --- |
+| Body / UI | Inter | — |
+| Mono / labels | JetBrains Mono | — |
+| Display / headings | Hanken Grotesk | Neue Montreal (commercial) |
+| Hero / body accent | Manrope | Satoshi (commercial) |
+
+If you license `Neue Montreal` / `Satoshi`, add the font files and put their names first in
+the `display` / `satoshi` stacks in `tailwind.config.js`.
+
+## Deploy on Vercel
+
+This is a static Vite SPA — zero-config on Vercel.
+
+1. Push the branch and merge PR #1 into `main` (or deploy the branch directly).
+2. In Vercel: **New Project → import `olayinka-david/Utopia`**. Vercel auto-detects the
+   **Vite** preset; `vercel.json` pins the build for determinism:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+   - Install command: `npm install`
+3. Deploy. No environment variables are required.
+
+CLI alternative: `npm i -g vercel && vercel` (then `vercel --prod`).
