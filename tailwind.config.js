@@ -5,11 +5,13 @@ export default {
     extend: {
       fontFamily: {
         // Inter / JetBrains Mono are self-hosted via @fontsource.
-        // Neue Montreal & Satoshi are not OFL-licensed; close fallbacks are used.
+        // Neue Montreal & Satoshi are commercial; closest free self-hosted
+        // matches are used (Hanken Grotesk / Manrope). If you have the licensed
+        // font files, add them and put their names first in these stacks.
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
-        display: ["'Neue Montreal'", "Inter", "system-ui", "sans-serif"],
-        satoshi: ["Satoshi", "Inter", "system-ui", "sans-serif"],
+        display: ["'Neue Montreal'", "'Hanken Grotesk'", "Inter", "system-ui", "sans-serif"],
+        satoshi: ["Satoshi", "Manrope", "Inter", "system-ui", "sans-serif"],
       },
       colors: {
         ink: "#101010",
