@@ -111,6 +111,26 @@
           </div>
         </section>
 
+        <!-- ===== PORTFOLIO ===== -->
+        <section class="view" id="portfolio">
+          <div class="grid grid-4" id="portfolioKpis" style="margin-bottom:16px;"></div>
+          <section class="panel">
+            <div class="panel-head" style="flex-wrap:wrap;gap:12px;">
+              <div><h2>Portfolio Companies</h2><p class="meta">URAF · Q1 2026 · click a company for the full overview</p></div>
+              <div class="toolbar">
+                <input class="input" id="pfSearch" type="search" placeholder="Search…" />
+                <select class="select" id="pfSector"></select>
+                <select class="select" id="pfCountry"></select>
+                <select class="select" id="pfSort"></select>
+              </div>
+            </div>
+            <div class="panel-body table-scroll"><table class="tbl" id="pfTable"></table></div>
+          </section>
+        </section>
+
+        <!-- ===== COMPANY OVERVIEW ===== -->
+        <section class="view" id="company"><div id="companyBody"></div></section>
+
         <!-- ===== PLACEHOLDER (shared by not-yet-built sections) ===== -->
         <section class="view" id="placeholder">
           <div class="placeholder panel" style="padding:40px;">
