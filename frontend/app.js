@@ -129,21 +129,23 @@ function renderNav() {
 function renderHero() {
   const drawnPct = Math.round((fund.drawn / fund.committed) * 100);
   document.getElementById("hero").innerHTML = `
-    <div class="hero-top">
+    <div class="hero-glow"></div>
+    <button class="hero-bell" type="button" aria-label="Notifications">🔔</button>
+    <div class="hero-ring">${ring(drawnPct, "#fff", 104, true)}<span class="lab">drawn of committed</span></div>
+    <div class="hero-content">
       <span class="hero-pill">URAF · Q1 2026</span>
-      <span class="hero-bell">🔔</span>
-    </div>
-    <div>
-      <div class="hero-value">${fund.moic.toFixed(2)}<sup>×</sup></div>
-      <div class="hero-label">Gross Portfolio MOIC · GAV ${moneyM(fund.gav)}</div>
+      <div>
+        <div class="hero-value">${fund.moic.toFixed(2)}<sup>×</sup></div>
+        <div class="hero-label">Gross Portfolio MOIC · GAV ${moneyM(fund.gav)}</div>
+      </div>
       <div class="hero-stats">
         <div class="hero-stat"><strong>${moneyM(fund.committed)}</strong><span>Committed</span></div>
         <div class="hero-stat"><strong>${moneyM(fund.drawn)}</strong><span>Drawn</span></div>
         <div class="hero-stat"><strong>${moneyM(fund.deployed)}</strong><span>Deployed</span></div>
         <div class="hero-stat"><strong>${fund.companies}</strong><span>Companies</span></div>
+        <div class="hero-stat"><strong>N/A</strong><span>Gross IRR · &lt;2 ev</span></div>
       </div>
-    </div>
-    <div class="hero-ring">${ring(drawnPct, "#fff", 92, true)}<div style="text-align:center;color:rgba(255,255,255,0.82);font-size:10.5px;font-weight:700;margin-top:6px;">drawn</div></div>`;
+    </div>`;
 }
 
 function renderAllocation() {

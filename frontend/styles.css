@@ -186,24 +186,41 @@ h3 { font-size: 13.5px; font-weight: 800; }
 .panel-body { padding: 18px 20px 20px; }
 .panel-head + .panel-body { padding-top: 14px; }
 
-/* ---------- Hero KPI (flat orange, no gradient) ---------- */
+/* ---------- Hero KPI (orange → amber gradient banner) ---------- */
 .hero {
-  border: 0; border-radius: var(--radius);
-  background: var(--orange); color: #fff;
-  padding: 24px; position: relative; overflow: hidden;
+  border: 0; border-radius: 22px; color: #fff;
+  background: linear-gradient(110deg, #ee5d11 0%, #f5741f 38%, #ff9a2e 76%, #ffb348 100%);
+  padding: 24px 28px; position: relative; overflow: hidden;
   box-shadow: var(--shadow-md);
-  display: flex; flex-direction: column; justify-content: space-between; min-height: 230px;
 }
-.hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
-.hero-pill { background: rgba(255, 255, 255, 0.18); color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 11.5px; font-weight: 800; }
-.hero-bell { width: 38px; height: 38px; border-radius: 11px; background: rgba(255, 255, 255, 0.16); display: grid; place-items: center; color: #fff; }
-.hero-value { font-size: 56px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+.hero-glow {
+  position: absolute; right: -70px; top: 50%; transform: translateY(-50%);
+  width: 380px; height: 380px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 68%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; max-width: 68%; }
+.hero-pill { align-self: flex-start; background: rgba(255, 255, 255, 0.22); color: #fff; border-radius: 999px; padding: 6px 13px; font-size: 11.5px; font-weight: 800; }
+.hero-value { font-size: 58px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
 .hero-value sup { font-size: 24px; font-weight: 700; margin-left: 2px; }
-.hero-label { margin-top: 8px; color: rgba(255, 255, 255, 0.82); font-weight: 700; font-size: 13px; }
-.hero-stats { display: flex; flex-wrap: wrap; gap: 26px; margin-top: 22px; }
-.hero-stat strong { display: block; font-size: 19px; font-weight: 800; }
-.hero-stat span { color: rgba(255, 255, 255, 0.8); font-size: 11.5px; font-weight: 700; }
-.hero-ring { position: absolute; right: 22px; top: 64px; }
+.hero-label { margin-top: -8px; color: rgba(255, 255, 255, 0.92); font-weight: 700; font-size: 13.5px; }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 30px; margin-top: 4px; }
+.hero-stat strong { display: block; font-size: 20px; font-weight: 800; }
+.hero-stat span { color: rgba(255, 255, 255, 0.82); font-size: 11.5px; font-weight: 700; }
+.hero-bell {
+  position: absolute; top: 22px; right: 26px; z-index: 2;
+  width: 40px; height: 40px; border-radius: 12px; border: 0;
+  background: #fff; color: var(--orange);
+  display: grid; place-items: center; font-size: 16px; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(24, 22, 20, 0.18);
+  transition: background-color 130ms ease, transform 130ms ease;
+}
+.hero-bell:hover { background: #fff7f1; transform: translateY(-1px); }
+.hero-ring {
+  position: absolute; right: 56px; top: 0; bottom: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+}
+.hero-ring .lab { color: rgba(255, 255, 255, 0.85); font-size: 10.5px; font-weight: 700; }
 
 /* ---------- KPI cards ---------- */
 .kpi { padding: 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 118px; }
