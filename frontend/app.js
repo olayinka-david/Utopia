@@ -156,13 +156,21 @@ const upcoming = [
 
 /* Sector exposure by capital deployed ($K). */
 const sectors = [
-  { label: "Agri-Food", value: 450, color: "#f2691e" },
-  { label: "Energy", value: 425, color: "#ff7a1a" },
-  { label: "Clean Mobility", value: 250, color: "#ff9a2e" },
-  { label: "Robotics", value: 250, color: "#ffb338" },
-  { label: "NbS / Carbon", value: 250, color: "#ffc233" },
-  { label: "Circular Economy", value: 200, color: "#e9b27a" },
-  { label: "Water", value: 50, color: "#ded9d0" },
+  { label: "Agri-Food", value: 450, count: 2, color: "#f2691e" },
+  { label: "Energy", value: 425, count: 2, color: "#ff7a1a" },
+  { label: "Clean Mobility", value: 250, count: 1, color: "#ff9a2e" },
+  { label: "Robotics", value: 250, count: 1, color: "#ffb338" },
+  { label: "NbS / Carbon", value: 250, count: 1, color: "#ffc233" },
+  { label: "Circular Economy", value: 200, count: 2, color: "#e9b27a" },
+  { label: "Water", value: 50, count: 1, color: "#ded9d0" },
+];
+
+/* Geographic exposure (by capital $K and by company count). */
+const geos = [
+  { label: "Singapore", value: 950, count: 4, color: "#f2691e" },
+  { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
+  { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
+  { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
 ];
 
 const moicTrend = [
@@ -188,18 +196,18 @@ const nav = [
   { group: "Overview", items: [
     { id: "dashboard", label: "Dashboard", view: "dashboard", route: "/dashboard", icon: "▦" },
     { id: "portfolio", label: "Portfolio", view: "portfolio", route: "/dashboard/companies", icon: "◫" },
-    { id: "exposure", label: "Exposure", view: "placeholder", route: "/dashboard/exposure", icon: "◐", soon: true },
-    { id: "performance", label: "Performance", view: "placeholder", route: "/dashboard/performance", icon: "▲", soon: true },
+    { id: "exposure", label: "Exposure", view: "exposure", route: "/dashboard/exposure", icon: "◐" },
+    { id: "performance", label: "Performance", view: "performance", route: "/dashboard/performance", icon: "▲" },
   ]},
   { group: "Workflow", items: [
-    { id: "reporting", label: "Reporting", view: "placeholder", route: "/reporting", icon: "◳", soon: true },
-    { id: "forms", label: "Forms Hub", view: "placeholder", route: "/forms", icon: "▤", soon: true },
-    { id: "documents", label: "Documents", view: "placeholder", route: "/documents", icon: "▢", soon: true },
+    { id: "reporting", label: "Reporting", view: "reporting", route: "/reporting", icon: "◳" },
+    { id: "forms", label: "Forms Hub", view: "forms", route: "/forms", icon: "▤" },
+    { id: "documents", label: "Documents", view: "documents", route: "/documents", icon: "▢" },
   ]},
   { group: "Intelligence", items: [
-    { id: "intelligence", label: "Intelligence", view: "placeholder", route: "/intelligence", icon: "◈", soon: true },
-    { id: "audit", label: "Audit", view: "placeholder", route: "/audit", icon: "▣", soon: true },
-    { id: "dealflow", label: "Deal Flow", view: "placeholder", route: "/dealflow", icon: "◧", soon: true },
+    { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "◈" },
+    { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "▣" },
+    { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "◧" },
   ]},
   { group: "Admin", items: [
     { id: "settings", label: "Settings", view: "settings", route: "/settings", icon: "◎" },
@@ -209,6 +217,14 @@ const nav = [
 const pageMeta = {
   dashboard: { eyebrow: "URAF · The Radical Fund", title: "Fund Dashboard", sub: "Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026." },
   portfolio: { eyebrow: "URAF · The Radical Fund", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
+  exposure: { eyebrow: "URAF · The Radical Fund", title: "Exposure", sub: "Sector and geographic concentration — by capital allocated and by company count." },
+  performance: { eyebrow: "URAF · The Radical Fund", title: "Performance", sub: "MOIC development, capital deployment, and fund multiples to date." },
+  reporting: { eyebrow: "URAF · The Radical Fund", title: "Quarterly Reporting", sub: "The Q1 2026 LP reporting cycle — workflow phases, tasks, and report generation." },
+  forms: { eyebrow: "Workflow", title: "Forms Hub", sub: "Platform-wide form taxonomy (A–G) with role-based submission permissions." },
+  documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
+  intelligence: { eyebrow: "Intelligence", title: "Risk Intelligence", sub: "Automated risk signals across the portfolio — filter by severity and track resolution." },
+  audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
+  dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
   settings: { eyebrow: "Configuration", title: "Settings", sub: "Workspace defaults, reporting thresholds, roles, and visual system." },
 };
 
@@ -346,7 +362,7 @@ function renderMoicChart() {
   document.getElementById("moicChart").innerHTML = moicTrend.map((d, i) => {
     const h = ((d.v - min) / (max - min)) * 100;
     const cls = i === moicTrend.length - 1 ? "hot" : i >= moicTrend.length - 3 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-v num">${d.v.toFixed(2)}x</div><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div><div class="chart-x">${d.period}</div></div>`;
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d.v.toFixed(2)}x</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d.period}</div></div>`;
   }).join("");
 }
 
@@ -485,6 +501,293 @@ function setSettingsTab(tab) {
   document.querySelectorAll(".toggle").forEach((t) => t.addEventListener("click", () => t.classList.toggle("is-on")));
 }
 
+/* ============================================================
+   Additional module pages
+   ============================================================ */
+
+/* Shared helpers */
+function donut(el, items, accessor) {
+  const total = items.reduce((s, x) => s + accessor(x), 0);
+  let acc = 0;
+  el.style.background = `conic-gradient(${items.map((s) => { const f = (acc / total) * 100; acc += accessor(s); return `${s.color} ${f.toFixed(1)}% ${((acc / total) * 100).toFixed(1)}%`; }).join(", ")})`;
+  return total;
+}
+function legend(items, accessor, total, unit) {
+  return items.map((s) => `<div class="legend-row"><span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((accessor(s) / total) * 100)}%${unit ? ` · ${unit(s)}` : ""}</strong></div>`).join("");
+}
+
+/* ---------- Exposure ---------- */
+let expMode = "value"; // "value" | "count"
+function renderExposure() {
+  const acc = (x) => (expMode === "value" ? x.value : x.count);
+  const unit = (x) => (expMode === "value" ? moneyK(x.value) : `${x.count} co`);
+  const sTotal = sectors.reduce((s, x) => s + acc(x), 0);
+  const gTotal = geos.reduce((s, x) => s + acc(x), 0);
+  document.getElementById("exposureBody").innerHTML = `
+    <div class="section-title">
+      <div class="seg" id="expSeg">
+        <button class="${expMode === "value" ? "is-active" : ""}" data-mode="value" type="button">By capital</button>
+        <button class="${expMode === "count" ? "is-active" : ""}" data-mode="count" type="button">By company count</button>
+      </div>
+      <button class="btn btn-muted" type="button">Export PNG</button>
+    </div>
+    <div class="grid grid-2">
+      <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : fund.companies + " companies"}</span></div>
+        <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expSector"><div class="donut-center"><strong>${sectors.length}</strong><span>sectors</span></div></div><div class="legend">${legend(sectors, acc, sTotal, unit)}</div></div></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Geographic Exposure</h2><span class="chip">${geos.length} markets</span></div>
+        <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expGeo"><div class="donut-center"><strong>${geos.length}</strong><span>markets</span></div></div><div class="legend">${legend(geos, acc, gTotal, unit)}</div></div></div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Concentration Table</h2><span class="chip">${expMode === "value" ? "by capital" : "by count"}</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Sector</th><th class="num">Capital</th><th class="num">Companies</th><th class="num">% of fund</th></tr></thead>
+        <tbody>${sectors.map((s) => `<tr><td><div class="company-cell"><span class="dot" style="background:${s.color};width:12px;height:12px;"></span><strong>${s.label}</strong></div></td><td class="num">${moneyK(s.value)}</td><td class="num">${s.count}</td><td class="num">${Math.round((acc(s) / sTotal) * 100)}%</td></tr>`).join("")}</tbody>
+      </table></div>
+    </section>`;
+  donut(document.getElementById("expSector"), sectors, acc);
+  donut(document.getElementById("expGeo"), geos, acc);
+  document.querySelectorAll("#expSeg button").forEach((b) => b.addEventListener("click", () => { expMode = b.dataset.mode; renderExposure(); }));
+}
+
+/* ---------- Performance ---------- */
+const perfSeries = {
+  MOIC: { fmt: (v) => v.toFixed(2) + "x", min: 0.98, max: 1.12, data: [["Q2'24", 1.0], ["Q4'24", 1.02], ["Q1'25", 1.04], ["Q2'25", 1.06], ["Q3'25", 1.08], ["Q1'26", 1.1]] },
+  GAV: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.2, data: [["Q2'24", 0.85], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.8], ["Q3'25", 1.95], ["Q1'26", 2.07]] },
+  Deployed: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.0, data: [["Q2'24", 0.8], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.7], ["Q3'25", 1.8], ["Q1'26", 1.88]] },
+};
+const drivers = [
+  ["Okapi", "Up-round", "Q4 2024", "First uplift in carrying value"],
+  ["Alicia Bots", "Seed round", "Q1 2025", "Priced round — uplift to 1.16x"],
+  ["Alternō", "Follow-on", "Q2 2025", "Additional carrying-value uplift"],
+  ["Arkadiah", "Series A", "Q3 2025", "Uplift to 1.49x — top performer"],
+];
+let perfMetric = "MOIC";
+function renderPerfChart() {
+  const s = perfSeries[perfMetric];
+  document.getElementById("perfChart").innerHTML = s.data.map((d, i) => {
+    const h = ((d[1] - s.min) / (s.max - s.min)) * 100;
+    const cls = i === s.data.length - 1 ? "hot" : i >= s.data.length - 3 ? "warm" : "";
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${s.fmt(d[1])}</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d[0]}</div></div>`;
+  }).join("");
+}
+function renderPerformance() {
+  const kpis = [["1.10x", "Gross MOIC", "GAV / invested"], ["1.10x", "TVPI", "NAV + dist / paid-in"], ["0.00x", "DPI", "no distributions yet"], ["N/A", "Gross IRR", "< 2 cash-flow events"]];
+  document.getElementById("performanceBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
+    <section class="panel"><div class="panel-head"><div><h2>Fund Development</h2><p class="meta">Gross portfolio progression to date</p></div>
+      <div class="seg" id="perfSeg">${Object.keys(perfSeries).map((k) => `<button class="${k === perfMetric ? "is-active" : ""}" data-metric="${k}" type="button">${k}</button>`).join("")}</div></div>
+      <div class="panel-body"><div class="chart" id="perfChart"></div></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>Event</th><th>Period</th><th>Impact</th></tr></thead>
+        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
+      </table></div>
+    </section>`;
+  renderPerfChart();
+  document.querySelectorAll("#perfSeg button").forEach((b) => b.addEventListener("click", () => { perfMetric = b.dataset.metric; document.querySelectorAll("#perfSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderPerfChart(); }));
+  bindCompanyClicks();
+}
+
+/* ---------- Reporting ---------- */
+const reportDocs = [
+  ["QIA Deal Team", ".xlsx", "Approved", "green"],
+  ["QIA Novus", ".xlsx", "Under Review", "amber"],
+  ["QIA Master", ".xlsx", "Draft", "blue"],
+  ["Board Reporting Pack", ".docx", "Draft", "blue"],
+  ["Commentary Letter", ".docx", "Not started", "blue"],
+  ["Audit Confirmations", ".docx", "Draft", "blue"],
+];
+let phaseSel = 3;
+function renderReporting() {
+  const reminders = "15 · 25 · 30 · 40 · 50 · 55 · 58";
+  document.getElementById("reportingBody").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Q1 2026 Workflow</h2><p class="meta">Target: Day 60 LP distribution · reminders sent on days ${reminders}</p></div><span class="status status-amber">Assembly · Day 50</span></div>
+      <div class="panel-body">
+        <div class="phases" id="phases">${workflow.map((w, i) => `<div class="phase ${w.state} ${i === phaseSel ? "is-active" : ""}" data-phase="${i}"><div class="ph-k">${w.day}</div><strong>${w.title}</strong><div class="meta">${w.owner}</div></div>`).join("")}</div>
+        <div id="phaseDetail" style="margin-top:14px;"></div>
+      </div>
+    </section>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <section class="panel"><div class="panel-head"><h2>Report Generation</h2><span class="chip">6 outputs</span></div>
+        <div class="panel-body"><div class="alert-list">${reportDocs.map((r) => `<div class="alert-row"><span class="alert-icon status-${r[3]}">${r[1].replace(".", "").toUpperCase()}</span><div><h3>${r[0]}</h3><p class="meta">${r[1]} · auto-generated from stored data</p></div><div style="display:flex;gap:8px;align-items:center;">${status(r[3], r[2])}<button class="btn btn-muted gen" type="button">Generate</button></div></div>`).join("")}</div></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Quarter Tasks</h2><span class="chip" id="taskCount"></span></div>
+        <div class="panel-body" id="taskList"></div>
+      </section>
+    </div>`;
+  renderPhaseDetail();
+  document.querySelectorAll("#phases .phase").forEach((p) => p.addEventListener("click", () => { phaseSel = +p.dataset.phase; document.querySelectorAll("#phases .phase").forEach((x) => x.classList.toggle("is-active", x === p)); renderPhaseDetail(); }));
+  document.querySelectorAll(".gen").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Generated ✓"; setTimeout(() => { e.currentTarget.textContent = "Generate"; }, 1400); }));
+  renderTasks();
+}
+function renderPhaseDetail() {
+  const w = workflow[phaseSel];
+  document.getElementById("phaseDetail").innerHTML = `<div class="panel-muted" style="border-radius:12px;padding:16px;"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div><h3>${w.day} · ${w.title}</h3><p class="meta" style="margin-top:4px;">Owner — ${w.owner}</p></div>${status(w.state === "done" ? "green" : w.state === "current" ? "amber" : "blue", w.status)}</div></div>`;
+}
+const tasks = [
+  { t: "Collect founder updates (10 companies)", done: true },
+  { t: "Compile financials with Ocorian", done: true },
+  { t: "Assemble QIA Deal Team export", done: true },
+  { t: "Review QIA Novus & Master", done: false },
+  { t: "Managing Partner approval", done: false },
+  { t: "Distribute to LPs via Ocorian", done: false },
+];
+function renderTasks() {
+  document.getElementById("taskList").innerHTML = tasks.map((x, i) => `<div class="check ${x.done ? "is-done" : ""}" data-task="${i}"><span class="box">${x.done ? "✓" : ""}</span><span class="lbl">${x.t}</span></div>`).join("");
+  document.getElementById("taskCount").textContent = `${tasks.filter((x) => x.done).length}/${tasks.length} done`;
+  document.querySelectorAll("#taskList .check").forEach((c) => c.addEventListener("click", () => { tasks[+c.dataset.task].done = !tasks[+c.dataset.task].done; renderTasks(); }));
+}
+
+/* ---------- Forms Hub ---------- */
+const formDefs = [
+  ["A", "New Investment Onboarding", "Capture a new investment at close.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["B", "New Round / Capital Event", "Record a follow-on round or capital event.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["C", "Quarterly Company Update", "Pre-meeting founder update, per company.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["D", "Post-Meeting Valuation Review", "Confirm quarterly carrying values.", ["Head of Portfolio"]],
+  ["E", "Fund Performance Snapshot", "Authoritative quarterly fund record.", ["CFO"]],
+  ["F", "Climate & Impact KPIs", "Mandatory at Q4 — climate metrics.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["G", "Correction Request", "Request a data correction (HoP approves).", ["Any role"]],
+];
+let formRole = "All roles";
+function renderForms() {
+  const roles = ["All roles", "Portfolio Ops", "Investment Team", "Head of Portfolio", "CFO"];
+  document.getElementById("formsBody").innerHTML = `
+    <div class="section-title">
+      <select class="select" id="formRole" style="width:auto;min-width:180px;">${roles.map((r) => `<option ${r === formRole ? "selected" : ""}>${r}</option>`).join("")}</select>
+      <button class="btn btn-primary" type="button">+ New submission</button>
+    </div>
+    <div class="grid grid-3" id="formGrid"></div>`;
+  renderFormGrid();
+  document.getElementById("formRole").addEventListener("change", (e) => { formRole = e.target.value; renderFormGrid(); });
+}
+function renderFormGrid() {
+  const can = (f) => formRole === "All roles" || f[3].includes(formRole) || f[3].includes("Any role");
+  document.getElementById("formGrid").innerHTML = formDefs.map((f) => `
+    <section class="panel" style="opacity:${can(f) ? 1 : 0.5};">
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="chip">Form ${f[0]}</span>${can(f) ? `<button class="btn btn-muted" type="button">Open</button>` : `<span class="meta">No access</span>`}</div>
+        <h3 style="margin-top:12px;font-size:15px;">${f[1]}</h3>
+        <p class="meta" style="margin-top:6px;line-height:1.5;">${f[2]}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">${f[3].map((r) => `<span class="chip">${r}</span>`).join("")}</div>
+      </div>
+    </section>`).join("");
+}
+
+/* ---------- Documents ---------- */
+const docTypes = ["Management Accounts", "Board Deck", "Cap Table", "SAFE Agreement", "Pitch Deck"];
+const docs = companies.slice(0, 8).map((c, i) => ({ name: `${c.name} — ${docTypes[i % docTypes.length]}`, company: c.name, type: docTypes[i % docTypes.length], date: ["12 May 2026", "08 May 2026", "30 Apr 2026", "22 Apr 2026"][i % 4], shared: i % 2 === 0, views: [12, 4, 23, 7, 31, 2, 15, 9][i] }));
+let docState = { q: "", type: "All types" };
+function renderDocuments() {
+  document.getElementById("documentsBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[[String(docs.length), "Documents", "this quarter"], [String(docs.filter((d) => d.shared).length), "Shared links", "active"], [String(docs.reduce((s, d) => s + d.views, 0)), "Total views", "tracked"], ["10", "Companies", "covered"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <section class="panel"><div class="panel-head" style="flex-wrap:wrap;gap:12px;"><div><h2>Document Library</h2><p class="meta">Secure sharing links with page-level view tracking</p></div>
+      <div class="toolbar"><input class="input" id="docSearch" type="search" placeholder="Search…" /><select class="select" id="docType"></select></div></div>
+      <div class="panel-body table-scroll"><table class="tbl" id="docTable"></table></div>
+    </section>`;
+  const sel = document.getElementById("docType");
+  sel.innerHTML = ["All types", ...docTypes].map((t) => `<option>${t}</option>`).join("");
+  document.getElementById("docSearch").addEventListener("input", (e) => { docState.q = e.target.value; renderDocTable(); });
+  sel.addEventListener("change", (e) => { docState.type = e.target.value; renderDocTable(); });
+  renderDocTable();
+}
+function renderDocTable() {
+  const list = docs.filter((d) => (!docState.q || d.name.toLowerCase().includes(docState.q.toLowerCase())) && (docState.type === "All types" || d.type === docState.type));
+  document.getElementById("docTable").innerHTML = `
+    <thead><tr><th>Document</th><th>Company</th><th>Type</th><th>Date</th><th class="num">Views</th><th>Link</th></tr></thead>
+    <tbody>${list.map((d, i) => `<tr><td><strong>${d.name}</strong></td><td>${d.company}</td><td>${d.type}</td><td class="meta">${d.date}</td><td class="num">${d.views}</td><td>${d.shared ? `<button class="btn btn-muted copy" type="button">Copy link</button>` : `<span class="chip">Private</span>`}</td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("#docTable .copy").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Copied ✓"; setTimeout(() => { e.currentTarget.textContent = "Copy link"; }, 1400); }));
+}
+
+/* ---------- Intelligence ---------- */
+const signals = [
+  { co: "Alterno", type: "RUNWAY_CRITICAL", sev: "critical", why: "Reported runway 4.5 months — below the 6-month threshold. Claimed inflows not yet reflected in cash.", resolved: false },
+  { co: "3Cat", type: "RUNWAY_CRITICAL", sev: "critical", why: "Runway 5 months; dependent on Series A closing 15 Jun 2026.", resolved: false },
+  { co: "Okapi", type: "TARGET_MISS", sev: "warning", why: "ARR at 20% of plan ($524K vs $1.8M). Lead investor stalled.", resolved: false },
+  { co: "Alicia Bots", type: "BURN_ACCELERATION", sev: "warning", why: "Cash fell from $1.1M (Jan) to $710K; monthly burn $103K with revenue-recognition lag.", resolved: false },
+  { co: "Sirsak", type: "REVENUE_STAGNATION", sev: "warning", why: "Quarterly revenue -53% QoQ; revenue remains largely project-based.", resolved: false },
+  { co: "Arkadiah", type: "REVENUE_STAGNATION", sev: "warning", why: "Revenue -81% QoQ; Q1 collections near-zero against a >$1M pipeline (timing).", resolved: false },
+  { co: "Sirsak", type: "FUNDRAISE_NEEDED", sev: "info", why: "Runway 9 months with a Seed bridge in preparation.", resolved: false },
+];
+let sevFilter = "all";
+function renderIntelligence() {
+  const counts = { critical: signals.filter((s) => s.sev === "critical").length, warning: signals.filter((s) => s.sev === "warning").length, info: signals.filter((s) => s.sev === "info").length };
+  document.getElementById("intelligenceBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[[String(signals.length), "Active signals", "all"], [String(counts.critical), "Critical", "critical"], [String(counts.warning), "Warning", "warning"], [String(signals.filter((s) => s.resolved).length), "Resolved", "all"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span>${k[2] === "critical" ? status("red", "RAG") : k[2] === "warning" ? status("amber", "RAG") : `<span class="chip">Q1'26</span>`}</div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <div class="section-title">
+      <div class="seg" id="sevSeg">${[["all", "All"], ["critical", "Critical"], ["warning", "Warning"], ["info", "Info"]].map((s) => `<button class="${s[0] === sevFilter ? "is-active" : ""}" data-sev="${s[0]}" type="button">${s[1]}</button>`).join("")}</div>
+    </div>
+    <section class="panel"><div class="panel-head"><h2>Risk Signals</h2><span class="meta">AI-explained · 7 signal types · daily cron</span></div>
+      <div class="panel-body"><div class="alert-list" id="sigList"></div></div>
+    </section>`;
+  renderSignals();
+  document.querySelectorAll("#sevSeg button").forEach((b) => b.addEventListener("click", () => { sevFilter = b.dataset.sev; document.querySelectorAll("#sevSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderSignals(); }));
+}
+function renderSignals() {
+  const tone = (s) => (s === "critical" ? "red" : s === "warning" ? "amber" : "blue");
+  const list = signals.filter((s) => sevFilter === "all" || s.sev === sevFilter);
+  document.getElementById("sigList").innerHTML = list.map((s) => { const i = signals.indexOf(s); return `
+    <div class="alert-row" style="${s.resolved ? "opacity:0.55;" : ""}">
+      <span class="alert-icon status-${tone(s.sev)}">${s.co.slice(0, 2).toUpperCase()}</span>
+      <div><h3>${s.co} · <span class="meta" style="font-weight:700;">${s.type}</span></h3><p class="meta">${s.why}</p></div>
+      <div style="display:flex;gap:8px;align-items:center;">${status(tone(s.sev), s.sev)}<button class="btn btn-muted res" data-sig="${i}" type="button">${s.resolved ? "Reopen" : "Resolve"}</button></div>
+    </div>`; }).join("") || `<div class="meta" style="padding:20px;text-align:center;">No signals at this severity.</div>`;
+  document.querySelectorAll("#sigList .res").forEach((b) => b.addEventListener("click", () => { signals[+b.dataset.sig].resolved = !signals[+b.dataset.sig].resolved; renderIntelligence(); }));
+}
+
+/* ---------- Audit ---------- */
+const auditStages = ["DRAFT", "SENT_TO_COMPANY", "RECEIVED", "SENT_TO_AUDITOR"];
+const auditRows = companies.map((c, i) => ({ co: c.name, stage: [0, 1, 2, 3, 1, 2, 0, 1, 2, 0][i] }));
+function renderAudit() {
+  const done = auditRows.filter((r) => r.stage === 3).length;
+  document.getElementById("auditBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[["FY2025", "Audit year", "Moore"], [`${done}/${auditRows.length}`, "Sent to auditor", "complete"], ["31 Mar", "Year-end", "quarter close"], ["45", "Days to deadline", "countdown"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <section class="panel"><div class="panel-head"><div><h2>Confirmation Letters</h2><p class="meta">Auto-generated from investment terms · addressed to Moore</p></div></div>
+      <div class="panel-body table-scroll"><table class="tbl" id="auditTable"></table></div>
+    </section>`;
+  renderAuditTable();
+}
+function renderAuditTable() {
+  const tone = (s) => (s === 3 ? "green" : s === 0 ? "blue" : "amber");
+  document.getElementById("auditTable").innerHTML = `
+    <thead><tr><th>Company</th><th>Letter status</th><th>Stage</th><th></th></tr></thead>
+    <tbody>${auditRows.map((r, i) => `<tr><td><div class="company-cell"><span class="avatar">${initials(r.co)}</span><strong>${r.co}</strong></div></td><td>${status(tone(r.stage), auditStages[r.stage].replace(/_/g, " "))}</td><td class="meta">${r.stage + 1} of 4</td><td>${r.stage < 3 ? `<button class="btn btn-muted adv" data-row="${i}" type="button">Advance →</button>` : `<span class="chip">Complete</span>`}</td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("#auditTable .adv").forEach((b) => b.addEventListener("click", () => { const r = auditRows[+b.dataset.row]; r.stage = Math.min(3, r.stage + 1); renderAudit(); }));
+}
+
+/* ---------- Deal Flow ---------- */
+const funnelData = [["Total pipeline", 950], ["Pre-intro & intro", 162], ["Screening", 6], ["Due diligence", 2], ["Portfolio", 10]];
+const kanban = {
+  "Initial Review": [["Helios Grid", "Energy · SG"], ["Loop Materials", "Circular · MY"]],
+  "Deep Dive": [["BlueCarbonX", "NbS · ID"]],
+  "Term Sheet": [["Aleph Technologies", "Infra Intel · SG"], ["N&E Innovations", "Low-Carbon · SG"]],
+  "Closed": [["Farmio", "Agri-Food · SG"]],
+  "Passed": [["—", "2 this quarter"]],
+};
+function renderDealflow() {
+  const max = funnelData[0][1];
+  document.getElementById("dealflowBody").innerHTML = `
+    <div class="grid grid-2">
+      <section class="panel"><div class="panel-head"><h2>Pipeline Funnel</h2><span class="chip">Q1 2026</span></div>
+        <div class="panel-body"><div class="funnel">${funnelData.map((f, i) => `<div class="funnel-row"><span class="meta">${f[0]}</span><div class="funnel-bar" style="width:${Math.max((f[1] / max) * 100, 8)}%;background:${i === funnelData.length - 1 ? "var(--green)" : "var(--orange)"};">${f[1]}</div><span class="num" style="font-weight:800;">${Math.round((f[1] / max) * 100)}%</span></div>`).join("")}</div></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Pipeline Mix</h2><span class="chip">by stage</span></div>
+        <div class="panel-body"><div class="legend">${[["Pre-Seed", 40, "#f2691e"], ["Seed", 40, "#ff9a2e"], ["Pre-Series A", 11, "#ffc233"], ["Series A", 9, "#ded9d0"]].map((s) => `<div class="legend-row"><span class="dot" style="background:${s[2]}"></span><span>${s[0]}</span><strong>${s[1]}%</strong></div>`).join("")}</div>
+        <h3 style="margin-top:18px;">Top sectors</h3><div class="legend" style="margin-top:10px;">${[["Food & Agriculture", 22], ["Waste Mgmt & Circularity", 18], ["Clean Mobility", 11], ["Energy Transition", 10]].map((s) => `<div class="legend-row"><span class="dot" style="background:var(--orange)"></span><span>${s[0]}</span><strong>${s[1]}%</strong></div>`).join("")}</div></div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Prospect Pipeline</h2><p class="meta">Q2 2026 sidecar investments with QDB · IC approved, pending QDB</p></div></div>
+      <div class="panel-body"><div class="kanban">${Object.entries(kanban).map(([col, cards]) => `<div class="kan-col"><h3>${col}<span class="chip">${cards.length}</span></h3>${cards.map((c) => `<div class="kan-card"><strong>${c[0]}</strong><div class="meta">${c[1]}</div></div>`).join("")}</div>`).join("")}</div></div>
+    </section>`;
+}
+
 /* ---------- Router ---------- */
 function go(id) {
   const item = nav.flatMap((g) => g.items).find((i) => i.id === id);
@@ -501,9 +804,21 @@ function go(id) {
   } else {
     setMeta(pageMeta[item.view]);
   }
-  if (item.view === "portfolio") renderPortfolioPage();
+  if (renderers[item.view]) renderers[item.view]();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+const renderers = {
+  portfolio: renderPortfolioPage,
+  exposure: renderExposure,
+  performance: renderPerformance,
+  reporting: renderReporting,
+  forms: renderForms,
+  documents: renderDocuments,
+  intelligence: renderIntelligence,
+  audit: renderAudit,
+  dealflow: renderDealflow,
+};
 
 function setMeta(m) {
   if (!m) return;

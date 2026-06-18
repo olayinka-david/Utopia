@@ -248,6 +248,43 @@ h3 { font-size: 13.5px; font-weight: 800; }
 .narr ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
 .narr li { color: var(--muted); font-weight: 600; line-height: 1.5; font-size: 12.5px; }
 
+/* ---------- Segmented control ---------- */
+.seg { display: inline-flex; background: var(--surface-3); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 999px; font-weight: 700; font-size: 12px; color: var(--muted); cursor: pointer; transition: background 130ms ease, color 130ms ease; }
+.seg button.is-active { background: #fff; color: var(--text); box-shadow: var(--shadow-sm); }
+
+/* ---------- Funnel ---------- */
+.funnel { display: grid; gap: 10px; }
+.funnel-row { display: grid; grid-template-columns: 130px 1fr 44px; gap: 12px; align-items: center; }
+.funnel-bar { height: 36px; border-radius: 9px; display: flex; align-items: center; padding: 0 12px; color: #fff; font-weight: 800; font-size: 13px; min-width: 40px; }
+
+/* ---------- Kanban ---------- */
+.kanban { display: grid; grid-template-columns: repeat(5, minmax(150px, 1fr)); gap: 12px; }
+.kan-col { background: var(--surface-2); border-radius: var(--radius-sm); padding: 11px; }
+.kan-col h3 { font-size: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.kan-card { background: #fff; border-radius: 10px; padding: 11px; margin-bottom: 8px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 120ms ease; }
+.kan-card:last-child { margin-bottom: 0; }
+.kan-card:hover { transform: translateY(-1px); }
+.kan-card strong { font-size: 12.5px; }
+.kan-card .meta { font-size: 11px; margin-top: 2px; }
+
+/* ---------- Phase tracker ---------- */
+.phases { display: flex; gap: 8px; flex-wrap: wrap; }
+.phase { flex: 1; min-width: 120px; border-radius: var(--radius-sm); background: var(--surface-2); padding: 13px; cursor: pointer; border: 1px solid transparent; transition: background 130ms ease, border-color 130ms ease; }
+.phase:hover { border-color: var(--line-2); }
+.phase.done { background: rgba(47, 170, 99, 0.08); }
+.phase.is-active { border-color: var(--orange); background: var(--orange-soft); }
+.phase .ph-k { font-size: 11px; color: var(--orange); font-weight: 800; }
+.phase strong { display: block; margin-top: 4px; font-size: 13px; }
+
+/* ---------- Task checklist ---------- */
+.check { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.check:last-child { border-bottom: 0; }
+.check .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--line-2); display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; flex: none; }
+.check.is-done .box { background: var(--orange); border-color: var(--orange); }
+.check .lbl { font-weight: 700; font-size: 13px; }
+.check.is-done .lbl { color: var(--muted); text-decoration: line-through; }
+
 /* ---------- KPI cards ---------- */
 .kpi { padding: 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 118px; }
 .kpi-label { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -306,12 +343,13 @@ h3 { font-size: 13.5px; font-weight: 800; }
 .dot { width: 11px; height: 11px; border-radius: 4px; }
 
 /* ---------- Bar chart ---------- */
-.chart { height: 200px; display: flex; align-items: end; gap: 10px; padding-top: 18px; }
-.chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.chart-bar { width: 100%; max-width: 46px; border-radius: 9px 9px 0 0; background: var(--surface-3); position: relative; }
+.chart { height: 210px; display: flex; align-items: stretch; gap: 10px; }
+.chart-col { flex: 1; display: flex; flex-direction: column; }
+.chart-barwrap { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.chart-bar { width: 100%; max-width: 46px; border-radius: 9px 9px 0 0; background: var(--surface-3); }
 .chart-bar.hot { background: var(--orange); }
 .chart-bar.warm { background: var(--amber); }
-.chart-x { color: var(--muted); font-size: 11px; font-weight: 700; }
+.chart-x { text-align: center; margin-top: 8px; color: var(--muted); font-size: 11px; font-weight: 700; }
 .chart-v { color: var(--text); font-size: 11.5px; font-weight: 800; }
 
 /* ---------- Tables ---------- */
@@ -384,6 +422,7 @@ h3 { font-size: 13.5px; font-weight: 800; }
   .dash-top, .grid-4, .grid-3, .grid-2, .settings-layout { grid-template-columns: 1fr; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .narr-grid { grid-template-columns: 1fr; }
+  .kanban { grid-template-columns: repeat(2, 1fr); }
   .main { padding: 22px; }
 }
 @media (max-width: 720px) {
