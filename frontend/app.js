@@ -215,6 +215,26 @@ const nav = [
   ]},
 ];
 
+/* ---------- Roles & access control (mock) ---------- */
+const roles = [
+  ["Admin", "Full platform access"],
+  ["Head of Portfolio", "Portfolio + valuation review"],
+  ["Investment Team", "Portfolio & reporting"],
+  ["CFO", "Fund financials & approvals"],
+  ["LP Viewer", "Read-only performance"],
+];
+const rolePerson = { "Admin": "JJ Erpaiboon", "Head of Portfolio": "Alina Truhina", "Investment Team": "Steve Prawiro", "CFO": "Shamona Maharaj", "LP Viewer": "LP Investor" };
+const access = {
+  "Admin": null, // null = all views
+  "Head of Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "audit", "dealflow"],
+  "Investment Team": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "dealflow"],
+  "CFO": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "documents", "audit"],
+  "LP Viewer": ["dashboard", "performance", "exposure", "summary", "documents"],
+};
+let currentRole = null;
+let currentView = "dashboard";
+const allowed = (view) => { const a = access[currentRole]; return !a || a.includes(view); };
+
 const pageMeta = {
   dashboard: { eyebrow: "URAF · The Radical Fund", title: "Fund Dashboard", sub: "Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026." },
   portfolio: { eyebrow: "URAF · The Radical Fund", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
@@ -253,16 +273,68 @@ const initials = (name) => name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").slice(0
 
 /* ---------- Renderers ---------- */
 function renderNav() {
-  document.getElementById("nav").innerHTML = nav.map((g) => `
-    <div class="nav-group">
-      <div class="nav-label">${g.group}</div>
-      ${g.items.map((it) => `
-        <button class="nav-item ${it.id === "dashboard" ? "is-active" : ""}" data-nav="${it.id}" type="button">
-          <span class="ico">${it.icon}</span><span>${it.label}</span>${it.soon ? '<span class="tag">Soon</span>' : ""}
-        </button>`).join("")}
-    </div>`).join("");
+  document.getElementById("nav").innerHTML = nav.map((g) => {
+    const items = g.items.filter((it) => allowed(it.view));
+    if (!items.length) return "";
+    return `<div class="nav-group"><div class="nav-label">${g.group}</div>${items.map((it) => `
+      <button class="nav-item ${it.id === currentView ? "is-active" : ""}" data-nav="${it.id}" type="button">
+        <span class="ico">${it.icon}</span><span>${it.label}</span></button>`).join("")}</div>`;
+  }).join("");
+  document.querySelectorAll("#nav [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
+}
 
-  document.querySelectorAll("[data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
+/* ---------- Auth (mock) ---------- */
+function renderAuthGate() {
+  document.getElementById("authgate").innerHTML = `
+    <div class="auth-card panel"><div class="panel-body" style="padding:28px;">
+      <div class="collect-brand"><span class="brand-icon">Y</span><span>Yello</span></div>
+      <h2 style="margin-top:16px;">Sign in</h2>
+      <p class="meta" style="margin-top:6px;">Utopia Radical operating system · choose a role to explore the demo.</p>
+      <div style="margin-top:16px;">${roles.map((r) => `
+        <button class="auth-role" data-role="${r[0]}" type="button">
+          <span><strong>${r[0]}</strong><div class="meta" style="font-weight:600;">${r[1]} · ${rolePerson[r[0]]}</div></span>
+          <span style="color:var(--orange);font-weight:800;">→</span>
+        </button>`).join("")}</div>
+    </div></div>`;
+  document.querySelectorAll("#authgate .auth-role").forEach((b) => b.addEventListener("click", () => signIn(b.dataset.role)));
+}
+function renderUser() {
+  const name = rolePerson[currentRole] || "User";
+  document.getElementById("sidebarFoot").innerHTML = `
+    <div class="user-chip">
+      <span class="user-avatar">${initials(name)}</span>
+      <div class="user-meta"><strong>${name}</strong><span>${currentRole}</span></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <select class="select" id="roleSwitch" style="flex:1;min-height:32px;font-size:12px;padding:0 8px;">${roles.map((r) => `<option ${r[0] === currentRole ? "selected" : ""}>${r[0]}</option>`).join("")}</select>
+      <button class="btn btn-ghost" id="signOut" type="button" style="min-height:32px;">Sign out</button>
+    </div>`;
+  document.getElementById("roleSwitch").addEventListener("change", (e) => setRole(e.target.value));
+  document.getElementById("signOut").addEventListener("click", signOut);
+}
+function setRole(role) {
+  currentRole = role;
+  try { localStorage.setItem("yelloRole", role); } catch (e) {}
+  renderNav(); renderUser();
+  go(allowed(currentView) ? currentView : "dashboard");
+}
+function signIn(role) {
+  document.body.classList.add("authed");
+  setRole(role);
+}
+function signOut() {
+  currentRole = null;
+  try { localStorage.removeItem("yelloRole"); } catch (e) {}
+  document.body.classList.remove("authed");
+  heroStop();
+  renderAuthGate();
+}
+function showUnauthorized(label) {
+  document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+  document.getElementById("unauthorized").classList.add("is-active");
+  document.getElementById("unauthBody").textContent = `Your role (${currentRole}) doesn’t have access to ${label || "this section"}.`;
+  document.querySelectorAll("#unauthorized [data-nav]").forEach((b) => b.onclick = () => go(b.dataset.nav));
+  setMeta({ eyebrow: "Access", title: "Unauthorized", sub: "This section isn’t available for your role." });
 }
 
 let heroIdx = 0, heroTimer = null;
@@ -869,6 +941,8 @@ function renderDealflow() {
 function go(id) {
   const item = nav.flatMap((g) => g.items).find((i) => i.id === id);
   if (!item) return;
+  if (!allowed(item.view)) { showUnauthorized(item.label); return; }
+  currentView = id;
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("is-active", b.dataset.nav === id));
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
   document.getElementById(item.view).classList.add("is-active");
@@ -984,7 +1058,8 @@ let currentCompany = null, companyTab = "overview";
 
 function openCompany(name) {
   if (!companies.find((x) => x.name === name)) return;
-  currentCompany = name; companyTab = "overview";
+  if (!allowed("company")) { showUnauthorized("Company overview"); return; }
+  currentCompany = name; companyTab = "overview"; currentView = "company";
   heroStop();
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
   document.getElementById("company").classList.add("is-active");
@@ -1140,7 +1215,6 @@ function renderCompanyTab(c, d) {
 }
 
 /* ---------- Init ---------- */
-renderNav();
 renderHero();
 renderAllocation();
 renderHealthList();
@@ -1158,3 +1232,8 @@ document.getElementById("refreshBtn").addEventListener("click", (e) => {
   e.currentTarget.textContent = "Refreshed ✓";
   setTimeout(() => { e.currentTarget.textContent = "Refresh data"; }, 1400);
 });
+
+/* ---------- Auth bootstrap ---------- */
+renderAuthGate();
+const savedRole = (() => { try { return localStorage.getItem("yelloRole"); } catch (e) { return null; } })();
+if (savedRole && access[savedRole] !== undefined) signIn(savedRole);

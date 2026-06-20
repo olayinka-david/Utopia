@@ -18,12 +18,7 @@
 
         <nav class="nav-scroll" id="nav"></nav>
 
-        <div class="sidebar-foot">
-          <div class="user-chip">
-            <span class="user-avatar">JE</span>
-            <div class="user-meta"><strong>JJ Erpaiboon</strong><span>Admin · Investment Ops</span></div>
-          </div>
-        </div>
+        <div class="sidebar-foot" id="sidebarFoot"></div>
       </aside>
 
       <!-- ============ MAIN ============ -->
@@ -142,6 +137,18 @@
         <section class="view" id="audit"><div id="auditBody"></div></section>
         <section class="view" id="dealflow"><div id="dealflowBody"></div></section>
 
+        <!-- ===== UNAUTHORIZED ===== -->
+        <section class="view" id="unauthorized">
+          <div class="placeholder panel" style="padding:40px;">
+            <div>
+              <div class="ph-icon">⊘</div>
+              <h2>Unauthorized</h2>
+              <p id="unauthBody">Your role doesn’t have access to this section.</p>
+              <div class="ph-tag"><button class="btn btn-muted" data-nav="dashboard" type="button">Back to dashboard</button></div>
+            </div>
+          </div>
+        </section>
+
         <!-- ===== PLACEHOLDER (shared by not-yet-built sections) ===== -->
         <section class="view" id="placeholder">
           <div class="placeholder panel" style="padding:40px;">
@@ -155,6 +162,8 @@
         </section>
       </main>
     </div>
+
+    <div id="authgate" class="authgate"></div>
 
     <script src="./app.js"></script>
   </body>
