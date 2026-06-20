@@ -730,7 +730,10 @@ function renderForms() {
   document.getElementById("formsBody").innerHTML = `
     <div class="section-title">
       <select class="select" id="formRole" style="width:auto;min-width:180px;">${roles.map((r) => `<option ${r === formRole ? "selected" : ""}>${r}</option>`).join("")}</select>
-      <button class="btn btn-primary" type="button">+ New submission</button>
+      <div style="display:flex;gap:8px;">
+        <a class="btn btn-muted" href="./collect.html?company=Alterno" target="_blank" rel="noopener">Founder portal ↗</a>
+        <button class="btn btn-primary" type="button">+ New submission</button>
+      </div>
     </div>
     <div class="grid grid-3" id="formGrid"></div>`;
   renderFormGrid();
