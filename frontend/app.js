@@ -198,6 +198,7 @@ const nav = [
     { id: "portfolio", label: "Portfolio", view: "portfolio", route: "/dashboard/companies", icon: "◫" },
     { id: "exposure", label: "Exposure", view: "exposure", route: "/dashboard/exposure", icon: "◐" },
     { id: "performance", label: "Performance", view: "performance", route: "/dashboard/performance", icon: "▲" },
+    { id: "summary", label: "Quarterly Summary", view: "summary", route: "/dashboard/summary", icon: "◰" },
   ]},
   { group: "Workflow", items: [
     { id: "reporting", label: "Reporting", view: "reporting", route: "/reporting", icon: "◳" },
@@ -219,6 +220,7 @@ const pageMeta = {
   portfolio: { eyebrow: "URAF · The Radical Fund", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
   exposure: { eyebrow: "URAF · The Radical Fund", title: "Exposure", sub: "Sector and geographic concentration — by capital allocated and by company count." },
   performance: { eyebrow: "URAF · The Radical Fund", title: "Performance", sub: "MOIC development, capital deployment, and fund multiples to date." },
+  summary: { eyebrow: "URAF · The Radical Fund", title: "Quarterly Summary", sub: "Quarterly Portfolio Summary and Investment Summary — Q1 2026 (URAF)." },
   reporting: { eyebrow: "URAF · The Radical Fund", title: "Quarterly Reporting", sub: "The Q1 2026 LP reporting cycle — workflow phases, tasks, and report generation." },
   forms: { eyebrow: "Workflow", title: "Forms Hub", sub: "Platform-wide form taxonomy (A–G) with role-based submission permissions." },
   documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
@@ -514,6 +516,78 @@ function donut(el, items, accessor) {
 }
 function legend(items, accessor, total, unit) {
   return items.map((s) => `<div class="legend-row"><span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((accessor(s) / total) * 100)}%${unit ? ` · ${unit(s)}` : ""}</strong></div>`).join("");
+}
+
+/* ---------- Quarterly Summary (Portfolio + Investment) ---------- */
+let summaryTab = "portfolio";
+function renderSummary() {
+  document.getElementById("summaryBody").innerHTML = `
+    <div class="section-title">
+      <div class="seg" id="sumSeg">
+        <button class="${summaryTab === "portfolio" ? "is-active" : ""}" data-tab="portfolio" type="button">Portfolio Summary</button>
+        <button class="${summaryTab === "investment" ? "is-active" : ""}" data-tab="investment" type="button">Investment Summary</button>
+      </div>
+      <button class="btn btn-muted" type="button">Export</button>
+    </div>
+    <div id="sumContent"></div>`;
+  document.querySelectorAll("#sumSeg button").forEach((b) => b.addEventListener("click", () => { summaryTab = b.dataset.tab; renderSummary(); }));
+  if (summaryTab === "portfolio") renderSummaryPortfolio(); else renderSummaryInvestment();
+}
+function renderSummaryPortfolio() {
+  const stats = [["2023", "Vintage"], ["$13.8M", "Committed"], ["$5.7M", "Drawn"], ["$1.88M", "Deployed"], ["$2.07M", "GAV"], ["10", "Companies"], ["1.10x", "Gross MOIC"]];
+  const notes = [
+    "Q3 2023–Q2 2024: Gross MOIC held at 1.00x — investments carried at cost; new positions in Arkadiah and Okapi.",
+    "Q3–Q4 2024: GAV rose on investments into Alternō, Terra Oleo, Dash and Alicia Bots, plus the first uplift in Okapi’s carrying value.",
+    "Q1–Q3 2025: GAV grew on follow-ons into Alicia Bots and Dash, new investments in 3cat, Sirsak, Waterhub and Farmio, and uplifts in Alicia Bots and Alternō.",
+    "Q4 2025–Q1 2026: GAV reached $2.07M following the Arkadiah uplift — Gross Portfolio MOIC up to 1.10x.",
+  ];
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>URAF — The Radical Fund</h2><p class="meta">Overview as of Q1 2026 · $1.88M deployed across 10 companies, GAV $2.07M</p></div><span class="chip">Latest stake value</span></div>
+      <div class="panel-body"><div class="hero-stats" style="gap:30px;color:var(--text);">${stats.map((s) => `<div class="hero-stat"><strong style="font-size:18px;">${s[0]}</strong><span style="color:var(--muted);">${s[1]}</span></div>`).join("")}</div></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Quarterly Portfolio Summary</h2><p class="meta">In order of LTM revenue · click a company for the full overview</p></div></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Investment · Own.</th><th class="num">LTM Revenue</th><th class="num">MOIC</th><th>Runway</th><th>Fundraise Status</th><th>Notes</th></tr></thead>
+        <tbody>${companies.map((c) => `<tr class="clickable" data-company="${c.name}">
+          <td><div class="company-cell"><span class="avatar">${initials(c.name)}</span><strong>${c.name}</strong></div></td>
+          <td>${c.sector}</td><td>${c.country}</td>
+          <td class="num">${moneyK(c.invested)} · ${c.ownership}</td>
+          <td class="num">${c.ltm === 0 ? "Pre-revenue" : "$" + c.ltm.toLocaleString()}</td>
+          <td class="num">${c.moic}</td>
+          <td>${status(c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green", c.runway)}</td>
+          <td class="meta">${c.fundraise}</td>
+          <td class="meta" style="max-width:240px;">${c.note}</td>
+        </tr>`).join("")}
+        <tr><td colspan="3"><strong>Total</strong></td><td class="num"><strong>$1.88M</strong></td><td></td><td class="num"><strong>1.10x</strong></td><td colspan="3"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Gross Portfolio MOIC — development to date</h2><span class="status status-green">1.00x → 1.10x</span></div>
+      <div class="panel-body"><div class="narr"><ul>${notes.map((n) => `<li>${n}</li>`).join("")}</ul></div></div>
+    </section>`;
+  bindCompanyClicks();
+}
+function renderSummaryInvestment() {
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Quarterly Investment Summary</h2><p class="meta">Planned for closing in Q2 2026 · Decarb Industry POD · sidecar co-investment with Qatar Development Bank (QDB)</p></div><span class="chip">IC approved · pending QDB</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>HQ</th><th>Description</th><th>Round</th><th class="num">URAF</th><th class="num">Sidecar*</th><th>Co-Investors</th><th>Sector</th><th>Status</th></tr></thead>
+        <tbody>${upcoming.map((u) => `<tr>
+          <td><div class="company-cell"><span class="avatar">${initials(u.name)}</span><strong>${u.name}</strong></div></td>
+          <td>${u.hq}</td>
+          <td class="meta" style="max-width:280px;">${u.desc}</td>
+          <td>${u.round}</td>
+          <td class="num">${u.uraf}</td>
+          <td class="num">${u.sidecar}</td>
+          <td class="meta" style="max-width:200px;">${u.coInvestors}</td>
+          <td>${u.sector}</td>
+          <td>${status("blue", u.status)}</td>
+        </tr>`).join("")}
+        <tr><td colspan="4"><strong>Total</strong></td><td class="num"><strong>$500K</strong></td><td class="num"><strong>$300K</strong></td><td colspan="3"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <p class="meta" style="margin-top:12px;">* Sidecar investment represents co-investment from Qatar Development Bank.</p>`;
 }
 
 /* ---------- Exposure ---------- */
@@ -812,6 +886,7 @@ const renderers = {
   portfolio: renderPortfolioPage,
   exposure: renderExposure,
   performance: renderPerformance,
+  summary: renderSummary,
   reporting: renderReporting,
   forms: renderForms,
   documents: renderDocuments,
