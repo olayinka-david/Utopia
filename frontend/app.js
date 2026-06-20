@@ -979,18 +979,51 @@ function renderPortfolioPage() {
   renderPortfolioTableFull();
 }
 
-/* ---------- Company overview ---------- */
+/* ---------- Company overview (tabbed deep-dive) ---------- */
+let currentCompany = null, companyTab = "overview";
+
 function openCompany(name) {
-  const c = companies.find((x) => x.name === name);
-  if (!c) return;
-  const d = details[name] || {};
+  if (!companies.find((x) => x.name === name)) return;
+  currentCompany = name; companyTab = "overview";
   heroStop();
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
   document.getElementById("company").classList.add("is-active");
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("is-active", b.dataset.nav === "portfolio"));
-  setMeta({ eyebrow: "Portfolio · " + c.sector, title: c.name, sub: d.desc || c.note });
+  renderCompany();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function gauge(months) {
+  const pct = Math.min(months / 24, 1) * 100;
+  const color = months < 6 ? "#e0564c" : months < 12 ? "#ff9a2e" : "#2faa63";
+  const r = 40, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
+  return `<div class="ring" style="--size:110px">
+    <svg viewBox="0 0 110 110" style="transform:rotate(-90deg)"><circle cx="55" cy="55" r="${r}" fill="none" stroke="rgba(28,27,26,0.08)" stroke-width="9"></circle><circle cx="55" cy="55" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle></svg>
+    <div style="text-align:center"><strong style="font-size:22px">${months}</strong><div class="meta" style="font-size:10px">months runway</div></div></div>`;
+}
+
+function revSeries(c) {
+  if (c.ltm === 0) return null;
+  const q = Math.round(c.ltm / 4);
+  const periods = ["Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26"];
+  const ramp = [0.55, 0.68, 0.8, 0.9, 1.0];
+  return periods.map((p, i) => [p, Math.round(q * ramp[i])]);
+}
+
+function companyChart(data) {
+  const max = Math.max(...data.map((d) => d[1])) * 1.15 || 1;
+  return `<div class="chart">${data.map((d, i) => {
+    const h = (d[1] / max) * 100;
+    const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : "";
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmtUSD(d[1])}</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d[0]}</div></div>`;
+  }).join("")}</div>`;
+}
+
+function renderCompany() {
+  const c = companies.find((x) => x.name === currentCompany);
+  const d = details[c.name] || {};
   const runwayTone = c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green";
-  const metrics = d.metrics || [["—", "No metrics"]];
+  const tabs = [["overview", "Overview"], ["financials", "Financials"], ["valuations", "Valuations"], ["documents", "Documents"]];
   document.getElementById("companyBody").innerHTML = `
     <button class="btn btn-ghost" type="button" data-nav="portfolio" style="margin-bottom:14px;">← Back to portfolio</button>
     <section class="panel"><div class="panel-body">
@@ -1012,35 +1045,98 @@ function openCompany(name) {
         </div>
       </div>
     </div></section>
+    <div class="tabbar">${tabs.map((t) => `<button class="tab ${t[0] === companyTab ? "is-active" : ""}" data-tab="${t[0]}" type="button">${t[1]}</button>`).join("")}</div>
+    <div id="companyTab"></div>`;
+  document.querySelectorAll("#companyBody [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
+  document.querySelectorAll("#companyBody .tab").forEach((b) => b.addEventListener("click", () => { companyTab = b.dataset.tab; renderCompany(); }));
+  renderCompanyTab(c, d);
+}
 
-    <div class="grid grid-2" style="margin-top:16px;">
-      <section class="panel"><div class="panel-head"><h2>About</h2><span class="chip">${d.invested ? "Invested " + d.invested : "URAF"}</span></div>
-        <div class="panel-body">
-          <p class="meta" style="font-size:13px;line-height:1.65;">${d.desc || "—"}</p>
-          ${d.model ? `<h3 style="margin-top:16px;">Business model</h3><p class="meta" style="font-size:13px;line-height:1.65;margin-top:6px;">${d.model}</p>` : ""}
-          <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;">
-            <div><div class="num" style="font-weight:800;font-size:16px;">${moneyK(c.invested)}</div><div class="meta">Invested</div></div>
-            <div><div class="num" style="font-weight:800;font-size:16px;">${c.ownership}</div><div class="meta">Ownership</div></div>
-            <div><div style="font-weight:800;font-size:13.5px;">${c.fundraise}</div><div class="meta">Fundraise status</div></div>
+function renderCompanyTab(c, d) {
+  const el = document.getElementById("companyTab");
+  const metrics = d.metrics || [["—", "No metrics"]];
+  if (companyTab === "overview") {
+    el.innerHTML = `
+      <div class="grid grid-2">
+        <section class="panel"><div class="panel-head"><h2>About</h2><span class="chip">${d.invested ? "Invested " + d.invested : "URAF"}</span></div>
+          <div class="panel-body">
+            <p class="meta" style="font-size:13px;line-height:1.65;">${d.desc || "—"}</p>
+            ${d.model ? `<h3 style="margin-top:16px;">Business model</h3><p class="meta" style="font-size:13px;line-height:1.65;margin-top:6px;">${d.model}</p>` : ""}
+            <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;">
+              <div><div class="num" style="font-weight:800;font-size:16px;">${moneyK(c.invested)}</div><div class="meta">Invested</div></div>
+              <div><div class="num" style="font-weight:800;font-size:16px;">${c.ownership}</div><div class="meta">Ownership</div></div>
+              <div><div style="font-weight:800;font-size:13.5px;">${c.fundraise}</div><div class="meta">Fundraise status</div></div>
+            </div>
           </div>
-        </div>
-      </section>
-      <section class="panel"><div class="panel-head"><h2>Key Metrics</h2><span class="chip">Q1 2026</span></div>
-        <div class="panel-body">
-          <div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div>
-          ${d.rag && d.rag.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">${d.rag.map((r) => status(r[0], r[1])).join("")}</div>` : ""}
-        </div>
-      </section>
-    </div>
-
-    ${(d.highlights || d.lowlights || d.goals) ? `<section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Notable Updates</h2><span class="chip">Q1 2026</span></div>
-      <div class="panel-body"><div class="narr-grid">
-        <div class="narr"><h3>Highlights</h3><ul>${(d.highlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
-        <div class="narr"><h3>Low-lights</h3><ul>${(d.lowlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
-        <div class="narr"><h3>Goals</h3><ul>${(d.goals || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
-      </div></div></section>` : ""}`;
-  document.querySelectorAll("#company [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
-  window.scrollTo({ top: 0, behavior: "smooth" });
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Key Metrics</h2><span class="chip">Q1 2026</span></div>
+          <div class="panel-body">
+            <div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div>
+            ${d.rag && d.rag.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">${d.rag.map((r) => status(r[0], r[1])).join("")}</div>` : ""}
+          </div>
+        </section>
+      </div>
+      ${(d.highlights || d.lowlights || d.goals) ? `<section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Notable Updates</h2><span class="chip">Q1 2026</span></div>
+        <div class="panel-body"><div class="narr-grid">
+          <div class="narr"><h3>Highlights</h3><ul>${(d.highlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+          <div class="narr"><h3>Low-lights</h3><ul>${(d.lowlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+          <div class="narr"><h3>Goals</h3><ul>${(d.goals || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+        </div></div></section>` : ""}`;
+  } else if (companyTab === "financials") {
+    const series = revSeries(c);
+    el.innerHTML = `
+      <div class="grid grid-2">
+        <section class="panel"><div class="panel-head"><div><h2>Revenue trend</h2><p class="meta">Quarterly revenue · latest = ${c.ltm === 0 ? "pre-revenue" : "Q1 2026"}</p></div></div>
+          <div class="panel-body">${series ? companyChart(series) : `<div class="meta" style="padding:30px;text-align:center;">Pre-revenue company — no revenue to chart yet.</div>`}</div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Runway</h2><span class="chip">threshold 6 / 12 mo</span></div>
+          <div class="panel-body" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
+            ${gauge(c.runwayMo)}
+            <div style="display:grid;gap:10px;">
+              <div><div class="num" style="font-weight:800;font-size:16px;">${c.burn}</div><div class="meta">Monthly burn</div></div>
+              <div><div class="num" style="font-weight:800;font-size:16px;">${(d.metrics || []).find((m) => /cash/i.test(m[1])) ? d.metrics.find((m) => /cash/i.test(m[1]))[0] : "—"}</div><div class="meta">Cash on hand</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Financial snapshot</h2><span class="chip">Q1 2026</span></div>
+        <div class="panel-body"><div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div></div>
+      </section>`;
+  } else if (companyTab === "valuations") {
+    const cost = c.invested, cur = Math.round(c.invested * parseFloat(c.moic));
+    const step = [["Entry", cost * 1000], ["Q2'25", cost * 1000], ["Q3'25", cost * 1000], ["Q4'25", Math.round((cost + (cur - cost) * 0.6) * 1000)], ["Q1'26", cur * 1000]];
+    el.innerHTML = `
+      <div class="grid grid-2">
+        <section class="panel"><div class="panel-head"><h2>Carrying value</h2><span class="status status-green">${c.moic}</span></div>
+          <div class="panel-body">${companyChart(step)}</div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Position</h2><span class="chip">${d.security || "—"}</span></div>
+          <div class="panel-body" style="display:flex;gap:30px;flex-wrap:wrap;">
+            <div><div class="num" style="font-weight:800;font-size:22px;">${moneyK(cost)}</div><div class="meta">Invested (cost)</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${d.holding || moneyK(cur)}</div><div class="meta">Current holding</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${c.moic}</div><div class="meta">MOIC</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${c.ownership}</div><div class="meta">Ownership</div></div>
+          </div>
+        </section>
+      </div>
+      <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Valuation history</h2></div>
+        <div class="panel-body table-scroll"><table class="tbl">
+          <thead><tr><th>As of</th><th class="num">Holding value</th><th>Method</th><th>Event</th><th class="num">MOIC</th><th>Committee</th></tr></thead>
+          <tbody>
+            <tr><td>Q1 2026</td><td class="num">${d.holding || moneyK(cur)}</td><td>${parseFloat(c.moic) > 1 ? "Last Round" : "Cost"}</td><td>${parseFloat(c.moic) > 1 ? "Follow-on / uplift" : "No change"}</td><td class="num">${c.moic}</td><td>${status("green", "Approved")}</td></tr>
+            <tr><td>Entry</td><td class="num">${moneyK(cost)}</td><td>Cost</td><td>Initial investment</td><td class="num">1.00x</td><td>${status("green", "Approved")}</td></tr>
+          </tbody>
+        </table></div>
+      </section>`;
+  } else {
+    const cdocs = [["Management Accounts — Q1 2026", "Financials", "12 May 2026", true], [c.name + " Board Deck", "Update", "08 May 2026", true], ["Cap Table", "Legal", "30 Apr 2026", false], [(d.security || "SAFE") + " Agreement", "Legal", "—", false]];
+    el.innerHTML = `<section class="panel"><div class="panel-head"><h2>Documents</h2><span class="chip">${c.name}</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Document</th><th>Type</th><th>Date</th><th>Link</th></tr></thead>
+        <tbody>${cdocs.map((x) => `<tr><td><strong>${x[0]}</strong></td><td>${x[1]}</td><td class="meta">${x[2]}</td><td>${x[3] ? `<button class="btn btn-muted copy" type="button">Copy link</button>` : `<span class="chip">Private</span>`}</td></tr>`).join("")}</tbody>
+      </table></div></section>`;
+    el.querySelectorAll(".copy").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Copied ✓"; setTimeout(() => { e.currentTarget.textContent = "Copy link"; }, 1400); }));
+  }
 }
 
 /* ---------- Init ---------- */
