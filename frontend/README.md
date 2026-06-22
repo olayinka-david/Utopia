@@ -36,7 +36,7 @@ All figures are dummy data sourced from **URAF Q1 2026 Quarterly Portfolio Summa
 - **Soft elevation instead of hard borders** — faint hairlines + subtle shadows and a
   16px card radius replace the prior 1px-border-everywhere treatment.
 - **Circular indicators** retained for fund deployment and per-company health.
-- Plus Jakarta Sans, table-first density, no floating UI.
+- Manrope, table-first density, no floating UI.
 
 ## Architecture note
 

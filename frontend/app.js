@@ -583,7 +583,7 @@ const settingsTemplates = {
   visuals: `
     <div class="panel-head"><div><h2>Visual system</h2><p class="meta">Flat palette, soft elevation, no gradients.</p></div></div>
     <div class="panel-body field-grid">
-      ${field("Typeface", "System UI typeface.", '<input class="input" value="Plus Jakarta Sans" />')}
+      ${field("Typeface", "System UI typeface.", '<input class="input" value="Manrope" />')}
       ${field("Primary accent", "Flat orange for primary actions and active states.", swatchInput("#F2691E"))}
       ${field("Amber", "Secondary warm accent.", swatchInput("#FF9A2E"))}
       ${field("Yellow", "Tertiary warm accent.", swatchInput("#FFC233"))}
@@ -1038,12 +1038,12 @@ function seriesSVG(series, fmt, title) {
     const h = (s[1] / max) * (H - pad * 2);
     const x = pad + i * gap + (gap - bw) / 2, y = H - pad - h;
     return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="10" fill="#f2691e"/>
-      <text x="${x + bw / 2}" y="${y - 12}" font-size="20" font-weight="700" text-anchor="middle" fill="#1b1a18" font-family="Plus Jakarta Sans,Arial">${fmt(s[1])}</text>
-      <text x="${x + bw / 2}" y="${H - pad + 28}" font-size="18" text-anchor="middle" fill="#6b6863" font-family="Plus Jakarta Sans,Arial">${s[0]}</text>`;
+      <text x="${x + bw / 2}" y="${y - 12}" font-size="20" font-weight="700" text-anchor="middle" fill="#1b1a18" font-family="Manrope,Arial">${fmt(s[1])}</text>
+      <text x="${x + bw / 2}" y="${H - pad + 28}" font-size="18" text-anchor="middle" fill="#6b6863" font-family="Manrope,Arial">${s[0]}</text>`;
   }).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
     <rect width="${W}" height="${H}" fill="#ffffff"/>
-    <text x="${pad}" y="56" font-size="30" font-weight="800" fill="#1b1a18" font-family="Plus Jakarta Sans,Arial">${title}</text>
+    <text x="${pad}" y="56" font-size="30" font-weight="800" fill="#1b1a18" font-family="Manrope,Arial">${title}</text>
     <line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="rgba(28,27,26,0.12)"/>
     ${bars}</svg>`;
 }
@@ -1147,7 +1147,7 @@ function renderDesignSystem() {
       <div class="panel-body"><div class="ds-swatches">${colors.map((c) => `<div class="ds-swatch"><div class="sw" style="background:${c[1]};"></div><strong>${c[0]}</strong><span class="meta num">${c[1]}</span></div>`).join("")}</div></div>
     </section>
     <div class="grid grid-2" style="margin-top:16px;">
-      <section class="panel"><div class="panel-head"><h2>Typography</h2><span class="chip">Plus Jakarta Sans</span></div>
+      <section class="panel"><div class="panel-head"><h2>Typography</h2><span class="chip">Manrope</span></div>
         <div class="panel-body">
           <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;">Display · 800</div>
           <div style="font-size:18px;font-weight:800;margin-top:10px;">Heading · 800</div>

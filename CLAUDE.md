@@ -35,7 +35,7 @@ Audit · Deal Flow · Settings. See `docs/frontend-gap-analysis.md` for gaps.
 - **Charts:** capsule (pill) bars on a `#f1eee9` track with gradient fills; circular
   rings with rounded caps.
 - **Circular indicators** for fund deployment + per-company health.
-- Typeface **Plus Jakarta Sans**; information-dense, table-first; tabular numerics.
+- Typeface **Manrope**; information-dense, table-first; tabular numerics.
 - Responsive: sidebar collapses to top nav; grids/kanban/funnel stack on mobile.
 
 ## Data
