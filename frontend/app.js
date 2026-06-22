@@ -1297,20 +1297,89 @@ function revSeries(c) {
   return periods.map((p, i) => [p, Math.round(q * ramp[i])]);
 }
 
-function companyChart(data) {
-  const max = Math.max(...data.map((d) => d[1])) * 1.15 || 1;
-  return `<div class="chart">${data.map((d, i) => {
-    const h = (d[1] / max) * 100;
-    const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmtUSD(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
-  }).join("")}</div>`;
+/* ---------- Per-company time series + fundraising (deep-dive) ---------- */
+let companyMetric = "revenue";
+const fin = {
+  "3Cat": { rev: 4750000, ebitda: -120000, burn: 90000, cash: 432000, hc: 113, op: "Stores", opVal: 22 },
+  "Farmio": { rev: 1800000, ebitda: -94600, burn: 94600, cash: 1100000, hc: 12, op: "ARR ($M)", opVal: 10.2 },
+  "Dash": { rev: 1000000, ebitda: -110000, burn: 40000, cash: 65000, hc: 59, op: "Active workers", opVal: 1224 },
+  "Alterno": { rev: 39000, ebitda: -90000, burn: 39000, cash: 180000, hc: 22, op: "Batteries deployed", opVal: 8 },
+  "Alicia Bots": { rev: 105000, ebitda: -200000, burn: 103000, cash: 710000, hc: 26, op: "Robots deployed", opVal: 61 },
+  "Okapi": { rev: 131000, ebitda: -10000, burn: 10000, cash: 313000, hc: 6, op: "Leases closed", opVal: 473 },
+  "Arkadiah": { rev: 23000, ebitda: -150000, burn: 158000, cash: 3400000, hc: 15, op: "Signed clients", opVal: 9 },
+  "Sirsak": { rev: 27700, ebitda: -15000, burn: 17000, cash: 366000, hc: 20, op: "Collection points", opVal: 670 },
+  "Waterhub": { rev: 16000, ebitda: -6000, burn: 6400, cash: 36000, hc: 15, op: "Litres/mo (K)", opVal: 420 },
+  "Terra Oleo": { rev: 0, ebitda: -67000, burn: 67000, cash: 900000, hc: 6, op: "Pilots signed", opVal: 8 },
+};
+const finPeriods = ["Q4'24", "Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26"];
+function metricSeries(name, metric) {
+  const f = fin[name]; if (!f) return null;
+  const cur = { revenue: f.rev, ebitda: f.ebitda, burn: f.burn, cash: f.cash, headcount: f.hc, op: f.opVal }[metric];
+  const shape = metric === "cash" ? [1.5, 1.35, 1.25, 1.15, 1.06, 1]
+    : metric === "burn" ? [0.78, 0.84, 0.9, 0.94, 0.98, 1]
+    : metric === "ebitda" ? [1.7, 1.5, 1.35, 1.2, 1.08, 1]
+    : [0.5, 0.62, 0.74, 0.84, 0.92, 1];
+  return finPeriods.map((p, i) => { let v = cur * shape[i]; if (metric === "ebitda") v = Math.abs(v); v = Math.abs(cur) >= 100 ? Math.round(v) : Math.round(v * 10) / 10; return [p, v]; });
 }
+const metricFmt = {
+  revenue: (v) => fmtUSD(v), ebitda: (v) => "−" + fmtUSD(v), burn: (v) => fmtUSD(v), cash: (v) => fmtUSD(v),
+  headcount: (v) => String(v), op: (v) => String(v),
+};
+function capsuleChart(data, fmt) {
+  const max = Math.max(...data.map((d) => d[1])) * 1.15 || 1;
+  return `<div class="chart">${data.map((d, i) => { const h = (d[1] / max) * 100; const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : ""; return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`; }).join("")}</div>`;
+}
+function companyChart(data) { return capsuleChart(data, fmtUSD); }
+function renderCoChart(c) {
+  const elc = document.getElementById("coChart"); if (!elc) return;
+  const s = metricSeries(c.name, companyMetric);
+  if (!s || (companyMetric === "revenue" && c.ltm === 0)) {
+    elc.innerHTML = `<div class="meta" style="padding:34px;text-align:center;">${companyMetric === "revenue" ? "Pre-revenue — no revenue to chart yet." : "No data for this metric."}</div>`;
+    return;
+  }
+  elc.innerHTML = capsuleChart(s, metricFmt[companyMetric]);
+}
+
+/* Fundraising history (dummy, anchored to URAF Q1 2026 known facts). */
+const funding = {
+  "Alterno": [["Seed (SAFE)", "Mar 2024", "$2.0M", "$250K", "$12M cap", "Wavemaker, angels"], ["Series A2 (target)", "H1 2027", "$5.0M", "TBD", "$25M", "Synexia Ventures, NTT CVC (DD)"]],
+  "Okapi": [["Pre-Seed", "2023", "$0.8M", "—", "—", "Angels"], ["Seed (SAFE)", "Mar 2024", "$1.5M", "$175K", "$8M cap", "Wavemaker"], ["Seed extension", "2026 · raising", "$3.0M", "TBD", "—", "Iterative (in talks)"]],
+  "Dash": [["Seed", "Jul 2024", "$2.0M", "$150K", "$10M", "Existing investors"], ["Seed top-up", "H2 2025", "$1.0M", "$100K", "$12M", "Existing investors"], ["Bridge", "Apr 2026", "$0.8M", "$200K", "SAFE", "Existing investors"], ["Series A (pipeline)", "2026", "$8.0M", "TBD", "—", "Intudo, Beacon VC, Twynam"]],
+  "3Cat": [["Seed (SAFE)", "May 2025", "$1.5M", "$150K", "$12M cap", "Existing investors"], ["Series A (closing)", "15 Jun 2026", "$4.0M", "TBD", "—", "Foxmont (lead), ADB Ventures, GGV"]],
+  "Alicia Bots": [["Seed", "Jul 2024", "$3.0M", "$250K", "$15M", "Existing investors"], ["Series A (advanced)", "2026", "—", "TBD", "—", "In diligence"]],
+  "Arkadiah": [["Seed (SAFE)", "Sep 2023", "$2.5M", "$250K", "$16M cap", "Wavemaker, angels"], ["Series A (closed)", "Q4 2025", "$6.0M", "Follow-on", "$30M", "Existing + new"]],
+  "Sirsak": [["Seed (SAFE)", "May 2025", "$1.0M", "$50K", "$6M cap", "Angels"], ["Seed bridge (prep)", "2026", "$1.0M", "TBD", "—", "Impact investors (sought)"]],
+  "Waterhub": [["Pre-seed (SAFE)", "Jul 2025", "$0.5M", "$50K", "$4M cap", "Angels"], ["Pre-seed extension", "2026 · planning", "—", "TBD", "—", "—"]],
+  "Terra Oleo": [["Seed", "Jun 2024", "$2.0M", "$150K", "$10M", "Breakthrough Energy Fellows"], ["EnterpriseSG grant", "Feb 2026", "SGD 0.8M", "—", "Non-dilutive", "EnterpriseSG"]],
+  "Farmio": [["Seed (SAFE)", "Oct 2025", "$3.0M", "$300K", "$18M cap", "Existing investors"], ["Pre-Series A (prep)", "2026", "—", "TBD", "—", "Food / supply-chain strategics"]],
+};
+function valueAdd(c) {
+  const round = (c.fundraise || "").split("·")[0].trim() || "its next round";
+  return [
+    ["Fundraising & network", `Introduced ${c.name} to investors for ${round} and ongoing rounds.`],
+    ["Market expansion", `Hands-on GTM support scaling across Southeast Asia from ${c.country}.`],
+    ["Portfolio intelligence", `Benchmarking and best-practice sharing with comparable ${c.sector} companies.`],
+  ];
+}
+function fundingSection(c) {
+  const rounds = funding[c.name] || [];
+  return `<section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>URAF in ${c.name}'s rounds</h2><p class="meta">Round history · our participation, valuation and co-investors</p></div><span class="chip">${rounds.length} rounds</span></div>
+    <div class="panel-body"><div class="grid grid-2" style="align-items:start;">
+      <div class="table-scroll"><table class="tbl">
+        <thead><tr><th>Round</th><th>Date</th><th class="num">Size</th><th class="num">URAF</th><th class="num">Valuation</th><th>Lead / co-investors</th></tr></thead>
+        <tbody>${rounds.length ? rounds.map((r) => `<tr><td><span class="round-tag">${r[0]}</span></td><td class="meta">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3] === "—" || r[3] === "TBD" ? `<span class="meta">${r[3]}</span>` : `<strong>${r[3]}</strong>`}</td><td class="num">${r[4]}</td><td class="meta">${r[5]}</td></tr>`).join("") : `<tr><td colspan="6"><div class="meta" style="padding:18px;text-align:center;">No round history.</div></td></tr>`}</tbody>
+      </table></div>
+      <div class="narr"><h3>How URAF adds value</h3><ul>${valueAdd(c).map((v) => `<li><strong style="color:var(--text);">${v[0]}</strong> — ${v[1]}</li>`).join("")}</ul></div>
+    </div></div>
+  </section>`;
+}
+
 
 function renderCompany() {
   const c = companies.find((x) => x.name === currentCompany);
   const d = details[c.name] || {};
   const runwayTone = c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green";
-  const tabs = [["overview", "Overview"], ["financials", "Financials"], ["valuations", "Valuations"], ["documents", "Documents"]];
+  const tabs = [["overview", "Overview"], ["financials", "Financials"], ["valuations", "Valuations"], ["funding", "Funding"], ["documents", "Documents"]];
   document.getElementById("companyBody").innerHTML = `
     <button class="btn btn-ghost" type="button" data-nav="portfolio" style="margin-bottom:14px;">← Back to portfolio</button>
     <section class="panel"><div class="panel-body">
@@ -1370,25 +1439,32 @@ function renderCompanyTab(c, d) {
           <div class="narr"><h3>Goals</h3><ul>${(d.goals || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
         </div></div></section>` : ""}`;
   } else if (companyTab === "financials") {
-    const series = revSeries(c);
+    const opLabel = (fin[c.name] && fin[c.name].op) || "KPI";
+    const metricDefs = [["revenue", "Revenue"], ["ebitda", "EBITDA"], ["burn", "Burn"], ["cash", "Cash"], ["headcount", "Headcount"], ["op", opLabel]];
+    if (!fin[c.name]) companyMetric = "revenue";
     el.innerHTML = `
-      <div class="grid grid-2">
-        <section class="panel"><div class="panel-head"><div><h2>Revenue trend</h2><p class="meta">Quarterly revenue · latest = ${c.ltm === 0 ? "pre-revenue" : "Q1 2026"}</p></div></div>
-          <div class="panel-body">${series ? companyChart(series) : `<div class="meta" style="padding:30px;text-align:center;">Pre-revenue company — no revenue to chart yet.</div>`}</div>
-        </section>
+      <section class="panel"><div class="panel-head"><div><h2>Performance over time</h2><p class="meta">Financial &amp; operational metrics · last 6 quarters</p></div>
+        <div class="seg" id="coMetricSeg">${metricDefs.map((m) => `<button class="${m[0] === companyMetric ? "is-active" : ""}" data-metric="${m[0]}" type="button">${m[1]}</button>`).join("")}</div></div>
+        <div class="panel-body"><div id="coChart"></div></div>
+      </section>
+      <div class="grid grid-2" style="margin-top:16px;">
         <section class="panel"><div class="panel-head"><h2>Runway</h2><span class="chip">threshold 6 / 12 mo</span></div>
           <div class="panel-body" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
             ${gauge(c.runwayMo)}
             <div style="display:grid;gap:10px;">
               <div><div class="num" style="font-weight:800;font-size:16px;">${c.burn}</div><div class="meta">Monthly burn</div></div>
-              <div><div class="num" style="font-weight:800;font-size:16px;">${(d.metrics || []).find((m) => /cash/i.test(m[1])) ? d.metrics.find((m) => /cash/i.test(m[1]))[0] : "—"}</div><div class="meta">Cash on hand</div></div>
+              <div><div class="num" style="font-weight:800;font-size:16px;">${fin[c.name] ? fmtUSD(fin[c.name].cash) : "—"}</div><div class="meta">Cash on hand</div></div>
             </div>
           </div>
         </section>
-      </div>
-      <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Financial snapshot</h2><span class="chip">Q1 2026</span></div>
-        <div class="panel-body"><div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div></div>
-      </section>`;
+        <section class="panel"><div class="panel-head"><h2>Financial snapshot</h2><span class="chip">Q1 2026</span></div>
+          <div class="panel-body"><div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div></div>
+        </section>
+      </div>`;
+    renderCoChart(c);
+    document.querySelectorAll("#coMetricSeg button").forEach((b) => b.addEventListener("click", () => { companyMetric = b.dataset.metric; document.querySelectorAll("#coMetricSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderCoChart(c); }));
+  } else if (companyTab === "funding") {
+    el.innerHTML = fundingSection(c);
   } else if (companyTab === "valuations") {
     const cost = c.invested, cur = Math.round(c.invested * parseFloat(c.moic));
     const step = [["Entry", cost * 1000], ["Q2'25", cost * 1000], ["Q3'25", cost * 1000], ["Q4'25", Math.round((cost + (cur - cost) * 0.6) * 1000)], ["Q1'26", cur * 1000]];
@@ -1414,7 +1490,8 @@ function renderCompanyTab(c, d) {
             <tr><td>Entry</td><td class="num">${moneyK(cost)}</td><td>Cost</td><td>Initial investment</td><td class="num">1.00x</td><td>${status("green", "Approved")}</td></tr>
           </tbody>
         </table></div>
-      </section>`;
+      </section>
+      ${fundingSection(c)}`;
   } else {
     const cdocs = [["Management Accounts — Q1 2026", "Financials", "12 May 2026", true], [c.name + " Board Deck", "Update", "08 May 2026", true], ["Cap Table", "Legal", "30 Apr 2026", false], [(d.security || "SAFE") + " Agreement", "Legal", "—", false]];
     el.innerHTML = `<section class="panel"><div class="panel-head"><h2>Documents</h2><span class="chip">${c.name}</span></div>

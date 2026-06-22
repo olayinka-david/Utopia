@@ -278,7 +278,8 @@ select.select option { font-weight: 600; }
 .tab.is-active { color: var(--orange); border-bottom-color: var(--orange); }
 
 /* ---------- Segmented control ---------- */
-.seg { display: inline-flex; background: var(--surface-3); border-radius: 999px; padding: 3px; gap: 2px; }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--surface-3); border-radius: 999px; padding: 3px; gap: 2px; }
+.round-tag { display: inline-block; padding: 4px 10px; border-radius: 8px; background: var(--orange-soft); color: #b9560f; font-weight: 800; font-size: 11.5px; border: 1px solid rgba(242, 105, 30, 0.18); white-space: nowrap; }
 .seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 999px; font-weight: 700; font-size: 12px; color: var(--muted); cursor: pointer; transition: background 130ms ease, color 130ms ease; }
 .seg button.is-active { background: #fff; color: var(--text); box-shadow: var(--shadow-sm); }
 
