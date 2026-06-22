@@ -461,6 +461,12 @@ body.authed .authgate { display: none; }
 .chart-fill.hot { background: linear-gradient(180deg, #F2691E, #FF9A2E); }
 .chart-x { text-align: center; margin-top: 8px; color: var(--muted); font-size: 11px; font-weight: 700; }
 .chart-v { color: var(--text); font-size: 11.5px; font-weight: 800; }
+.fund-band { display: flex; flex-wrap: wrap; gap: 36px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.fund-band .stat strong { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.fund-band .stat span { color: var(--muted); font-size: 12px; font-weight: 700; }
+.chart-legend { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 12px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.chart-legend i { width: 16px; height: 3px; border-radius: 2px; display: inline-block; }
 
 /* KPI accent (Buildora gradient stat) */
 .kpi-accent { border-color: transparent; background: linear-gradient(150deg, #F2691E 0%, #FF9A2E 100%); color: #fff; box-shadow: 0 16px 32px -18px rgba(242, 105, 30, 0.6); }

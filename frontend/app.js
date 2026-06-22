@@ -755,26 +755,60 @@ function renderPerfChart() {
     return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${s.fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
   }).join("");
 }
+function fundTrendChart() {
+  const periods = ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"];
+  const inv = [0.25, 0.80, 1.20, 1.60, 1.80, 1.88];
+  const gav = [0.25, 0.82, 1.25, 1.70, 1.95, 2.07];
+  const moic = [1.00, 1.02, 1.04, 1.06, 1.08, 1.10];
+  const W = 920, H = 380, L = 64, R = 64, T = 30, B = 50;
+  const pL = L, pR = W - R, pT = T, pB = H - B, pW = pR - pL, pH = pB - pT, n = periods.length;
+  const maxL = 2.4, minR = 0.95, maxR = 1.15;
+  const x = (i) => pL + pW * (i / (n - 1));
+  const yL = (v) => pB - (v / maxL) * pH;
+  const yR = (v) => pB - ((v - minR) / (maxR - minR)) * pH;
+  const pts = (arr, sc) => arr.map((v, i) => `${x(i).toFixed(1)},${sc(v).toFixed(1)}`).join(" ");
+  const dots = (arr, sc, color) => arr.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.5"/>`).join("");
+  const grid = [0, 0.6, 1.2, 1.8, 2.4].map((t) => `<line x1="${pL}" y1="${yL(t).toFixed(1)}" x2="${pR}" y2="${yL(t).toFixed(1)}" stroke="rgba(28,27,26,0.07)"/><text x="${pL - 10}" y="${(yL(t) + 4).toFixed(1)}" text-anchor="end" font-size="12" fill="#8a8884" font-family="Manrope,Arial">$${t.toFixed(1)}</text>`).join("");
+  const rTicks = [0.95, 1.00, 1.05, 1.10, 1.15].map((t) => `<text x="${pR + 10}" y="${(yR(t) + 4).toFixed(1)}" text-anchor="start" font-size="12" fill="#8a8884" font-family="Manrope,Arial">${t.toFixed(2)}x</text>`).join("");
+  const xL = periods.map((p, i) => `<text x="${x(i).toFixed(1)}" y="${pB + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b6863" font-family="Manrope,Arial">${p}</text>`).join("");
+  const moicLab = moic.map((v, i) => `<text x="${x(i).toFixed(1)}" y="${(yR(v) - 12).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="#F2691E" font-family="Manrope,Arial">${v.toFixed(2)}</text>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;" role="img" aria-label="URAF capital invested, holding value and MOIC over time">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>
+    ${grid}${rTicks}
+    <text x="${pL}" y="16" font-size="11" fill="#8a8884" font-family="Manrope,Arial">US$ millions</text>
+    <text x="${pR}" y="16" text-anchor="end" font-size="11" fill="#8a8884" font-family="Manrope,Arial">MOIC (x)</text>
+    <polyline points="${pts(inv, yL)}" fill="none" stroke="#c9c5bd" stroke-width="2.5"/>
+    <polyline points="${pts(gav, yL)}" fill="none" stroke="#8a8884" stroke-width="2.5"/>
+    <polyline points="${pts(moic, yR)}" fill="none" stroke="#F2691E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots(inv, yL, "#c9c5bd")}${dots(gav, yL, "#8a8884")}${dots(moic, yR, "#F2691E")}
+    ${moicLab}${xL}
+  </svg>`;
+}
+
 function renderPerformance() {
+  const band = [["$1.88M", "Capital invested"], ["$2.07M", "Holding value"], ["1.10x", "Gross MOIC"], ["13", "Investments · 10 cos"]];
   const kpis = [["1.10x", "Gross MOIC", "GAV / invested"], ["1.10x", "TVPI", "NAV + dist / paid-in"], ["0.00x", "DPI", "no distributions yet"], ["N/A", "Gross IRR", "< 2 cash-flow events"]];
   document.getElementById("performanceBody").innerHTML = `
-    <div class="grid grid-4" style="margin-bottom:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
-    <section class="panel"><div class="panel-head"><div><h2>Fund Development</h2><p class="meta">Gross portfolio progression to date</p></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><div class="seg" id="perfSeg">${Object.keys(perfSeries).map((k) => `<button class="${k === perfMetric ? "is-active" : ""}" data-metric="${k}" type="button">${k}</button>`).join("")}</div><button class="btn btn-muted" id="perfPng" type="button">Export PNG</button><button class="btn btn-muted" id="perfCsv" type="button">Board report</button></div></div>
-      <div class="panel-body"><div class="chart" id="perfChart"></div></div>
+    <section class="panel"><div class="panel-head"><div><h2>Fund value &amp; MOIC over time</h2><p class="meta">Capital invested vs holding value (left, US$M) and gross MOIC (right, ×)</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-muted" id="perfPng" type="button">Export PNG</button><button class="btn btn-muted" id="perfCsv" type="button">Board report</button></div></div>
+      <div class="panel-body">
+        <div class="fund-band">${band.map((b) => `<div class="stat"><strong class="num">${b[0]}</strong><span>${b[1]}</span></div>`).join("")}</div>
+        <div id="fundTrend" style="margin-top:18px;">${fundTrendChart()}</div>
+        <div class="chart-legend">
+          <span><i style="background:#c9c5bd"></i>Capital invested</span>
+          <span><i style="background:#8a8884"></i>Holding value</span>
+          <span><i style="background:#F2691E"></i>MOIC</span>
+        </div>
+      </div>
     </section>
+    <div class="grid grid-4" style="margin-top:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x</span></div>
       <div class="panel-body table-scroll"><table class="tbl">
         <thead><tr><th>Company</th><th>Event</th><th>Period</th><th>Impact</th></tr></thead>
         <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
       </table></div>
     </section>`;
-  renderPerfChart();
-  document.querySelectorAll("#perfSeg button").forEach((b) => b.addEventListener("click", () => { perfMetric = b.dataset.metric; document.querySelectorAll("#perfSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderPerfChart(); }));
-  document.getElementById("perfPng").addEventListener("click", () => {
-    const s = perfSeries[perfMetric];
-    exportPNG("URAF-" + perfMetric + "-development.png", seriesSVG(s.data, s.fmt, "URAF — " + perfMetric + " development"));
-  });
+  document.getElementById("perfPng").addEventListener("click", () => exportPNG("URAF-fund-trend.png", fundTrendChart()));
   document.getElementById("perfCsv").addEventListener("click", () => {
     const rows = [["Committed", "$13.8M"], ["Drawn", "$5.7M"], ["Deployed", "$1.88M"], ["GAV", "$2.07M"], ["Gross MOIC", "1.10x"], ["TVPI", "1.10x"], ["DPI", "0.00x"], ["Gross IRR", "N/A"], [], ["Company", "Sector", "Invested", "MOIC", "Runway"], ...companies.map((c) => [c.name, c.sector, moneyK(c.invested), c.moic, c.runway])];
     downloadFile("URAF-Q1-2026-board-report.csv", rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv;charset=utf-8");
