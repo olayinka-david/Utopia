@@ -1138,44 +1138,7 @@ function renderCompliance() {
    Design System — gap #5 (brand token reference)
    ============================================================ */
 function renderDesignSystem() {
-  const colors = [
-    ["Orange", "#F2691E"], ["Amber", "#FF9A2E"], ["Yellow", "#FFC233"], ["Orange soft", "#FEF0E7"],
-    ["Ink", "#1B1A18"], ["Muted", "#8A8884"], ["Surface", "#FFFFFF"], ["Canvas", "#F4F2EE"],
-    ["RAG green", "#2FAA63"], ["RAG amber", "#E0901B"], ["RAG red", "#E0564C"], ["Info", "#3C6E9E"],
-  ];
-  document.getElementById("designsystemBody").innerHTML = `
-    <section class="panel"><div class="panel-head"><div><h2>Palette</h2><p class="meta">Flat warm tones · no gradients except the dashboard hero</p></div></div>
-      <div class="panel-body"><div class="ds-swatches">${colors.map((c) => `<div class="ds-swatch"><div class="sw" style="background:${c[1]};"></div><strong>${c[0]}</strong><span class="meta num">${c[1]}</span></div>`).join("")}</div></div>
-    </section>
-    <div class="grid grid-2" style="margin-top:16px;">
-      <section class="panel"><div class="panel-head"><h2>Typography</h2><span class="chip">Manrope</span></div>
-        <div class="panel-body">
-          <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;">Display · 800</div>
-          <div style="font-size:18px;font-weight:800;margin-top:10px;">Heading · 800</div>
-          <div style="font-size:14px;font-weight:650;margin-top:10px;">Body · 650 — information-dense, table-first.</div>
-          <div class="meta" style="margin-top:10px;">Meta · muted secondary text</div>
-          <div class="num" style="margin-top:10px;font-weight:800;">Tabular numerics · 1,234,567 · 1.10x</div>
-        </div>
-      </section>
-      <section class="panel"><div class="panel-head"><h2>Radii & elevation</h2></div>
-        <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-          <div style="width:90px;height:64px;border-radius:8px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">8px</div>
-          <div style="width:90px;height:64px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">12px</div>
-          <div style="width:90px;height:64px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-md);display:grid;place-items:center;" class="meta">16px</div>
-          <div style="width:90px;height:64px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">pill</div>
-        </div>
-      </section>
-    </div>
-    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Components</h2></div>
-      <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <button class="btn btn-primary" type="button">Primary</button>
-        <button class="btn btn-muted" type="button">Muted</button>
-        <button class="btn btn-ghost" type="button">Ghost</button>
-        <span class="chip">Chip</span>
-        ${status("green", "Green")}${status("amber", "Amber")}${status("red", "Red")}${status("blue", "Info")}
-        ${ring(82, "#2faa63", 54)}${ring(48, "#e0564c", 54)}
-      </div>
-    </section>`;
+  if (window.renderDesignSystemInto) window.renderDesignSystemInto("designsystemBody");
 }
 
 /* ---------- Router ---------- */

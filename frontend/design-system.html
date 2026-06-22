@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design System — Yellow</title>
+    <meta name="description" content="Yellow design system — brand tokens, typography, components and data-visualization language for the Utopia Radical platform." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div style="width:min(1080px, calc(100vw - 32px));margin:0 auto;padding:32px 0 72px;">
+      <header style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+        <div>
+          <div class="collect-brand"><span class="brand-icon">Y</span><span>Yellow</span></div>
+          <div class="meta" style="margin-top:8px;">Design System · Utopia Radical · URAF</div>
+        </div>
+        <a class="btn btn-muted" href="./index.html">Open platform ↗</a>
+      </header>
+      <div id="dsRoot"></div>
+    </div>
+    <script src="./design-system.js"></script>
+    <script>renderDesignSystemInto("dsRoot");</script>
+  </body>
+</html>
