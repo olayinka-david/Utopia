@@ -329,7 +329,7 @@ function renderUser() {
       <div class="user-meta"><strong>${name}</strong><span>${currentRole}</span></div>
     </div>
     <div style="display:flex;gap:6px;margin-top:8px;">
-      <select class="select" id="roleSwitch" style="flex:1;min-height:32px;font-size:12px;padding:0 8px;">${roles.map((r) => `<option ${r[0] === currentRole ? "selected" : ""}>${r[0]}</option>`).join("")}</select>
+      <select class="select" id="roleSwitch" style="flex:1;min-height:34px;font-size:12px;padding-left:10px;">${roles.map((r) => `<option ${r[0] === currentRole ? "selected" : ""}>${r[0]}</option>`).join("")}</select>
       <button class="btn btn-ghost" id="signOut" type="button" style="min-height:32px;">Sign out</button>
     </div>`;
   document.getElementById("roleSwitch").addEventListener("change", (e) => setRole(e.target.value));
@@ -1323,7 +1323,7 @@ function gauge(months) {
   const r = 40, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
   return `<div class="ring" style="--size:110px">
     <svg viewBox="0 0 110 110" style="transform:rotate(-90deg)"><circle cx="55" cy="55" r="${r}" fill="none" stroke="rgba(28,27,26,0.08)" stroke-width="9"></circle><circle cx="55" cy="55" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle></svg>
-    <div style="text-align:center"><strong style="font-size:22px">${months}</strong><div class="meta" style="font-size:10px">months runway</div></div></div>`;
+    <div style="text-align:center;line-height:1.02;max-width:76px;"><strong style="font-size:21px;font-weight:800;">${months}</strong><div class="meta" style="font-size:9.5px;font-weight:700;margin-top:1px;">months</div></div></div>`;
 }
 
 function revSeries(c) {
