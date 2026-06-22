@@ -786,13 +786,13 @@ function fundTrendChart() {
 }
 
 function renderPerformance() {
-  const band = [["$1.88M", "Capital invested"], ["$2.07M", "Holding value"], ["1.10x", "Gross MOIC"], ["13", "Investments · 10 cos"]];
+  const band = [["Capital invested", "$1.88M", "cost basis", ""], ["Holding value", "$2.07M", "GAV · +10% to date", ""], ["Gross MOIC", "1.10x", "1.00x → 1.10x", "accent"], ["No. of investments", "13", "across 10 companies", ""]];
   const kpis = [["1.10x", "Gross MOIC", "GAV / invested"], ["1.10x", "TVPI", "NAV + dist / paid-in"], ["0.00x", "DPI", "no distributions yet"], ["N/A", "Gross IRR", "< 2 cash-flow events"]];
   document.getElementById("performanceBody").innerHTML = `
     <section class="panel"><div class="panel-head"><div><h2>Fund value &amp; MOIC over time</h2><p class="meta">Capital invested vs holding value (left, US$M) and gross MOIC (right, ×)</p></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-muted" id="perfPng" type="button">Export PNG</button><button class="btn btn-muted" id="perfCsv" type="button">Board report</button></div></div>
       <div class="panel-body">
-        <div class="fund-band">${band.map((b) => `<div class="stat"><strong class="num">${b[0]}</strong><span>${b[1]}</span></div>`).join("")}</div>
+        <div class="fund-band">${band.map((b) => `<div class="box"><div class="hd">${b[0]}</div><div class="val num" style="${b[3] === "accent" ? "color:var(--orange);" : ""}">${b[1]}</div><div class="sub">${b[2]}</div></div>`).join("")}</div>
         <div id="fundTrend" style="margin-top:18px;">${fundTrendChart()}</div>
         <div class="chart-legend">
           <span><i style="background:#c9c5bd"></i>Capital invested</span>
