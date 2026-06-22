@@ -194,28 +194,47 @@ const workflow = [
 /* ---------- Navigation (full application shell) ---------- */
 const nav = [
   { group: "Overview", items: [
-    { id: "dashboard", label: "Dashboard", view: "dashboard", route: "/dashboard", icon: "▦" },
-    { id: "portfolio", label: "Portfolio", view: "portfolio", route: "/dashboard/companies", icon: "◫" },
-    { id: "exposure", label: "Exposure", view: "exposure", route: "/dashboard/exposure", icon: "◐" },
-    { id: "performance", label: "Performance", view: "performance", route: "/dashboard/performance", icon: "▲" },
-    { id: "summary", label: "Quarterly Summary", view: "summary", route: "/dashboard/summary", icon: "◰" },
+    { id: "dashboard", label: "Dashboard", view: "dashboard", route: "/dashboard", icon: "dashboard" },
+    { id: "portfolio", label: "Portfolio", view: "portfolio", route: "/dashboard/companies", icon: "portfolio" },
+    { id: "exposure", label: "Exposure", view: "exposure", route: "/dashboard/exposure", icon: "exposure" },
+    { id: "performance", label: "Performance", view: "performance", route: "/dashboard/performance", icon: "performance" },
+    { id: "summary", label: "Quarterly Summary", view: "summary", route: "/dashboard/summary", icon: "summary" },
   ]},
   { group: "Workflow", items: [
-    { id: "reporting", label: "Reporting", view: "reporting", route: "/reporting", icon: "◳" },
-    { id: "forms", label: "Forms Hub", view: "forms", route: "/forms", icon: "▤" },
-    { id: "documents", label: "Documents", view: "documents", route: "/documents", icon: "▢" },
+    { id: "reporting", label: "Reporting", view: "reporting", route: "/reporting", icon: "reporting" },
+    { id: "forms", label: "Forms Hub", view: "forms", route: "/forms", icon: "forms" },
+    { id: "documents", label: "Documents", view: "documents", route: "/documents", icon: "documents" },
   ]},
   { group: "Intelligence", items: [
-    { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "◈" },
-    { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "▣" },
-    { id: "compliance", label: "Compliance", view: "compliance", route: "/compliance", icon: "✓" },
-    { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "◧" },
+    { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "intelligence" },
+    { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "audit" },
+    { id: "compliance", label: "Compliance", view: "compliance", route: "/compliance", icon: "compliance" },
+    { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "dealflow" },
   ]},
   { group: "Admin", items: [
-    { id: "designsystem", label: "Design System", view: "designsystem", route: "/settings/design", icon: "◍" },
-    { id: "settings", label: "Settings", view: "settings", route: "/settings", icon: "◎" },
+    { id: "designsystem", label: "Design System", view: "designsystem", route: "/settings/design", icon: "design" },
+    { id: "settings", label: "Settings", view: "settings", route: "/settings", icon: "settings" },
   ]},
 ];
+
+/* Lucide icons (MIT) — inline SVG, no external dependency. */
+const icons = {
+  dashboard: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  portfolio: '<rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  exposure: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  performance: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  summary: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  reporting: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  forms: '<path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"/><polyline points="14 2 14 8 20 8"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/>',
+  documents: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  intelligence: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/>',
+  audit: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  compliance: '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+  dealflow: '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  design: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+};
+const svgIcon = (k) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[k] || ""}</svg>`;
 
 /* ---------- Roles & access control (mock) ---------- */
 const roles = [
@@ -250,7 +269,7 @@ const pageMeta = {
   audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
   compliance: { eyebrow: "Intelligence", title: "Compliance", sub: "Climate & impact and gender (2X) reporting — mandatory Form F lock at Q4." },
   dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
-  designsystem: { eyebrow: "Configuration", title: "Design System", sub: "Yello brand tokens — palette, type, radii, elevation, and components." },
+  designsystem: { eyebrow: "Configuration", title: "Design System", sub: "Yellow brand tokens — palette, type, radii, elevation, and components." },
   settings: { eyebrow: "Configuration", title: "Settings", sub: "Workspace defaults, reporting thresholds, roles, and visual system." },
 };
 
@@ -282,7 +301,7 @@ function renderNav() {
     if (!items.length) return "";
     return `<div class="nav-group"><div class="nav-label">${g.group}</div>${items.map((it) => `
       <button class="nav-item ${it.id === currentView ? "is-active" : ""}" data-nav="${it.id}" type="button">
-        <span class="ico">${it.icon}</span><span>${it.label}</span></button>`).join("")}</div>`;
+        ${svgIcon(it.icon)}<span>${it.label}</span></button>`).join("")}</div>`;
   }).join("");
   document.querySelectorAll("#nav [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
 }
@@ -291,7 +310,7 @@ function renderNav() {
 function renderAuthGate() {
   document.getElementById("authgate").innerHTML = `
     <div class="auth-card panel"><div class="panel-body" style="padding:28px;">
-      <div class="collect-brand"><span class="brand-icon">Y</span><span>Yello</span></div>
+      <div class="collect-brand"><span class="brand-icon">Y</span><span>Yellow</span></div>
       <h2 style="margin-top:16px;">Sign in</h2>
       <p class="meta" style="margin-top:6px;">Utopia Radical operating system · choose a role to explore the demo.</p>
       <div style="margin-top:16px;">${roles.map((r) => `
@@ -514,7 +533,7 @@ const settingsTemplates = {
   workspace: `
     <div class="panel-head"><div><h2>Workspace identity</h2><p class="meta">Core fund workspace naming and defaults.</p></div><span class="chip">Application settings</span></div>
     <div class="panel-body field-grid">
-      ${field("Workspace name", "Visible to internal users.", '<input class="input" value="Yello — Utopia Radical" />')}
+      ${field("Workspace name", "Visible to internal users.", '<input class="input" value="Yellow — Utopia Radical" />')}
       ${field("Default fund", "Used for dashboard and reporting defaults.", select(["URAF — The Radical Fund", "UMEF — A-Typical"]))}
       ${field("Reporting period", "Primary reporting quarter.", select(["Q1 2026", "Q4 2025", "Q3 2025"]))}
       ${field("Fund administrator", "Liaison for NAV and distribution.", '<input class="input" value="Ocorian" />')}
