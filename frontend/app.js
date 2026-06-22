@@ -383,7 +383,8 @@ function updateHero(i) {
   [content, ringEl].forEach((el) => { el.classList.remove("hero-anim"); void el.offsetWidth; el.classList.add("hero-anim"); });
 }
 
-function heroStart() { heroStop(); heroTimer = setInterval(() => updateHero(heroIdx + 1), 5000); }
+const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function heroStart() { heroStop(); if (prefersReducedMotion) return; heroTimer = setInterval(() => updateHero(heroIdx + 1), 5000); }
 function heroStop() { if (heroTimer) clearInterval(heroTimer); }
 
 function renderHero() {
@@ -1223,7 +1224,9 @@ function setMeta(m) {
 
 function bindCompanyClicks() {
   document.querySelectorAll("[data-company]").forEach((el) => {
+    if (!el.hasAttribute("tabindex")) { el.setAttribute("tabindex", "0"); el.setAttribute("role", "button"); el.setAttribute("aria-label", "Open " + el.dataset.company + " overview"); }
     el.addEventListener("click", () => openCompany(el.dataset.company));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCompany(el.dataset.company); } });
   });
 }
 
