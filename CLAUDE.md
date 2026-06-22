@@ -26,9 +26,14 @@ Exposure · Performance · Reporting · Forms Hub · Documents · Intelligence �
 Audit · Deal Flow · Settings. See `docs/frontend-gap-analysis.md` for gaps.
 
 ## Design rules (do not regress)
-- **Palette:** flat warm tones — orange `#F2691E`, amber `#FF9A2E`, yellow `#FFC233`.
-- **No gradients** anywhere **except the dashboard hero banner** (orange→amber).
-- **Borders:** soft elevation + faint hairlines + ~16px radius — NOT hard 1px borders.
+- **Palette:** warm tones — orange `#F2691E`, amber `#FF9A2E`, yellow `#FFC233`.
+- **Gradients are reserved for accents** (Buildora style): the hero banner, primary
+  buttons, the accent KPI, capsule chart-bar fills, and the allocation bar
+  (orange→amber `linear-gradient(150deg,#F2691E,#FF9A2E)` family). Surfaces/text stay flat.
+- **Surfaces:** soft, deep, low-opacity elevation + faint hairlines + ~18–20px radius —
+  NOT hard 1px borders. Warm radial canvas background.
+- **Charts:** capsule (pill) bars on a `#f1eee9` track with gradient fills; circular
+  rings with rounded caps.
 - **Circular indicators** for fund deployment + per-company health.
 - Typeface **Plus Jakarta Sans**; information-dense, table-first; tabular numerics.
 - Responsive: sidebar collapses to top nav; grids/kanban/funnel stack on mobile.

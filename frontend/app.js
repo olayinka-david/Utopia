@@ -438,8 +438,8 @@ function renderKpis() {
     { label: "Critical runway", value: String(critical), foot: "At or below 6 months", tone: "red" },
     { label: "Active fundraises", value: String(fundraising), foot: "Rounds underway", tone: "amber" },
   ];
-  document.getElementById("kpiGrid").innerHTML = kpis.map((k) => `
-    <section class="panel kpi">
+  document.getElementById("kpiGrid").innerHTML = kpis.map((k, i) => `
+    <section class="panel kpi ${i === 0 ? "kpi-accent" : ""}">
       <div class="kpi-label"><span>${k.label}</span>${k.tone ? status(k.tone, k.tone === "red" ? "Watch" : "Active") : '<span class="chip">Q1</span>'}</div>
       <div><div class="kpi-value num">${k.value}</div><div class="kpi-foot">${k.foot}</div></div>
     </section>`).join("");
@@ -459,7 +459,7 @@ function renderMoicChart() {
   document.getElementById("moicChart").innerHTML = moicTrend.map((d, i) => {
     const h = ((d.v - min) / (max - min)) * 100;
     const cls = i === moicTrend.length - 1 ? "hot" : i >= moicTrend.length - 3 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d.v.toFixed(2)}x</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d.period}</div></div>`;
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d.v.toFixed(2)}x</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d.period}</div></div>`;
   }).join("");
 }
 
@@ -751,7 +751,7 @@ function renderPerfChart() {
   document.getElementById("perfChart").innerHTML = s.data.map((d, i) => {
     const h = ((d[1] - s.min) / (s.max - s.min)) * 100;
     const cls = i === s.data.length - 1 ? "hot" : i >= s.data.length - 3 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${s.fmt(d[1])}</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d[0]}</div></div>`;
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${s.fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
   }).join("");
 }
 function renderPerformance() {
@@ -1336,7 +1336,7 @@ function companyChart(data) {
   return `<div class="chart">${data.map((d, i) => {
     const h = (d[1] / max) * 100;
     const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmtUSD(d[1])}</span><div class="chart-bar ${cls}" style="height:${Math.max(h, 6)}%"></div></div><div class="chart-x">${d[0]}</div></div>`;
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmtUSD(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
   }).join("")}</div>`;
 }
 
