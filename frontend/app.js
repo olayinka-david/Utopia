@@ -208,9 +208,11 @@ const nav = [
   { group: "Intelligence", items: [
     { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "◈" },
     { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "▣" },
+    { id: "compliance", label: "Compliance", view: "compliance", route: "/compliance", icon: "✓" },
     { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "◧" },
   ]},
   { group: "Admin", items: [
+    { id: "designsystem", label: "Design System", view: "designsystem", route: "/settings/design", icon: "◍" },
     { id: "settings", label: "Settings", view: "settings", route: "/settings", icon: "◎" },
   ]},
 ];
@@ -226,9 +228,9 @@ const roles = [
 const rolePerson = { "Admin": "JJ Erpaiboon", "Head of Portfolio": "Alina Truhina", "Investment Team": "Steve Prawiro", "CFO": "Shamona Maharaj", "LP Viewer": "LP Investor" };
 const access = {
   "Admin": null, // null = all views
-  "Head of Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "audit", "dealflow"],
-  "Investment Team": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "dealflow"],
-  "CFO": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "documents", "audit"],
+  "Head of Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "audit", "compliance", "dealflow"],
+  "Investment Team": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "compliance", "dealflow"],
+  "CFO": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "documents", "audit", "compliance"],
   "LP Viewer": ["dashboard", "performance", "exposure", "summary", "documents"],
 };
 let currentRole = null;
@@ -246,7 +248,9 @@ const pageMeta = {
   documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
   intelligence: { eyebrow: "Intelligence", title: "Risk Intelligence", sub: "Automated risk signals across the portfolio — filter by severity and track resolution." },
   audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
+  compliance: { eyebrow: "Intelligence", title: "Compliance", sub: "Climate & impact and gender (2X) reporting — mandatory Form F lock at Q4." },
   dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
+  designsystem: { eyebrow: "Configuration", title: "Design System", sub: "Yello brand tokens — palette, type, radii, elevation, and components." },
   settings: { eyebrow: "Configuration", title: "Settings", sub: "Workspace defaults, reporting thresholds, roles, and visual system." },
 };
 
@@ -599,10 +603,21 @@ function renderSummary() {
         <button class="${summaryTab === "portfolio" ? "is-active" : ""}" data-tab="portfolio" type="button">Portfolio Summary</button>
         <button class="${summaryTab === "investment" ? "is-active" : ""}" data-tab="investment" type="button">Investment Summary</button>
       </div>
-      <button class="btn btn-muted" type="button">Export</button>
+      <button class="btn btn-muted" id="sumExport" type="button">Export CSV</button>
     </div>
     <div id="sumContent"></div>`;
   document.querySelectorAll("#sumSeg button").forEach((b) => b.addEventListener("click", () => { summaryTab = b.dataset.tab; renderSummary(); }));
+  document.getElementById("sumExport").addEventListener("click", () => {
+    if (summaryTab === "portfolio") {
+      exportCSV("URAF-Q1-2026-portfolio-summary.csv",
+        ["Company", "Sector", "Country", "Invested", "Ownership", "LTM Revenue", "MOIC", "Runway", "Fundraise", "Notes"],
+        companies.map((c) => [c.name, c.sector, c.country, moneyK(c.invested), c.ownership, c.ltm === 0 ? "Pre-revenue" : c.ltm, c.moic, c.runway, c.fundraise, c.note]));
+    } else {
+      exportCSV("URAF-Q2-2026-investment-summary.csv",
+        ["Company", "HQ", "Round", "URAF", "Sidecar", "Co-Investors", "Sector", "Status"],
+        upcoming.map((u) => [u.name, u.hq, u.round, u.uraf, u.sidecar, u.coInvestors, u.sector, u.status]));
+    }
+  });
   if (summaryTab === "portfolio") renderSummaryPortfolio(); else renderSummaryInvestment();
 }
 function renderSummaryPortfolio() {
@@ -675,7 +690,7 @@ function renderExposure() {
         <button class="${expMode === "value" ? "is-active" : ""}" data-mode="value" type="button">By capital</button>
         <button class="${expMode === "count" ? "is-active" : ""}" data-mode="count" type="button">By company count</button>
       </div>
-      <button class="btn btn-muted" type="button">Export PNG</button>
+      <button class="btn btn-muted" id="expExport" type="button">Export PNG</button>
     </div>
     <div class="grid grid-2">
       <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : fund.companies + " companies"}</span></div>
@@ -694,6 +709,9 @@ function renderExposure() {
   donut(document.getElementById("expSector"), sectors, acc);
   donut(document.getElementById("expGeo"), geos, acc);
   document.querySelectorAll("#expSeg button").forEach((b) => b.addEventListener("click", () => { expMode = b.dataset.mode; renderExposure(); }));
+  document.getElementById("expExport").addEventListener("click", () => {
+    exportPNG("URAF-sector-exposure.png", seriesSVG(sectors.map((s) => [s.label, s.value]), (v) => "$" + v + "K", "URAF — Sector Exposure (by capital)"));
+  });
 }
 
 /* ---------- Performance ---------- */
@@ -722,7 +740,7 @@ function renderPerformance() {
   document.getElementById("performanceBody").innerHTML = `
     <div class="grid grid-4" style="margin-bottom:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
     <section class="panel"><div class="panel-head"><div><h2>Fund Development</h2><p class="meta">Gross portfolio progression to date</p></div>
-      <div class="seg" id="perfSeg">${Object.keys(perfSeries).map((k) => `<button class="${k === perfMetric ? "is-active" : ""}" data-metric="${k}" type="button">${k}</button>`).join("")}</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><div class="seg" id="perfSeg">${Object.keys(perfSeries).map((k) => `<button class="${k === perfMetric ? "is-active" : ""}" data-metric="${k}" type="button">${k}</button>`).join("")}</div><button class="btn btn-muted" id="perfPng" type="button">Export PNG</button><button class="btn btn-muted" id="perfCsv" type="button">Board report</button></div></div>
       <div class="panel-body"><div class="chart" id="perfChart"></div></div>
     </section>
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x</span></div>
@@ -733,6 +751,14 @@ function renderPerformance() {
     </section>`;
   renderPerfChart();
   document.querySelectorAll("#perfSeg button").forEach((b) => b.addEventListener("click", () => { perfMetric = b.dataset.metric; document.querySelectorAll("#perfSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderPerfChart(); }));
+  document.getElementById("perfPng").addEventListener("click", () => {
+    const s = perfSeries[perfMetric];
+    exportPNG("URAF-" + perfMetric + "-development.png", seriesSVG(s.data, s.fmt, "URAF — " + perfMetric + " development"));
+  });
+  document.getElementById("perfCsv").addEventListener("click", () => {
+    const rows = [["Committed", "$13.8M"], ["Drawn", "$5.7M"], ["Deployed", "$1.88M"], ["GAV", "$2.07M"], ["Gross MOIC", "1.10x"], ["TVPI", "1.10x"], ["DPI", "0.00x"], ["Gross IRR", "N/A"], [], ["Company", "Sector", "Invested", "MOIC", "Runway"], ...companies.map((c) => [c.name, c.sector, moneyK(c.invested), c.moic, c.runway])];
+    downloadFile("URAF-Q1-2026-board-report.csv", rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv;charset=utf-8");
+  });
   bindCompanyClicks();
 }
 
@@ -745,6 +771,19 @@ const reportDocs = [
   ["Commentary Letter", ".docx", "Not started", "blue"],
   ["Audit Confirmations", ".docx", "Draft", "blue"],
 ];
+const corrections = [
+  { co: "Okapi", field: "LTM revenue", reason: "IFRS lease revenue restatement", status: "Under Review" },
+  { co: "Farmio", field: "Net debt treatment", reason: "Exclude SAFE-related balances", status: "Approved" },
+  { co: "Metric", field: "Q4 revenue", reason: "Late management accounts", status: "Requested" },
+];
+const automation = [
+  ["Day 15", "Reminder → 4 companies pending", "fired", "green"],
+  ["Day 25", "Reminder → 2 companies pending", "fired", "green"],
+  ["Day 30", "Financials reminder → Shamona", "fired", "green"],
+  ["Day 42", "Overdue escalation → JJ + Head of Portfolio", "scheduled", "amber"],
+  ["Day 55", "MP review reminder → Alina", "scheduled", "blue"],
+];
+const corrStatusTone = (s) => (s === "Approved" ? "green" : s === "Requested" ? "blue" : "amber");
 let phaseSel = 3;
 function renderReporting() {
   const reminders = "15 · 25 · 30 · 40 · 50 · 55 · 58";
@@ -762,11 +801,30 @@ function renderReporting() {
       <section class="panel"><div class="panel-head"><h2>Quarter Tasks</h2><span class="chip" id="taskCount"></span></div>
         <div class="panel-body" id="taskList"></div>
       </section>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <section class="panel"><div class="panel-head"><div><h2>Data Corrections</h2><p class="meta">Form G · routed to Head of Portfolio for approval</p></div><span class="chip" id="corrCount"></span></div>
+        <div class="panel-body" id="corrList"></div>
+      </section>
+      <section class="panel"><div class="panel-head"><div><h2>Automation & escalations</h2><p class="meta">Auto-triggers via daily cron</p></div></div>
+        <div class="panel-body"><div class="timeline">${automation.map((a) => `<div class="timeline-item ${a[2] === "fired" ? "done" : ""}"><span class="day">${a[0]}</span><div><h3>${a[1]}</h3><p class="meta">${a[2] === "fired" ? "Triggered" : "Scheduled"}</p></div>${status(a[3], a[2] === "fired" ? "Fired" : "Scheduled")}</div>`).join("")}</div></div>
+      </section>
     </div>`;
+  renderCorrections();
   renderPhaseDetail();
   document.querySelectorAll("#phases .phase").forEach((p) => p.addEventListener("click", () => { phaseSel = +p.dataset.phase; document.querySelectorAll("#phases .phase").forEach((x) => x.classList.toggle("is-active", x === p)); renderPhaseDetail(); }));
   document.querySelectorAll(".gen").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Generated ✓"; setTimeout(() => { e.currentTarget.textContent = "Generate"; }, 1400); }));
   renderTasks();
+}
+function renderCorrections() {
+  const open = corrections.filter((c) => c.status !== "Approved").length;
+  document.getElementById("corrCount").textContent = `${open} open`;
+  document.getElementById("corrList").innerHTML = `<div class="alert-list">${corrections.map((c, i) => `
+    <div class="alert-row"><span class="alert-icon status-${corrStatusTone(c.status)}">G</span>
+      <div><h3>${c.co} · ${c.field}</h3><p class="meta">${c.reason}</p></div>
+      <div style="display:flex;gap:8px;align-items:center;">${status(corrStatusTone(c.status), c.status)}${c.status !== "Approved" ? `<button class="btn btn-muted corr-approve" data-i="${i}" type="button">Approve</button>` : ""}</div>
+    </div>`).join("")}</div>`;
+  document.querySelectorAll(".corr-approve").forEach((b) => b.addEventListener("click", () => { corrections[+b.dataset.i].status = "Approved"; renderCorrections(); }));
 }
 function renderPhaseDetail() {
   const w = workflow[phaseSel];
@@ -937,6 +995,169 @@ function renderDealflow() {
     </section>`;
 }
 
+/* ============================================================
+   Exports (CSV + chart PNG) — gap #4
+   ============================================================ */
+function downloadFile(name, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function toCSV(headers, rows) {
+  const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  return [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\n");
+}
+function exportCSV(name, headers, rows) { downloadFile(name, toCSV(headers, rows), "text/csv;charset=utf-8"); }
+
+function seriesSVG(series, fmt, title) {
+  const W = 1280, H = 720, pad = 90, max = Math.max(...series.map((s) => s[1])) * 1.15 || 1;
+  const bw = ((W - pad * 2) / series.length) * 0.55;
+  const gap = ((W - pad * 2) / series.length);
+  const bars = series.map((s, i) => {
+    const h = (s[1] / max) * (H - pad * 2);
+    const x = pad + i * gap + (gap - bw) / 2, y = H - pad - h;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="10" fill="#f2691e"/>
+      <text x="${x + bw / 2}" y="${y - 12}" font-size="20" font-weight="700" text-anchor="middle" fill="#1b1a18" font-family="Plus Jakarta Sans,Arial">${fmt(s[1])}</text>
+      <text x="${x + bw / 2}" y="${H - pad + 28}" font-size="18" text-anchor="middle" fill="#6b6863" font-family="Plus Jakarta Sans,Arial">${s[0]}</text>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>
+    <text x="${pad}" y="56" font-size="30" font-weight="800" fill="#1b1a18" font-family="Plus Jakarta Sans,Arial">${title}</text>
+    <line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="rgba(28,27,26,0.12)"/>
+    ${bars}</svg>`;
+}
+function exportPNG(name, svgString) {
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml" }));
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = 1280; c.height = 720;
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0);
+    c.toBlob((b) => { const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); });
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+/* ============================================================
+   Compliance — gap #2 (climate & impact + gender 2X, Q4 lock)
+   ============================================================ */
+let compTab = "climate";
+const climateRows = [
+  ["Arkadiah", "GHG monitored (MRV/dMRV)", "~4.5M ha addressable pipeline"],
+  ["Alterno", "GHG avoided via TES deployment", "8 batteries deployed"],
+  ["Okapi", "Clean energy financed", "473 solar leases"],
+  ["Waterhub", "CO₂ prevented + plastic avoided", "420K L/mo served"],
+  ["Sirsak", "Waste recovered", "177 tonnes cumulative"],
+];
+const twoXCriteria = [
+  ["Entrepreneurship", "≥51% women-founded", "partial"],
+  ["Leadership", "≥30% women in senior leadership", "partial"],
+  ["Employment", "≥30%–40% women in workforce", "green"],
+  ["Consumption", "Product/service benefits women", "green"],
+  ["Investment", "Fund commits to 2X criteria", "green"],
+];
+function renderCompliance() {
+  const locked = false;
+  document.getElementById("complianceBody").innerHTML = `
+    <section class="panel" style="margin-bottom:16px;background:var(--orange-soft);border-color:rgba(242,105,30,0.2);"><div class="panel-body" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div><h3>Form F — Climate & Impact KPIs</h3><p class="meta" style="margin-top:4px;">Mandatory at Q4 · current quarter Q1 2026 — submissions open. Q4 lock date: 31 Dec 2026.</p></div>
+      ${status(locked ? "red" : "green", locked ? "Locked" : "Open")}
+    </div></section>
+    <div class="section-title">
+      <div class="seg" id="compSeg">
+        <button class="${compTab === "climate" ? "is-active" : ""}" data-tab="climate" type="button">Climate & Impact</button>
+        <button class="${compTab === "gender" ? "is-active" : ""}" data-tab="gender" type="button">Gender (2X)</button>
+      </div>
+      <button class="btn btn-muted" id="compExport" type="button">Export CSV</button>
+    </div>
+    <div id="compContent"></div>`;
+  document.querySelectorAll("#compSeg button").forEach((b) => b.addEventListener("click", () => { compTab = b.dataset.tab; renderCompliance(); }));
+  if (compTab === "climate") {
+    document.getElementById("compContent").innerHTML = `
+      <div class="grid grid-4" style="margin-bottom:16px;">
+        ${[["~62K", "tCO₂e avoided", "fund aggregate"], ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 10", "Companies reporting", "Q1 2026"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+      </div>
+      <section class="panel"><div class="panel-head"><h2>Climate & impact by company</h2><span class="chip">Form F</span></div>
+        <div class="panel-body table-scroll"><table class="tbl"><thead><tr><th>Company</th><th>Metric</th><th>Latest</th></tr></thead>
+        <tbody>${climateRows.map((r) => `<tr class="clickable" data-company="${r[0]}"><td><div class="company-cell"><span class="avatar">${initials(r[0])}</span><strong>${r[0]}</strong></div></td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("")}</tbody></table></div>
+      </section>
+      <p class="meta" style="margin-top:12px;">Methodology: climate KPIs aggregated across reporting companies with per-company audit trail. Scope 1–2 and Scope 4 (avoided) tracked where available.</p>`;
+    bindCompanyClicks();
+  } else {
+    document.getElementById("compContent").innerHTML = `
+      <div class="grid grid-2">
+        <section class="panel"><div class="panel-head"><h2>2X Criteria</h2><span class="status status-amber">3 of 5 met</span></div>
+          <div class="panel-body"><div class="alert-list">${twoXCriteria.map((c) => `<div class="alert-row"><span class="alert-icon status-${c[2]}">${c[2] === "green" ? "✓" : "~"}</span><div><h3>${c[0]}</h3><p class="meta">${c[1]}</p></div>${status(c[2], c[2] === "green" ? "Met" : "Partial")}</div>`).join("")}</div></div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Workforce gender</h2><span class="chip">annual report</span></div>
+          <div class="panel-body">
+            <div class="hero-stats" style="gap:28px;color:var(--text);">
+              <div class="hero-stat"><strong style="font-size:20px;">38%</strong><span style="color:var(--muted);">Women in workforce</span></div>
+              <div class="hero-stat"><strong style="font-size:20px;">29%</strong><span style="color:var(--muted);">Women in leadership</span></div>
+            </div>
+            <table class="tbl" style="margin-top:14px;"><thead><tr><th>Company</th><th class="num">Female HC</th><th class="num">Total HC</th><th class="num">%</th></tr></thead>
+            <tbody>
+              <tr><td>Sirsak</td><td class="num">11</td><td class="num">20</td><td class="num">55%</td></tr>
+              <tr><td>Okapi</td><td class="num">2</td><td class="num">6</td><td class="num">33%</td></tr>
+              <tr><td>Alterno</td><td class="num">5</td><td class="num">22</td><td class="num">23%</td></tr>
+            </tbody></table>
+          </div>
+        </section>
+      </div>`;
+  }
+  document.getElementById("compExport").addEventListener("click", () => {
+    if (compTab === "climate") exportCSV("climate-impact-Q1-2026.csv", ["Company", "Metric", "Latest"], climateRows);
+    else exportCSV("gender-2x-Q1-2026.csv", ["Criterion", "Definition", "Status"], twoXCriteria);
+  });
+}
+
+/* ============================================================
+   Design System — gap #5 (brand token reference)
+   ============================================================ */
+function renderDesignSystem() {
+  const colors = [
+    ["Orange", "#F2691E"], ["Amber", "#FF9A2E"], ["Yellow", "#FFC233"], ["Orange soft", "#FEF0E7"],
+    ["Ink", "#1B1A18"], ["Muted", "#8A8884"], ["Surface", "#FFFFFF"], ["Canvas", "#F4F2EE"],
+    ["RAG green", "#2FAA63"], ["RAG amber", "#E0901B"], ["RAG red", "#E0564C"], ["Info", "#3C6E9E"],
+  ];
+  document.getElementById("designsystemBody").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Palette</h2><p class="meta">Flat warm tones · no gradients except the dashboard hero</p></div></div>
+      <div class="panel-body"><div class="ds-swatches">${colors.map((c) => `<div class="ds-swatch"><div class="sw" style="background:${c[1]};"></div><strong>${c[0]}</strong><span class="meta num">${c[1]}</span></div>`).join("")}</div></div>
+    </section>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <section class="panel"><div class="panel-head"><h2>Typography</h2><span class="chip">Plus Jakarta Sans</span></div>
+        <div class="panel-body">
+          <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;">Display · 800</div>
+          <div style="font-size:18px;font-weight:800;margin-top:10px;">Heading · 800</div>
+          <div style="font-size:14px;font-weight:650;margin-top:10px;">Body · 650 — information-dense, table-first.</div>
+          <div class="meta" style="margin-top:10px;">Meta · muted secondary text</div>
+          <div class="num" style="margin-top:10px;font-weight:800;">Tabular numerics · 1,234,567 · 1.10x</div>
+        </div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Radii & elevation</h2></div>
+        <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+          <div style="width:90px;height:64px;border-radius:8px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">8px</div>
+          <div style="width:90px;height:64px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">12px</div>
+          <div style="width:90px;height:64px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-md);display:grid;place-items:center;" class="meta">16px</div>
+          <div style="width:90px;height:64px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow-sm);display:grid;place-items:center;" class="meta">pill</div>
+        </div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Components</h2></div>
+      <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-primary" type="button">Primary</button>
+        <button class="btn btn-muted" type="button">Muted</button>
+        <button class="btn btn-ghost" type="button">Ghost</button>
+        <span class="chip">Chip</span>
+        ${status("green", "Green")}${status("amber", "Amber")}${status("red", "Red")}${status("blue", "Info")}
+        ${ring(82, "#2faa63", 54)}${ring(48, "#e0564c", 54)}
+      </div>
+    </section>`;
+}
+
 /* ---------- Router ---------- */
 function go(id) {
   const item = nav.flatMap((g) => g.items).find((i) => i.id === id);
@@ -969,7 +1190,9 @@ const renderers = {
   documents: renderDocuments,
   intelligence: renderIntelligence,
   audit: renderAudit,
+  compliance: renderCompliance,
   dealflow: renderDealflow,
+  designsystem: renderDesignSystem,
 };
 
 function setMeta(m) {
@@ -1048,6 +1271,10 @@ function renderPortfolioPage() {
     sectorSel.addEventListener("change", (e) => { pfState.sector = e.target.value; renderPortfolioTableFull(); });
     countrySel.addEventListener("change", (e) => { pfState.country = e.target.value; renderPortfolioTableFull(); });
     document.getElementById("pfSort").addEventListener("change", (e) => { pfState.sort = e.target.value; renderPortfolioTableFull(); });
+    document.getElementById("pfExport").addEventListener("click", () => {
+      exportCSV("URAF-portfolio.csv", ["Company", "Sector", "Country", "Invested", "Ownership", "LTM Revenue", "MOIC", "Runway", "Health", "Fundraise"],
+        filteredCompanies().map((c) => [c.name, c.sector, c.country, moneyK(c.invested), c.ownership, c.ltm === 0 ? "Pre-revenue" : c.ltm, c.moic, c.runway, c.health, c.fundraise]));
+    });
     sectorSel.dataset.ready = "1";
   }
   renderPortfolioTableFull();

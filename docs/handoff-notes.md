@@ -61,3 +61,4 @@ Dummy data: URAF Q1 2026. Full gap list: `docs/frontend-gap-analysis.md`.
 | Date | Side | Commit | Note |
 | --- | --- | --- | --- |
 | — | cloud | `d964d8a` | Paused after company deep-dive; handoff to local for 8090 phase pull |
+| — | cloud | (this push) | Closed out gap items: Auth+roles, Compliance (climate/2X, Q4 lock), Workflow (Form G corrections, escalations, automation log), Exports (CSV + chart PNG), Design System (brand tokens). All 5 priority gaps now have a prototype implementation. |

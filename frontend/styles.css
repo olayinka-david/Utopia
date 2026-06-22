@@ -291,6 +291,13 @@ h3 { font-size: 13.5px; font-weight: 800; }
 .check .lbl { font-weight: 700; font-size: 13px; }
 .check.is-done .lbl { color: var(--muted); text-decoration: line-through; }
 
+/* ---------- Design system (brand tokens) ---------- */
+.ds-swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.ds-swatch { display: flex; flex-direction: column; gap: 2px; }
+.ds-swatch .sw { height: 56px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line-2); margin-bottom: 6px; }
+.ds-swatch strong { font-size: 13px; }
+@media (max-width: 720px) { .ds-swatches { grid-template-columns: repeat(2, 1fr); } }
+
 /* ---------- Auth gate (mock sign-in) ---------- */
 .authgate { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; padding: 20px; }
 body.authed .authgate { display: none; }
