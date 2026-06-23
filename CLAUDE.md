@@ -36,7 +36,7 @@ Audit · Deal Flow · Settings. See `docs/frontend-gap-analysis.md` for gaps.
   rings with rounded caps.
 - **Circular indicators** for fund deployment + per-company health.
 - Typeface **Manrope**; information-dense, table-first; tabular numerics.
-- Responsive: sidebar collapses to top nav; grids/kanban/funnel stack on mobile.
+- Responsive: on mobile the sidebar becomes a **slide-in drawer** (hamburger top bar + scrim); grids/kanban/funnel stack.
 
 ## Data
 Dummy data = **URAF Q1 2026 Quarterly Portfolio Summary** (10 companies). Keep new

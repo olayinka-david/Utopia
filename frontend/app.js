@@ -1194,6 +1194,7 @@ function go(id) {
     setMeta(pageMeta[item.view]);
   }
   if (renderers[item.view]) renderers[item.view]();
+  closeNav();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1311,7 +1312,22 @@ function openCompany(name) {
   document.getElementById("company").classList.add("is-active");
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("is-active", b.dataset.nav === "portfolio"));
   renderCompany();
+  closeNav();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---------- Mobile drawer nav ---------- */
+function openNav() {
+  document.querySelector(".sidebar").classList.add("is-open");
+  document.getElementById("navScrim").classList.add("is-open");
+  const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+}
+function closeNav() {
+  const sb = document.querySelector(".sidebar"); if (sb) sb.classList.remove("is-open");
+  const sc = document.getElementById("navScrim"); if (sc) sc.classList.remove("is-open");
+  const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
 }
 
 function gauge(months) {
@@ -1555,6 +1571,13 @@ document.getElementById("refreshBtn").addEventListener("click", (e) => {
   e.currentTarget.textContent = "Refreshed ✓";
   setTimeout(() => { e.currentTarget.textContent = "Refresh data"; }, 1400);
 });
+
+/* ---------- Mobile drawer wiring ---------- */
+document.getElementById("navToggle").addEventListener("click", () => {
+  document.querySelector(".sidebar").classList.contains("is-open") ? closeNav() : openNav();
+});
+document.getElementById("navScrim").addEventListener("click", closeNav);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
 
 /* ---------- Auth bootstrap ---------- */
 renderAuthGate();
