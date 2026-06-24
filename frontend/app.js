@@ -877,6 +877,38 @@ function fundTrendChart() {
   </svg>`;
 }
 
+/* Per-company contribution to the fund's MOIC uplift.
+   uplift($K) = invested × (company MOIC − 1); fund-MOIC contribution(x) = uplift / deployed. */
+function moicContributions() {
+  const deployedK = (fund.deployed || 1) * 1000;
+  const rows = companies.map((c) => {
+    const m = parseFloat(String(c.moic)) || 1;
+    const uplift = c.invested * (m - 1);
+    return { name: c.name, moic: m, invested: c.invested, uplift, contribX: uplift / deployedK };
+  }).sort((a, b) => b.uplift - a.uplift);
+  const totalUplift = rows.reduce((s, r) => s + r.uplift, 0);
+  return { rows, totalUplift, contributors: rows.filter((r) => r.uplift > 0.5) };
+}
+function moicBreakdown() {
+  const { rows, totalUplift, contributors } = moicContributions();
+  if (!contributors.length) {
+    return `<p class="meta">No carrying-value uplift yet — all companies held at cost (1.00x). Contribution breakdown appears once positions are marked up.</p>`;
+  }
+  const max = contributors[0].uplift;
+  const flat = rows.length - contributors.length;
+  const bars = contributors.map((r) => {
+    const w = Math.max((r.uplift / max) * 100, 4);
+    const share = totalUplift ? (r.uplift / totalUplift) * 100 : 0;
+    return `<div class="mb-row" title="${r.name} · held at ${r.moic.toFixed(2)}x · +$${Math.round(r.uplift)}K uplift · +${r.contribX.toFixed(2)}x to fund MOIC">
+      <div class="mb-name"><span class="avatar" style="width:26px;height:26px;border-radius:8px;font-size:10px;">${initials(r.name)}</span><strong>${r.name}</strong><span class="chip muted">${r.moic.toFixed(2)}x</span></div>
+      <div class="mb-track"><span class="mb-fill" style="width:${w}%"></span></div>
+      <div class="mb-val"><strong class="num">+$${Math.round(r.uplift)}K</strong><span class="num">+${r.contribX.toFixed(2)}x · ${share.toFixed(0)}%</span></div>
+    </div>`;
+  }).join("");
+  return `<div class="moic-break">${bars}</div>
+    <div class="alloc-contrib" style="margin-top:14px;"><span class="lab">Total uplift</span><span class="chip">+$${Math.round(totalUplift)}K → ${fund.moic.toFixed(2)}x gross MOIC</span>${flat ? `<span class="chip muted">${flat} held at cost</span>` : ""}</div>`;
+}
+
 function renderPerformance() {
   const moicDelta = fund.moic > 1 ? `+${((fund.moic - 1) * 100).toFixed(0)}% to date` : "no change yet";
   const band = [
@@ -905,6 +937,9 @@ function renderPerformance() {
         <thead><tr><th>Company</th><th>Event</th><th>Period</th><th class="num">Uplift ($K)</th><th class="num">Fund MOIC contribution</th><th>Impact</th></tr></thead>
         <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
       </table></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>MOIC Contribution by Company</h2><p class="meta">Carrying-value uplift over cost · share of the +${((fund.moic - 1) * 100).toFixed(0)}% gross MOIC gain</p></div><span class="chip">by uplift</span></div>
+      <div class="panel-body">${moicBreakdown()}</div>
     </section>`;
   document.getElementById("perfPng").addEventListener("click", () => exportPNG("URAF-fund-trend.png", fundTrendChart()));
   document.getElementById("perfCsv").addEventListener("click", () => {

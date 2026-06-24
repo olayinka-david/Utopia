@@ -475,6 +475,22 @@ body.authed .authgate { display: none; }
 .alloc-seg.deployed { background: linear-gradient(90deg, #F2691E, #FF9A2E); }
 .alloc-seg.reserved { background: linear-gradient(90deg, #FFC233, #FFD66B); }
 
+/* ---------- MOIC contribution breakdown (horizontal bars) ---------- */
+.moic-break { display: flex; flex-direction: column; gap: 12px; }
+.mb-row { display: grid; grid-template-columns: 180px 1fr 132px; align-items: center; gap: 16px; }
+.mb-name { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+.mb-name strong { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mb-name .chip.muted { color: var(--soft); flex: none; }
+.mb-track { height: 14px; border-radius: 999px; background: #f1eee9; overflow: hidden; }
+.mb-fill { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #F2691E, #FF9A2E); }
+.mb-val { text-align: right; display: flex; flex-direction: column; line-height: 1.25; }
+.mb-val strong { font-size: 13.5px; font-weight: 800; }
+.mb-val span { font-size: 11px; color: var(--muted); font-weight: 700; }
+@media (max-width: 640px) {
+  .mb-row { grid-template-columns: 1fr 92px; grid-template-areas: "name val" "track track"; row-gap: 7px; }
+  .mb-name { grid-area: name; } .mb-val { grid-area: val; } .mb-track { grid-area: track; }
+}
+
 /* ---------- Donut (flat color stops) ---------- */
 .donut-wrap { display: grid; grid-template-columns: 168px 1fr; gap: 22px; align-items: center; }
 .donut { width: 168px; aspect-ratio: 1; border-radius: 50%; position: relative; }
