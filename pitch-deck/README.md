@@ -1,31 +1,28 @@
-# pitchdeck-builder
+# pitch-deck
 
-A Claude / Codex plugin that takes a founder or team from nothing to a deployed,
-responsive, interactive pitch-deck site. Sibling to
-[`brandbook-builder`](https://github.com/aiden150/brandbook-builder) — it reads the
-brand tokens that brandbook-builder produces (or asks for them inline when no brand
-book exists yet) and ships a section-scroll deck site in the
+A Claude Code skill that takes a founder or team from nothing to a deployed,
+responsive, interactive pitch-deck site. Sibling to the
+[`brandbook-builder`](https://github.com/aiden150/brandbook-builder) skill — it reads
+the brand tokens that brandbook-builder produces (or asks for them inline when no
+brand book exists yet) and ships a section-scroll deck site in the
 [`utopia-os-deck`](https://github.com/The-Utopia-Studio/utopia-os-deck) pattern.
 
 ## What ships
 
 ```
-.codex-plugin/plugin.json
-assets/                              # (reserved for shared briefs)
-scripts/
-  validate-pitchdeck-project.mjs     # pre-deploy validator
-skills/
-  pitchdeck/
-    SKILL.md                         # 5-phase flow: scope → brand → brief → scaffold → QA/deploy
-    references/
-      section-map.md                 # 12 canonical slides + investor/sales defaults
-      investor-tone.md               # voice + per-slide micro-spec for investor decks
-      sales-tone.md                  # voice + per-slide micro-spec for sales decks
-      brand-extraction.md            # how to read tokens from a brandbook-builder repo
-      reference-mining.md            # how to safely sample Pinterest / existing decks
-      deck-template-structure.md     # full file tree + slide conventions
-    templates/
-      slide-skeleton.tsx             # copy-paste motion-aware slide template
+pitch-deck/
+├── SKILL.md                          # 5-phase flow: scope → brand → brief → scaffold → QA/deploy
+├── references/
+│   ├── section-map.md                # 12 canonical slides + investor/sales defaults
+│   ├── investor-tone.md              # voice + per-slide micro-spec for investor decks
+│   ├── sales-tone.md                 # voice + per-slide micro-spec for sales decks
+│   ├── brand-extraction.md           # how to read tokens from a brandbook-builder repo
+│   ├── reference-mining.md           # how to safely sample Pinterest / existing decks
+│   └── deck-template-structure.md    # full file tree + slide conventions
+├── templates/
+│   └── slide-skeleton.tsx            # copy-paste motion-aware slide template
+└── scripts/
+    └── validate-pitchdeck-project.mjs # pre-deploy validator
 ```
 
 ## Output stack
@@ -53,9 +50,8 @@ skills/
 - **inline intake** — no brand book yet; the skill collects the minimum and writes
   `brand.json` directly.
 
-The default behavior is *read if present, ask if not* — the skill auto-detects a brand
-book at the path the user provides and falls back to inline questions for any token it
-cannot resolve.
+Default: *read if present, ask if not* — auto-detects a brand book at the path the user
+provides and falls back to inline questions for any token it cannot resolve.
 
 ## Audience modes
 
@@ -67,18 +63,9 @@ cannot resolve.
 ## Validation
 
 ```bash
-node pitchdeck-builder/scripts/validate-pitchdeck-project.mjs <path/to/deck>
+node pitch-deck/scripts/validate-pitchdeck-project.mjs <path/to/deck>
 ```
 
 Fails when `brand.json`, `deck-brief.md`, the Cover or Ask slide, or core scaffolding is
 missing. Warns on missing logo, missing `motion` dep, or `tailwind.config.js` without a
 `brand` color extension.
-
-## Extracting to its own repo
-
-This folder is self-contained. To split it out:
-
-```bash
-git subtree split --prefix pitchdeck-builder -b pitchdeck-builder-only
-git push <new-remote> pitchdeck-builder-only:main
-```

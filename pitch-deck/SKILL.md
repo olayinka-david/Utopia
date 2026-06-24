@@ -178,14 +178,14 @@ JSX time. Brand tokens win every conflict.
 
 ## Phase 5 — Build, verify, deploy
 
-Run `npm install`, then `npm run build`. Run the plugin's validator before booting:
+Run `npm install`, then `npm run build`. Run the skill's validator before booting:
 
 ```bash
-node <plugin-root>/scripts/validate-pitchdeck-project.mjs <deck-output-path>
+node <skill-root>/scripts/validate-pitchdeck-project.mjs <deck-output-path>
 ```
 
-(Resolved from `pitchdeck-builder/scripts/validate-pitchdeck-project.mjs` when the plugin
-is installed.) Then boot `npm run dev` and verify:
+(Resolved from `pitch-deck/scripts/validate-pitchdeck-project.mjs` inside the skills
+collection.) Then boot `npm run dev` and verify:
 
 - No console errors.
 - No horizontal scroll at 360, 768, 1280, 1920.
@@ -221,5 +221,4 @@ When done, summarise in ≤6 lines:
 - `references/reference-mining.md` — how to sample Pinterest / existing decks safely.
 - `references/deck-template-structure.md` — full file tree + slide skeleton conventions.
 - `templates/slide-skeleton.tsx` — copy-paste motion-aware slide template.
-- `../../scripts/validate-pitchdeck-project.mjs` — pre-deploy validator (lives at the
-  plugin root alongside `.codex-plugin/plugin.json`).
+- `scripts/validate-pitchdeck-project.mjs` — pre-deploy validator.
