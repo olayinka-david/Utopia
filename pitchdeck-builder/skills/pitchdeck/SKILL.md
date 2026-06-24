@@ -62,6 +62,10 @@ If anything is ambiguous, ask in the same turn — never spawn the scaffold blin
 
 ## Phase 1 — Brand extraction
 
+**Default behaviour: read if present, ask if not.** If the user gave a path or URL, try to
+extract every token from the brand book first; only prompt for tokens that cannot be
+resolved. If no brand book at all, fall through to inline intake.
+
 Follow `references/brand-extraction.md`. Produce a single `brand.json` at the output target's
 root with this shape (fields the build phase reads):
 
@@ -174,7 +178,14 @@ JSX time. Brand tokens win every conflict.
 
 ## Phase 5 — Build, verify, deploy
 
-Run `npm install`, then `npm run build`. Boot `npm run dev` and verify:
+Run `npm install`, then `npm run build`. Run the plugin's validator before booting:
+
+```bash
+node <plugin-root>/scripts/validate-pitchdeck-project.mjs <deck-output-path>
+```
+
+(Resolved from `pitchdeck-builder/scripts/validate-pitchdeck-project.mjs` when the plugin
+is installed.) Then boot `npm run dev` and verify:
 
 - No console errors.
 - No horizontal scroll at 360, 768, 1280, 1920.
@@ -183,8 +194,8 @@ Run `npm install`, then `npm run build`. Boot `npm run dev` and verify:
 - Loader exits cleanly; main fades in.
 - Tab order through anchors is sensible; CTAs are keyboard-reachable.
 
-Run `node scripts/validate-pitchdeck-project.mjs` from the skill dir — fails build if
-`brand.json`, `deck-brief.md`, slide components, or `assets.ts` are missing/malformed.
+The validator fails the deploy if `brand.json`, `deck-brief.md`, Cover, Ask, slide
+components, or `assets.ts` are missing/malformed.
 
 Deploy target — ask. Default Vercel; offer GitHub Pages / Netlify / static export. For Vercel,
 confirm `vercel.json` (output, framework=vite). Do NOT push or deploy without explicit user OK.
@@ -210,4 +221,5 @@ When done, summarise in ≤6 lines:
 - `references/reference-mining.md` — how to sample Pinterest / existing decks safely.
 - `references/deck-template-structure.md` — full file tree + slide skeleton conventions.
 - `templates/slide-skeleton.tsx` — copy-paste motion-aware slide template.
-- `scripts/validate-pitchdeck-project.mjs` — pre-deploy validator.
+- `../../scripts/validate-pitchdeck-project.mjs` — pre-deploy validator (lives at the
+  plugin root alongside `.codex-plugin/plugin.json`).
