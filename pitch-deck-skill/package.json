@@ -1,0 +1,23 @@
+{
+  "name": "@utopia-studio/pitch-deck",
+  "version": "0.1.0",
+  "description": "Install the /pitch-deck skill into Claude Code",
+  "keywords": ["claude-code", "skill", "pitch-deck", "utopia-studio"],
+  "homepage": "https://github.com/The-Utopia-Studio/skills/tree/main/skills/pitch-deck",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "pitch-deck": "./bin/pitch-deck-skill.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/pitch-deck-skill.js --postinstall"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skill/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
