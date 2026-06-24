@@ -171,30 +171,53 @@ let upcoming = urafUpcoming;
 
 /* Sector exposure by capital deployed ($K). */
 const urafSectors = [
-  { label: "Agri-Food", value: 450, count: 2, color: "#f2691e" },
-  { label: "Energy", value: 425, count: 2, color: "#ff7a1a" },
-  { label: "Clean Mobility", value: 250, count: 1, color: "#ff9a2e" },
-  { label: "Robotics", value: 250, count: 1, color: "#ffb338" },
-  { label: "NbS / Carbon", value: 250, count: 1, color: "#ffc233" },
-  { label: "Circular Economy", value: 200, count: 2, color: "#e9b27a" },
-  { label: "Water", value: 50, count: 1, color: "#ded9d0" },
+  { label: "Agri-Food", value: 450, count: 2, color: "#f2691e", companies: ["Farmio", "Terra Oleo"] },
+  { label: "Energy", value: 425, count: 2, color: "#ff7a1a", companies: ["Alterno", "Okapi"] },
+  { label: "Clean Mobility", value: 250, count: 1, color: "#ff9a2e", companies: ["Dash"] },
+  { label: "Robotics", value: 250, count: 1, color: "#ffb338", companies: ["Alicia Bots"] },
+  { label: "NbS / Carbon", value: 250, count: 1, color: "#ffc233", companies: ["Arkadiah"] },
+  { label: "Circular Economy", value: 200, count: 2, color: "#e9b27a", companies: ["3Cat", "Sirsak"] },
+  { label: "Water", value: 50, count: 1, color: "#ded9d0", companies: ["Waterhub"] },
 ];
 const umefSectors = [
-  { label: "Climate Tech", value: 250, count: 1, color: "#f2691e" },
+  { label: "Climate Tech", value: 250, count: 1, color: "#f2691e", companies: ["Metric"] },
 ];
 let sectors = urafSectors;
 
-/* Geographic exposure (by capital $K and by company count). */
-const urafGeos = [
-  { label: "Singapore", value: 950, count: 4, color: "#f2691e" },
-  { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
-  { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
-  { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
-];
-const umefGeos = [
-  { label: "UAE", value: 250, count: 1, color: "#f2691e" },
-];
+/* Geographic exposure — by HQ / Operations / Revenue base. */
+const urafGeoLenses = {
+  hq: [
+    { label: "Singapore", value: 950, count: 4, color: "#f2691e" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
+    { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
+  ],
+  operations: [
+    { label: "Singapore", value: 650, count: 3, color: "#f2691e" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
+    { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
+    { label: "Thailand", value: 150, count: 1, color: "#e9b27a" },
+    { label: "Japan", value: 150, count: 1, color: "#ded9d0" },
+  ],
+  revenue: [
+    { label: "Hong Kong", value: 600, count: 2, color: "#f2691e" },
+    { label: "Singapore", value: 500, count: 4, color: "#ff7a1a" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff9a2e" },
+    { label: "Malaysia", value: 250, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 100, count: 1, color: "#ffd27a" },
+    { label: "Middle East", value: 80, count: 1, color: "#e9b27a" },
+  ],
+};
+const umefGeoLenses = {
+  hq:         [{ label: "UAE",          value: 250, count: 1, color: "#f2691e" }],
+  operations: [{ label: "UAE",          value: 250, count: 1, color: "#f2691e" }],
+  revenue:    [{ label: "GCC region",   value: 250, count: 1, color: "#f2691e" }],
+};
+const urafGeos = urafGeoLenses.hq;
+const umefGeos = umefGeoLenses.hq;
 let geos = urafGeos;
+let geoLens = "hq";
 
 const urafMoicTrend = [
   { period: "Q2'24", v: 1.0 },
@@ -429,17 +452,23 @@ function renderHero() {
 function renderAllocation() {
   const deployed = fund.deployed, reserved = fund.reserved;
   const total = fund.committed;
+  // Top contributors by invested (compact)
+  const top = [...companies].sort((a, b) => b.invested - a.invested).slice(0, 3);
+  const extra = Math.max(0, companies.length - top.length);
   document.getElementById("allocation").innerHTML = `
-    <div class="alloc-head">
-      <div><div class="lab">Deployed</div><div class="val">${moneyM(deployed)}</div></div>
-      <div style="text-align:right;"><div class="lab">Reserved</div><div class="val">${moneyM(reserved)}</div></div>
+    <div class="alloc-stats">
+      <div class="alloc-stat"><span class="dot" style="background:#F2691E"></span><span class="lab">Deployed</span><strong class="num">${moneyM(deployed)}</strong></div>
+      <div class="alloc-stat"><span class="dot" style="background:#FFC233"></span><span class="lab">Reserved</span><strong class="num">${moneyM(reserved)}</strong></div>
+      <div class="alloc-stat right"><span class="lab">Committed</span><strong class="num">${moneyM(total)}</strong></div>
     </div>
     <div class="alloc-bar">
       <div class="alloc-seg deployed" style="width:${(deployed / total) * 100}%"></div>
       <div class="alloc-seg reserved" style="width:${(reserved / total) * 100}%"></div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-      <span class="chip">Okapi</span><span class="chip">Alternō</span><span class="chip">Dash</span><span class="chip">+7 more</span>
+    <div class="alloc-contrib">
+      <span class="lab">Top contributors</span>
+      ${top.map((c) => `<span class="chip">${c.name} · ${moneyK(c.invested)}</span>`).join("")}
+      ${extra ? `<span class="chip muted">+${extra} more</span>` : ""}
     </div>`;
 }
 
@@ -476,9 +505,31 @@ function renderSectorDonut() {
   const stops = sectors.map((s) => { const from = (acc / total) * 100; acc += s.value; const to = (acc / total) * 100; return `${s.color} ${from.toFixed(1)}% ${to.toFixed(1)}%`; }).join(", ");
   const donutEl = document.getElementById("sectorDonut");
   donutEl.style.background = `conic-gradient(${stops})`;
-  donutEl.innerHTML = `<div class="donut-center"><strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span></div>`;
-  document.getElementById("sectorLegend").innerHTML = sectors.map((s) => `
-    <div class="legend-row"><span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((s.value / total) * 100)}%</strong></div>`).join("");
+  donutEl.innerHTML = `<div class="donut-center" id="sectorDonutCenter"><strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span></div>`;
+  const defaultCenter = `<strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span>`;
+  document.getElementById("sectorLegend").innerHTML = sectors.map((s, i) => `
+    <div class="legend-row sector-row" tabindex="0" role="button" aria-label="${s.label} sector — ${s.companies.join(", ") || "no companies"}" data-sector="${i}">
+      <span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((s.value / total) * 100)}%</strong>
+      <div class="sector-pop">${s.companies.length ? s.companies.map((c) => `<span class="chip clickable" data-company="${c}">${c}</span>`).join("") : `<span class="meta">No companies</span>`}</div>
+    </div>`).join("");
+  // wire hover / focus → donut center swap
+  document.querySelectorAll("#sectorLegend .sector-row").forEach((row) => {
+    const i = +row.dataset.sector;
+    const s = sectors[i];
+    const enter = () => {
+      const center = document.getElementById("sectorDonutCenter");
+      if (center) center.innerHTML = `<strong style="color:${s.color}">${s.label}</strong><span>${s.companies.length} ${s.companies.length === 1 ? "company" : "companies"} · $${(s.value / 1000).toFixed(2)}M</span>`;
+    };
+    const leave = () => {
+      const center = document.getElementById("sectorDonutCenter");
+      if (center) center.innerHTML = defaultCenter;
+    };
+    row.addEventListener("mouseenter", enter);
+    row.addEventListener("mouseleave", leave);
+    row.addEventListener("focus", enter);
+    row.addEventListener("blur", leave);
+  });
+  bindCompanyClicks();
 }
 
 function renderMoicChart() {
@@ -750,7 +801,8 @@ function renderExposure() {
       <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : companies.length + " companies"}</span></div>
         <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expSector"><div class="donut-center"><strong>${sectors.length}</strong><span>sectors</span></div></div><div class="legend">${legend(sectors, acc, sTotal, unit)}</div></div></div>
       </section>
-      <section class="panel"><div class="panel-head"><h2>Geographic Exposure</h2><span class="chip">${geos.length} markets</span></div>
+      <section class="panel"><div class="panel-head" style="flex-wrap:wrap;gap:12px;"><div><h2>Geographic Exposure</h2><p class="meta">${geoLens === "hq" ? "By company HQ" : geoLens === "operations" ? "By country of operations" : "By revenue base"}</p></div>
+        <div class="seg" id="geoLensSeg"><button class="${geoLens === "hq" ? "is-active" : ""}" data-lens="hq" type="button">HQ</button><button class="${geoLens === "operations" ? "is-active" : ""}" data-lens="operations" type="button">Operations</button><button class="${geoLens === "revenue" ? "is-active" : ""}" data-lens="revenue" type="button">Revenue base</button></div></div>
         <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expGeo"><div class="donut-center"><strong>${geos.length}</strong><span>markets</span></div></div><div class="legend">${legend(geos, acc, gTotal, unit)}</div></div></div>
       </section>
     </div>
@@ -763,6 +815,11 @@ function renderExposure() {
   donut(document.getElementById("expSector"), sectors, acc);
   donut(document.getElementById("expGeo"), geos, acc);
   document.querySelectorAll("#expSeg button").forEach((b) => b.addEventListener("click", () => { expMode = b.dataset.mode; renderExposure(); }));
+  document.querySelectorAll("#geoLensSeg button").forEach((b) => b.addEventListener("click", () => {
+    geoLens = b.dataset.lens;
+    geos = ((activeFund === "URAF") ? urafGeoLenses : umefGeoLenses)[geoLens];
+    renderExposure();
+  }));
   document.getElementById("expExport").addEventListener("click", () => {
     exportPNG("URAF-sector-exposure.png", seriesSVG(sectors.map((s) => [s.label, s.value]), (v) => "$" + v + "K", "URAF — Sector Exposure (by capital)"));
   });
@@ -774,11 +831,12 @@ const perfSeries = {
   GAV: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.2, data: [["Q2'24", 0.85], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.8], ["Q3'25", 1.95], ["Q1'26", 2.07]] },
   Deployed: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.0, data: [["Q2'24", 0.8], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.7], ["Q3'25", 1.8], ["Q1'26", 1.88]] },
 };
+/* [company, event, period, impact, uplift in $K, MOIC contribution at fund level] */
 const drivers = [
-  ["Okapi", "Up-round", "Q4 2024", "First uplift in carrying value"],
-  ["Alicia Bots", "Seed round", "Q1 2025", "Priced round — uplift to 1.16x"],
-  ["Alternō", "Follow-on", "Q2 2025", "Additional carrying-value uplift"],
-  ["Arkadiah", "Series A", "Q3 2025", "Uplift to 1.49x — top performer"],
+  ["Okapi",       "Up-round",   "Q4 2024", "First uplift in carrying value",       25, "+0.01x"],
+  ["Alicia Bots", "Seed round", "Q1 2025", "Priced round — uplift to 1.16x",       40, "+0.02x"],
+  ["Alterno",     "Follow-on",  "Q2 2025", "Additional carrying-value uplift",      5, "+0.00x"],
+  ["Arkadiah",    "Series A",   "Q3 2025", "Uplift to 1.49x — top performer",     122, "+0.07x"],
 ];
 let perfMetric = "MOIC";
 function renderPerfChart() {
@@ -801,7 +859,7 @@ function fundTrendChart() {
   const yL = (v) => pB - (v / maxL) * pH;
   const yR = (v) => pB - ((v - minR) / (maxR - minR)) * pH;
   const pts = (arr, sc) => arr.map((v, i) => `${x(i).toFixed(1)},${sc(v).toFixed(1)}`).join(" ");
-  const dots = (arr, sc, color) => arr.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.5"/>`).join("");
+  const dots = (arr, sc, color, label, fmt) => arr.map((v, i) => `<g class="trend-dot"><circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="9" fill="transparent"><title>${periods[i]} · ${label}: ${fmt(v)}</title></circle><circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.5" pointer-events="none"/></g>`).join("");
   const grid = [0, 0.6, 1.2, 1.8, 2.4].map((t) => `<line x1="${pL}" y1="${yL(t).toFixed(1)}" x2="${pR}" y2="${yL(t).toFixed(1)}" stroke="rgba(28,27,26,0.07)"/><text x="${pL - 10}" y="${(yL(t) + 4).toFixed(1)}" text-anchor="end" font-size="12" fill="#8a8884" font-family="Manrope,Arial">$${t.toFixed(1)}</text>`).join("");
   const rTicks = [0.95, 1.00, 1.05, 1.10, 1.15].map((t) => `<text x="${pR + 10}" y="${(yR(t) + 4).toFixed(1)}" text-anchor="start" font-size="12" fill="#8a8884" font-family="Manrope,Arial">${t.toFixed(2)}x</text>`).join("");
   const xL = periods.map((p, i) => `<text x="${x(i).toFixed(1)}" y="${pB + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b6863" font-family="Manrope,Arial">${p}</text>`).join("");
@@ -814,7 +872,7 @@ function fundTrendChart() {
     <polyline points="${pts(inv, yL)}" fill="none" stroke="#c9c5bd" stroke-width="2.5"/>
     <polyline points="${pts(gav, yL)}" fill="none" stroke="#8a8884" stroke-width="2.5"/>
     <polyline points="${pts(moic, yR)}" fill="none" stroke="#F2691E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    ${dots(inv, yL, "#c9c5bd")}${dots(gav, yL, "#8a8884")}${dots(moic, yR, "#F2691E")}
+    ${dots(inv, yL, "#c9c5bd", "Capital invested", (v) => "$" + v.toFixed(2) + "M")}${dots(gav, yL, "#8a8884", "Holding value", (v) => "$" + v.toFixed(2) + "M")}${dots(moic, yR, "#F2691E", "MOIC", (v) => v.toFixed(2) + "x")}
     ${moicLab}${xL}
   </svg>`;
 }
@@ -842,10 +900,10 @@ function renderPerformance() {
       </div>
     </section>
     <div class="grid grid-4" style="margin-top:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
-    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x</span></div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x · +$192K uplift</span></div>
       <div class="panel-body table-scroll"><table class="tbl">
-        <thead><tr><th>Company</th><th>Event</th><th>Period</th><th>Impact</th></tr></thead>
-        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
+        <thead><tr><th>Company</th><th>Event</th><th>Period</th><th class="num">Uplift ($K)</th><th class="num">Fund MOIC contribution</th><th>Impact</th></tr></thead>
+        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
       </table></div>
     </section>`;
   document.getElementById("perfPng").addEventListener("click", () => exportPNG("URAF-fund-trend.png", fundTrendChart()));
@@ -948,6 +1006,8 @@ const formDefs = [
   ["E", "Fund Performance Snapshot", "Authoritative quarterly fund record.", ["CFO"]],
   ["F", "Climate & Impact KPIs", "Mandatory at Q4 — climate metrics.", ["Investment Team", "Head of Portfolio"]],
   ["G", "Correction Request", "Request a data correction (HoP approves).", ["Any role"]],
+  ["H", "Valuation Meeting Minutes", "Capture committee decisions, attendees, and per-company marks.", ["Investment Team", "Head of Portfolio"]],
+  ["I", "Quarter Tasks", "Per-cycle task checklist tied to the reporting workflow.", ["Investment Team", "Head of Portfolio"]],
 ];
 let formRole = "All roles";
 function renderForms() {
@@ -1140,6 +1200,7 @@ function exportPNG(name, svgString) {
    Compliance — gap #2 (climate & impact + gender 2X, Q4 lock)
    ============================================================ */
 let compTab = "climate";
+let compAgg = "fund"; // "fund" | "all" | "cumulative"
 const climateRows = [
   ["Arkadiah", "GHG monitored (MRV/dMRV)", "~4.5M ha addressable pipeline"],
   ["Alterno", "GHG avoided via TES deployment", "8 batteries deployed"],
@@ -1154,7 +1215,19 @@ const twoXCriteria = [
   ["Consumption", "Product/service benefits women", "green"],
   ["Investment", "Fund commits to 2X criteria", "green"],
 ];
+/* Aggregate views: each mode → 4 climate KPIs. */
+const climateAgg = {
+  fund:       [["~62K",  "tCO₂e avoided", "fund aggregate"], ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 10", "Companies reporting", "Q1 2026"]],
+  all:        [["~62K",  "tCO₂e avoided", "URAF + UMEF"],    ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 11", "Companies reporting", "All funds"]],
+  cumulative: [["~145K", "tCO₂e avoided", "lifetime"],       ["5.2M ha", "Under MRV (cumul.)", "since 2023"], ["3,800", "Households reached", "lifetime"], ["8",   "Companies reporting", "ever"]],
+};
+const genderAgg = {
+  fund:       [["38%", "Women in workforce"], ["29%", "Women in leadership"]],
+  all:        [["41%", "Women in workforce"], ["31%", "Women in leadership"]],
+  cumulative: [["36%", "Women in workforce"], ["27%", "Women in leadership"]],
+};
 function renderCompliance() {
+  const aggLabel = { fund: `This fund (${activeFund})`, all: "All funds", cumulative: "Cumulative" };
   const locked = false;
   document.getElementById("complianceBody").innerHTML = `
     <section class="panel" style="margin-bottom:16px;background:var(--orange-soft);border-color:rgba(242,105,30,0.2);"><div class="panel-body" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -1166,32 +1239,43 @@ function renderCompliance() {
         <button class="${compTab === "climate" ? "is-active" : ""}" data-tab="climate" type="button">Climate & Impact</button>
         <button class="${compTab === "gender" ? "is-active" : ""}" data-tab="gender" type="button">Gender (2X)</button>
       </div>
-      <button class="btn btn-muted" id="compExport" type="button">Export CSV</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span class="meta" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--soft);">Aggregate</span>
+        <div class="seg" id="compAggSeg">
+          <button class="${compAgg === "fund" ? "is-active" : ""}" data-agg="fund" type="button">This fund</button>
+          <button class="${compAgg === "all" ? "is-active" : ""}" data-agg="all" type="button">All funds</button>
+          <button class="${compAgg === "cumulative" ? "is-active" : ""}" data-agg="cumulative" type="button">Cumulative</button>
+        </div>
+        <button class="btn btn-muted" id="compExport" type="button">Export CSV</button>
+      </div>
     </div>
     <div id="compContent"></div>`;
   document.querySelectorAll("#compSeg button").forEach((b) => b.addEventListener("click", () => { compTab = b.dataset.tab; renderCompliance(); }));
+  document.querySelectorAll("#compAggSeg button").forEach((b) => b.addEventListener("click", () => { compAgg = b.dataset.agg; renderCompliance(); }));
   if (compTab === "climate") {
+    const ks = climateAgg[compAgg];
     document.getElementById("compContent").innerHTML = `
       <div class="grid grid-4" style="margin-bottom:16px;">
-        ${[["~62K", "tCO₂e avoided", "fund aggregate"], ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 10", "Companies reporting", "Q1 2026"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+        ${ks.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
       </div>
-      <section class="panel"><div class="panel-head"><h2>Climate & impact by company</h2><span class="chip">Form F</span></div>
+      <section class="panel"><div class="panel-head"><h2>Climate & impact by company</h2><span class="chip">Form F · ${aggLabel[compAgg]}</span></div>
         <div class="panel-body table-scroll"><table class="tbl"><thead><tr><th>Company</th><th>Metric</th><th>Latest</th></tr></thead>
         <tbody>${climateRows.map((r) => `<tr class="clickable" data-company="${r[0]}"><td><div class="company-cell"><span class="avatar">${initials(r[0])}</span><strong>${r[0]}</strong></div></td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("")}</tbody></table></div>
       </section>
       <p class="meta" style="margin-top:12px;">Methodology: climate KPIs aggregated across reporting companies with per-company audit trail. Scope 1–2 and Scope 4 (avoided) tracked where available.</p>`;
     bindCompanyClicks();
   } else {
+    const g = genderAgg[compAgg];
     document.getElementById("compContent").innerHTML = `
       <div class="grid grid-2">
         <section class="panel"><div class="panel-head"><h2>2X Criteria</h2><span class="status status-amber">3 of 5 met</span></div>
           <div class="panel-body"><div class="alert-list">${twoXCriteria.map((c) => `<div class="alert-row"><span class="alert-icon status-${c[2]}">${c[2] === "green" ? "✓" : "~"}</span><div><h3>${c[0]}</h3><p class="meta">${c[1]}</p></div>${status(c[2], c[2] === "green" ? "Met" : "Partial")}</div>`).join("")}</div></div>
         </section>
-        <section class="panel"><div class="panel-head"><h2>Workforce gender</h2><span class="chip">annual report</span></div>
+        <section class="panel"><div class="panel-head"><h2>Workforce gender</h2><span class="chip">${aggLabel[compAgg]}</span></div>
           <div class="panel-body">
             <div class="hero-stats" style="gap:28px;color:var(--text);">
-              <div class="hero-stat"><strong style="font-size:20px;">38%</strong><span style="color:var(--muted);">Women in workforce</span></div>
-              <div class="hero-stat"><strong style="font-size:20px;">29%</strong><span style="color:var(--muted);">Women in leadership</span></div>
+              <div class="hero-stat"><strong style="font-size:20px;">${g[0][0]}</strong><span style="color:var(--muted);">${g[0][1]}</span></div>
+              <div class="hero-stat"><strong style="font-size:20px;">${g[1][0]}</strong><span style="color:var(--muted);">${g[1][1]}</span></div>
             </div>
             <table class="tbl" style="margin-top:14px;"><thead><tr><th>Company</th><th class="num">Female HC</th><th class="num">Total HC</th><th class="num">%</th></tr></thead>
             <tbody>
@@ -1413,23 +1497,75 @@ function metricSeries(name, metric) {
     : [0.5, 0.62, 0.74, 0.84, 0.92, 1];
   return finPeriods.map((p, i) => { let v = cur * shape[i]; if (metric === "ebitda") v = Math.abs(v); v = Math.abs(cur) >= 100 ? Math.round(v) : Math.round(v * 10) / 10; return [p, v]; });
 }
+
+/* Synthesize a 6-quarter runway history per company, anchored on the current runwayMo. */
+function runwayHistorySeries(c) {
+  // Synthetic deltas tuned per company so it doesn't look like every co has the same trajectory.
+  const seedMap = { "Dash": [4, 5, 6, 8, 12, c.runwayMo], "Alterno": [12, 10, 8, 7, 5, c.runwayMo], "3Cat": [10, 9, 8, 7, 6, c.runwayMo], "Okapi": [14, 16, 18, 19, 20, c.runwayMo] };
+  const seed = seedMap[c.name];
+  if (seed) return finPeriods.map((p, i) => [p, seed[i]]);
+  // Default: slight downward drift over time ending at current
+  const r = c.runwayMo;
+  const shape = [r * 1.4, r * 1.25, r * 1.15, r * 1.08, r * 1.02, r];
+  return finPeriods.map((p, i) => [p, Math.max(1, Math.round(shape[i] * 10) / 10)]);
+}
+function runwayHistoryChart(c) {
+  const s = runwayHistorySeries(c);
+  const max = Math.max(24, ...s.map((d) => d[1])) * 1.1;
+  return `<div class="chart" style="height:120px;">${s.map((d, i) => {
+    const h = (d[1] / max) * 100;
+    const tone = d[1] < 6 ? "" : d[1] < 12 ? "warm" : "hot"; // visual cue: green-ish (hot=amber/orange used elsewhere); we want healthy=hot (orange), warning=warm (amber), critical=track-only
+    // override: critical -> plain (no fill class) so we color via inline
+    const fillStyle = d[1] < 6 ? "background:linear-gradient(180deg,#E0564C,#FF8A7E);" : "";
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d[1]}</span><div class="chart-bar"><span class="chart-fill ${fillStyle ? "" : tone}" style="height:${Math.max(h, 6)}%;${fillStyle}"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
+  }).join("")}</div>`;
+}
+
+/* QoQ / YoY % for a company metric — computed from the synthesized series. */
+function metricDeltas(name, metric) {
+  const s = metricSeries(name, metric); if (!s || s.length < 5) return null;
+  const cur = s[s.length - 1][1], prev = s[s.length - 2][1], yearAgo = s[s.length - 5][1];
+  const pct = (a, b) => { if (!b || !isFinite(b)) return null; return Math.round(((a - b) / Math.abs(b)) * 1000) / 10; };
+  return { qoq: pct(cur, prev), yoy: pct(cur, yearAgo) };
+}
+function deltaBadge(d, opts) {
+  if (d === null || d === undefined) return "";
+  // opts.inverse=true: lower-is-better (burn/ebitda absolute)
+  const positive = opts && opts.inverse ? d <= 0 : d >= 0;
+  const tone = positive ? "green" : "red";
+  const arrow = d >= 0 ? "▲" : "▼";
+  return `<span class="delta-badge ${tone}">${arrow} ${Math.abs(d).toFixed(1)}%</span>`;
+}
 const metricFmt = {
   revenue: (v) => fmtUSD(v), ebitda: (v) => "−" + fmtUSD(v), burn: (v) => fmtUSD(v), cash: (v) => fmtUSD(v),
   headcount: (v) => String(v), op: (v) => String(v),
 };
 function capsuleChart(data, fmt) {
   const max = Math.max(...data.map((d) => d[1])) * 1.15 || 1;
-  return `<div class="chart">${data.map((d, i) => { const h = (d[1] / max) * 100; const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : ""; return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`; }).join("")}</div>`;
+  return `<div class="chart">${data.map((d, i) => { const h = (d[1] / max) * 100; const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : ""; return `<div class="chart-col" title="${d[0]} · ${fmt(d[1])}"><div class="chart-barwrap"><span class="chart-v num">${fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`; }).join("")}</div>`;
 }
 function companyChart(data) { return capsuleChart(data, fmtUSD); }
 function renderCoChart(c) {
   const elc = document.getElementById("coChart"); if (!elc) return;
+  const elD = document.getElementById("coDeltas");
   const s = metricSeries(c.name, companyMetric);
   if (!s || (companyMetric === "revenue" && c.ltm === 0)) {
     elc.innerHTML = `<div class="meta" style="padding:34px;text-align:center;">${companyMetric === "revenue" ? "Pre-revenue — no revenue to chart yet." : "No data for this metric."}</div>`;
+    if (elD) elD.innerHTML = "";
     return;
   }
   elc.innerHTML = capsuleChart(s, metricFmt[companyMetric]);
+  if (elD) {
+    const d = metricDeltas(c.name, companyMetric);
+    const inverse = (companyMetric === "burn" || companyMetric === "ebitda");
+    const cur = s[s.length - 1][1];
+    const metricLabel = { revenue: "Revenue", ebitda: "EBITDA (abs)", burn: "Burn", cash: "Cash", headcount: "Headcount", op: (fin[c.name] && fin[c.name].op) || "KPI" }[companyMetric] || "";
+    elD.innerHTML = d ? `
+      <div class="co-delta"><span class="lab">Latest</span><strong class="num">${metricFmt[companyMetric](cur)}</strong></div>
+      <div class="co-delta"><span class="lab">QoQ</span>${deltaBadge(d.qoq, { inverse })}</div>
+      <div class="co-delta"><span class="lab">YoY</span>${deltaBadge(d.yoy, { inverse })}</div>
+      <div class="co-delta co-delta-meta meta">${metricLabel}</div>` : "";
+  }
 }
 
 /* Fundraising history (dummy, anchored to URAF Q1 2026 known facts). */
@@ -1537,15 +1673,21 @@ function renderCompanyTab(c, d) {
     el.innerHTML = `
       <section class="panel"><div class="panel-head"><div><h2>Performance over time</h2><p class="meta">Financial &amp; operational metrics · last 6 quarters</p></div>
         <div class="seg" id="coMetricSeg">${metricDefs.map((m) => `<button class="${m[0] === companyMetric ? "is-active" : ""}" data-metric="${m[0]}" type="button">${m[1]}</button>`).join("")}</div></div>
-        <div class="panel-body"><div id="coChart"></div></div>
+        <div class="panel-body"><div id="coDeltas" class="co-deltas"></div><div id="coChart"></div></div>
       </section>
       <div class="grid grid-2" style="margin-top:16px;">
         <section class="panel"><div class="panel-head"><h2>Runway</h2><span class="chip">threshold 6 / 12 mo</span></div>
-          <div class="panel-body" style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
-            ${gauge(c.runwayMo)}
-            <div style="display:grid;gap:10px;">
-              <div><div class="num" style="font-weight:800;font-size:16px;">${c.burn}</div><div class="meta">Monthly burn</div></div>
-              <div><div class="num" style="font-weight:800;font-size:16px;">${fin[c.name] ? fmtUSD(fin[c.name].cash) : "—"}</div><div class="meta">Cash on hand</div></div>
+          <div class="panel-body">
+            <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
+              ${gauge(c.runwayMo)}
+              <div style="display:grid;gap:10px;">
+                <div><div class="num" style="font-weight:800;font-size:16px;">${c.burn}</div><div class="meta">Monthly burn</div></div>
+                <div><div class="num" style="font-weight:800;font-size:16px;">${fin[c.name] ? fmtUSD(fin[c.name].cash) : "—"}</div><div class="meta">Cash on hand</div></div>
+              </div>
+            </div>
+            <div class="runway-history">
+              <div class="lab">Runway · last 6 quarters (mo)</div>
+              ${runwayHistoryChart(c)}
             </div>
           </div>
         </section>
@@ -1618,7 +1760,7 @@ function setActiveFund(id) {
   companies   = (id === "URAF") ? urafCompanies  : umefCompanies;
   upcoming    = (id === "URAF") ? urafUpcoming   : umefUpcoming;
   sectors     = (id === "URAF") ? urafSectors    : umefSectors;
-  geos        = (id === "URAF") ? urafGeos       : umefGeos;
+  geos        = ((id === "URAF") ? urafGeoLenses : umefGeoLenses)[geoLens];
   moicTrend   = (id === "URAF") ? urafMoicTrend  : umefMoicTrend;
   try { localStorage.setItem("yelloFund", id); } catch (e) {}
   // refresh the switcher UI + page eyebrow + re-render current view
