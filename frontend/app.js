@@ -3,36 +3,42 @@
    Dummy data sourced from URAF Q1 2026 Quarterly Portfolio Summary.
    ============================================================ */
 
-const fund = {
-  name: "Utopia Radical Asia Fund 1",
-  vintage: 2023,
-  committed: 13.8, // $M
-  drawn: 5.7,
-  deployed: 1.88,
-  reserved: 3.1, // committed-reserve illustration (drawn not yet deployed + buffer)
-  gav: 2.07,
-  companies: 10,
-  moic: 1.1,
-};
-
-/* Funds for the hero carousel (auto-rotating). */
-const funds = [
-  {
-    id: "URAF", name: "The Radical Fund", period: "Q1 2026", moic: "1.10",
-    sub: "Gross Portfolio MOIC · GAV $2.07M",
-    stats: [["$13.8M", "Committed"], ["$5.7M", "Drawn"], ["$1.88M", "Deployed"], ["10", "Companies"], ["N/A", "Gross IRR · &lt;2 ev"]],
-    ringPct: 41, ringLab: "drawn of committed",
-  },
-  {
-    id: "UMEF", name: "A-Typical · launching", period: "Q1 2026", moic: "1.00",
-    sub: "Gross Portfolio MOIC · GAV $0.25M",
-    stats: [["$0.25M", "Deployed"], ["1", "Company"], ["1", "LP"], ["Metric", "Holding"], ["N/A", "Gross IRR · &lt;2 ev"]],
-    ringPct: 100, ringLab: "deployed",
-  },
+const fundsCatalog = [
+  { id: "URAF", fullName: "Utopia Radical Asia Fund 1", short: "The Radical Fund" },
+  { id: "UMEF", fullName: "Utopia Middle East Fund 1",  short: "Middle East Fund" },
 ];
 
+/* Per-fund data — switching funds rescopes everything. */
+const fundDatasets = {
+  URAF: {
+    id: "URAF",
+    fullName: "Utopia Radical Asia Fund 1",
+    short: "The Radical Fund",
+    vintage: 2023,
+    committed: 13.8, drawn: 5.7, deployed: 1.88, reserved: 3.1, gav: 2.07, moic: 1.10, lps: 12, investments: 13,
+    /* Per-period fund trend (Capital invested / GAV / MOIC). */
+    trendPeriods: ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"],
+    trendInv:  [0.25, 0.80, 1.20, 1.60, 1.80, 1.88],
+    trendGav:  [0.25, 0.82, 1.25, 1.70, 1.95, 2.07],
+    trendMoic: [1.00, 1.02, 1.04, 1.06, 1.08, 1.10],
+  },
+  UMEF: {
+    id: "UMEF",
+    fullName: "Utopia Middle East Fund 1",
+    short: "Middle East Fund",
+    vintage: 2025,
+    committed: 5.0, drawn: 0.5, deployed: 0.25, reserved: 4.75, gav: 0.25, moic: 1.00, lps: 1, investments: 1,
+    trendPeriods: ["Q3'25", "Q4'25", "Q1'26"],
+    trendInv:  [0.10, 0.20, 0.25],
+    trendGav:  [0.10, 0.20, 0.25],
+    trendMoic: [1.00, 1.00, 1.00],
+  },
+};
+let activeFund = "URAF";
+let fund = fundDatasets[activeFund];
+
 /* In order of LTM revenue (per summary table p.2-3). invested in $K. */
-const companies = [
+const urafCompanies = [
   { name: "3Cat", sector: "Circular Economy", country: "Malaysia", invested: 150, ownership: "1.20%", ltm: 14835012, moic: "1.00x", runway: "5 mo", runwayMo: 5, burn: "$90K/mo", burnTone: "amber", health: 55, fundraise: "Series A · closing 15 Jun 2026", note: "Monitor Series A close to extend runway" },
   { name: "Farmio", sector: "Agri-Food", country: "Singapore", invested: 300, ownership: "2.21%", ltm: 6761021, moic: "1.00x", runway: "12 mo", runwayMo: 12, burn: "$94.6K/mo", burnTone: "amber", health: 84, fundraise: "Pre-Series A · in prep", note: "ARR doubled to $10.2M; HK expansion" },
   { name: "Dash", sector: "Clean Mobility", country: "Indonesia", invested: 250, ownership: "7.53%", ltm: 2073887, moic: "1.00x", runway: "12+ mo", runwayMo: 12, burn: "$40K/mo", burnTone: "green", health: 82, fundraise: "Series A · healthy pipeline", note: "Closed $800K bridge in Q2; nearing profitability" },
@@ -44,6 +50,13 @@ const companies = [
   { name: "Waterhub", sector: "Water", country: "Indonesia", invested: 50, ownership: "3.30%", ltm: 46228, moic: "1.00x", runway: "13 mo", runwayMo: 13, burn: "$6.4K/mo", burnTone: "green", health: 70, fundraise: "Pre-seed · early planning", note: "420K L/mo; capacity-constrained" },
   { name: "Terra Oleo", sector: "Biotech", country: "Singapore", invested: 150, ownership: "1.76%", ltm: 0, moic: "1.00x", runway: "14 mo", runwayMo: 14, burn: "$67K/mo", burnTone: "amber", health: 64, fundraise: "N/A · pending grant", note: "Pre-revenue; TRL behind, purity 80–90% vs 95%" },
 ];
+
+/* UMEF — minimal launched-state dataset. */
+const umefCompanies = [
+  { name: "Metric", sector: "Climate Tech", country: "UAE", invested: 250, ownership: "1.70%", ltm: 1300000, moic: "1.00x", runway: "10 mo", runwayMo: 10, burn: "$32K/mo", burnTone: "amber", health: 72, fundraise: "Pre-Series A · planning H2 2026", note: "Marketplace ARR $1.3M; pilots across GCC" },
+];
+
+let companies = urafCompanies;
 
 /* Rich per-company detail (URAF Q1 2026 Quarterly Portfolio Summary). */
 const details = {
@@ -149,13 +162,15 @@ const details = {
   },
 };
 
-const upcoming = [
+const urafUpcoming = [
   { name: "Aleph Technologies", hq: "Singapore", desc: "AI-powered industrial digital twins driving efficiency, predictive insights and energy savings.", round: "$2M · Pre-Series A", uraf: "$250K", sidecar: "$150K", coInvestors: "NUS Grip, Cocoon Capital", sector: "Infra Intelligence", status: "IC approved · pending QDB" },
   { name: "N&E Innovations", hq: "Singapore", desc: "Upcycles food waste into natural antimicrobial materials for sustainable packaging.", round: "$3.9M · Series A", uraf: "$250K", sidecar: "$150K", coInvestors: "Mandalay VP (lead), SGInnovate, SEEDS Capital, Cercano", sector: "Low Carbon Materials", status: "IC approved · pending QDB" },
 ];
+const umefUpcoming = [];
+let upcoming = urafUpcoming;
 
 /* Sector exposure by capital deployed ($K). */
-const sectors = [
+const urafSectors = [
   { label: "Agri-Food", value: 450, count: 2, color: "#f2691e" },
   { label: "Energy", value: 425, count: 2, color: "#ff7a1a" },
   { label: "Clean Mobility", value: 250, count: 1, color: "#ff9a2e" },
@@ -164,16 +179,24 @@ const sectors = [
   { label: "Circular Economy", value: 200, count: 2, color: "#e9b27a" },
   { label: "Water", value: 50, count: 1, color: "#ded9d0" },
 ];
+const umefSectors = [
+  { label: "Climate Tech", value: 250, count: 1, color: "#f2691e" },
+];
+let sectors = urafSectors;
 
 /* Geographic exposure (by capital $K and by company count). */
-const geos = [
+const urafGeos = [
   { label: "Singapore", value: 950, count: 4, color: "#f2691e" },
   { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
   { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
   { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
 ];
+const umefGeos = [
+  { label: "UAE", value: 250, count: 1, color: "#f2691e" },
+];
+let geos = urafGeos;
 
-const moicTrend = [
+const urafMoicTrend = [
   { period: "Q2'24", v: 1.0 },
   { period: "Q4'24", v: 1.02 },
   { period: "Q1'25", v: 1.04 },
@@ -181,14 +204,21 @@ const moicTrend = [
   { period: "Q3'25", v: 1.08 },
   { period: "Q1'26", v: 1.1 },
 ];
+const umefMoicTrend = [
+  { period: "Q3'25", v: 1.0 },
+  { period: "Q4'25", v: 1.0 },
+  { period: "Q1'26", v: 1.0 },
+];
+let moicTrend = urafMoicTrend;
 
 const workflow = [
-  { day: "Day 0", title: "Quarter end", owner: "—", status: "Closed", state: "done" },
-  { day: "Day 15", title: "Data collection", owner: "JJ Erpaiboon", status: "Complete", state: "done" },
-  { day: "Day 30", title: "Financials", owner: "Shamona Maharaj", status: "Complete", state: "done" },
-  { day: "Day 50", title: "Assembly", owner: "Shamona Maharaj", status: "In progress", state: "current" },
-  { day: "Day 55", title: "Review", owner: "Alina Truhina (MP)", status: "Pending", state: "" },
-  { day: "Day 60", title: "Distributed", owner: "Ocorian", status: "Pending", state: "" },
+  { day: "Day 0",  title: "Quarter End",                                          owner: "—",                 status: "Closed",      state: "done" },
+  { day: "Day 30", title: "Founder Data Collection Complete",                     owner: "JJ Erpaiboon",      status: "Complete",    state: "done" },
+  { day: "Day 40", title: "Portfolio Management & Valuation Review Completed",   owner: "JJ Erpaiboon",      status: "Complete",    state: "done" },
+  { day: "Day 45", title: "Financial Draft Received from Ocorian",                owner: "Shamona Maharaj",   status: "Received",    state: "done" },
+  { day: "Day 50", title: "Report Assembly (Financials + Portfolio + Letter)",   owner: "JJ Erpaiboon",      status: "In progress", state: "current" },
+  { day: "Day 55", title: "Managing Partner Review & Approval",                   owner: "Alina Truhina",     status: "Pending",     state: "" },
+  { day: "Day 60", title: "Distributed via Ocorian",                              owner: "Ocorian",           status: "Pending",     state: "" },
 ];
 
 /* ---------- Navigation (full application shell) ---------- */
@@ -208,7 +238,7 @@ const nav = [
   { group: "Intelligence", items: [
     { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "intelligence" },
     { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "audit" },
-    { id: "compliance", label: "Compliance", view: "compliance", route: "/compliance", icon: "compliance" },
+    { id: "compliance", label: "Impact Reporting", view: "compliance", route: "/impact", icon: "compliance" },
     { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "dealflow" },
   ]},
   { group: "Admin", items: [
@@ -236,38 +266,37 @@ const icons = {
 };
 const svgIcon = (k) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[k] || ""}</svg>`;
 
-/* ---------- Roles & access control (mock) ---------- */
-const roles = [
-  ["Admin", "Full platform access"],
-  ["Head of Portfolio", "Portfolio + valuation review"],
-  ["Investment Team", "Portfolio & reporting"],
-  ["CFO", "Fund financials & approvals"],
-  ["LP Viewer", "Read-only performance"],
+/* ---------- Users, roles & access control (mock) ---------- */
+const users = [
+  { name: "JJ Erpaiboon",    role: "Admin",     title: "Investment Operations Lead" },
+  { name: "Alina Truhina",   role: "Admin",     title: "Managing Partner" },
+  { name: "Roo Rogers",      role: "Admin",     title: "Managing Partner" },
+  { name: "Shamona Maharaj", role: "Admin",     title: "CFO" },
+  { name: "Kolleen Wright",  role: "Admin",     title: "Operations" },
+  { name: "Ahmad Hashim",    role: "Portfolio", title: "Investment Team" },
+  { name: "Alex Tan",        role: "Portfolio", title: "Investment Team" },
 ];
-const rolePerson = { "Admin": "JJ Erpaiboon", "Head of Portfolio": "Alina Truhina", "Investment Team": "Steve Prawiro", "CFO": "Shamona Maharaj", "LP Viewer": "LP Investor" };
 const access = {
   "Admin": null, // null = all views
-  "Head of Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "audit", "compliance", "dealflow"],
-  "Investment Team": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "compliance", "dealflow"],
-  "CFO": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "documents", "audit", "compliance"],
-  "LP Viewer": ["dashboard", "performance", "exposure", "summary", "documents"],
+  "Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "compliance", "dealflow"],
 };
+let currentUser = null;
 let currentRole = null;
 let currentView = "dashboard";
 const allowed = (view) => { const a = access[currentRole]; return !a || a.includes(view); };
 
 const pageMeta = {
-  dashboard: { eyebrow: "URAF · The Radical Fund", title: "Fund Dashboard", sub: "Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026." },
-  portfolio: { eyebrow: "URAF · The Radical Fund", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
-  exposure: { eyebrow: "URAF · The Radical Fund", title: "Exposure", sub: "Sector and geographic concentration — by capital allocated and by company count." },
-  performance: { eyebrow: "URAF · The Radical Fund", title: "Performance", sub: "MOIC development, capital deployment, and fund multiples to date." },
-  summary: { eyebrow: "URAF · The Radical Fund", title: "Quarterly Summary", sub: "Quarterly Portfolio Summary and Investment Summary — Q1 2026 (URAF)." },
-  reporting: { eyebrow: "URAF · The Radical Fund", title: "Quarterly Reporting", sub: "The Q1 2026 LP reporting cycle — workflow phases, tasks, and report generation." },
+  dashboard: { eyebrow: "$FUND", title: "Fund Dashboard", sub: "Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026." },
+  portfolio: { eyebrow: "$FUND", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
+  exposure: { eyebrow: "$FUND", title: "Exposure", sub: "Sector and geographic concentration — by capital allocated and by company count." },
+  performance: { eyebrow: "$FUND", title: "Performance", sub: "MOIC development, capital deployment, and fund multiples to date." },
+  summary: { eyebrow: "$FUND", title: "Quarterly Summary", sub: "Quarterly Portfolio Summary and Investment Summary — Q1 2026 (URAF)." },
+  reporting: { eyebrow: "$FUND", title: "Quarterly Reporting", sub: "The Q1 2026 LP reporting cycle — workflow phases, tasks, and report generation." },
   forms: { eyebrow: "Workflow", title: "Forms Hub", sub: "Platform-wide form taxonomy (A–G) with role-based submission permissions." },
   documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
   intelligence: { eyebrow: "Intelligence", title: "Risk Intelligence", sub: "Automated risk signals across the portfolio — filter by severity and track resolution." },
   audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
-  compliance: { eyebrow: "Intelligence", title: "Compliance", sub: "Climate & impact and gender (2X) reporting — mandatory Form F lock at Q4." },
+  compliance: { eyebrow: "Impact Reporting", title: "Impact Reporting", sub: "Climate & impact and gender (2X) reporting · aggregate views are toggleable · Form F locks at Q4." },
   dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
   designsystem: { eyebrow: "Configuration", title: "Design System", sub: "Yellow brand tokens — palette, type, radii, elevation, and components." },
   settings: { eyebrow: "Configuration", title: "Settings", sub: "Workspace defaults, reporting thresholds, roles, and visual system." },
@@ -308,46 +337,55 @@ function renderNav() {
 
 /* ---------- Auth (mock) ---------- */
 function renderAuthGate() {
+  const groups = [
+    ["Admin · Full platform access", users.filter((u) => u.role === "Admin")],
+    ["Portfolio · Investment Team access", users.filter((u) => u.role === "Portfolio")],
+  ];
   document.getElementById("authgate").innerHTML = `
     <div class="auth-card panel"><div class="panel-body" style="padding:28px;">
       <div class="collect-brand"><span class="brand-icon">Y</span><span>Yellow</span></div>
       <h2 style="margin-top:16px;">Sign in</h2>
-      <p class="meta" style="margin-top:6px;">Utopia Radical operating system · choose a role to explore the demo.</p>
-      <div style="margin-top:16px;">${roles.map((r) => `
-        <button class="auth-role" data-role="${r[0]}" type="button">
-          <span><strong>${r[0]}</strong><div class="meta" style="font-weight:600;">${r[1]} · ${rolePerson[r[0]]}</div></span>
-          <span style="color:var(--orange);font-weight:800;">→</span>
-        </button>`).join("")}</div>
+      <p class="meta" style="margin-top:6px;">Utopia Radical operating system · choose a user to explore the demo.</p>
+      ${groups.map((g) => `
+        <div class="auth-group-label">${g[0]}</div>
+        ${g[1].map((u) => `
+          <button class="auth-role" data-user="${u.name}" type="button">
+            <span class="user-avatar" style="width:32px;height:32px;border-radius:9px;font-size:12px;flex:none;">${initials(u.name)}</span>
+            <span style="flex:1;text-align:left;"><strong>${u.name}</strong><div class="meta" style="font-weight:600;">${u.title}</div></span>
+            <span style="color:var(--orange);font-weight:800;">→</span>
+          </button>`).join("")}`).join("")}
     </div></div>`;
-  document.querySelectorAll("#authgate .auth-role").forEach((b) => b.addEventListener("click", () => signIn(b.dataset.role)));
+  document.querySelectorAll("#authgate .auth-role").forEach((b) => b.addEventListener("click", () => signIn(b.dataset.user)));
 }
 function renderUser() {
-  const name = rolePerson[currentRole] || "User";
+  const u = currentUser || { name: "User", role: "—", title: "" };
+  const switchOpts = users.map((x) => `<option value="${x.name}" ${x.name === u.name ? "selected" : ""}>${x.name} · ${x.role}</option>`).join("");
   document.getElementById("sidebarFoot").innerHTML = `
     <div class="user-chip">
-      <span class="user-avatar">${initials(name)}</span>
-      <div class="user-meta"><strong>${name}</strong><span>${currentRole}</span></div>
+      <span class="user-avatar">${initials(u.name)}</span>
+      <div class="user-meta"><strong>${u.name}</strong><span>${u.role} · ${u.title}</span></div>
     </div>
     <div style="display:flex;gap:6px;margin-top:8px;">
-      <select class="select" id="roleSwitch" style="flex:1;min-height:34px;font-size:12px;padding-left:10px;">${roles.map((r) => `<option ${r[0] === currentRole ? "selected" : ""}>${r[0]}</option>`).join("")}</select>
+      <select class="select" id="roleSwitch" style="flex:1;min-height:34px;font-size:12px;padding-left:10px;">${switchOpts}</select>
       <button class="btn btn-ghost" id="signOut" type="button" style="min-height:32px;">Sign out</button>
     </div>`;
-  document.getElementById("roleSwitch").addEventListener("change", (e) => setRole(e.target.value));
+  document.getElementById("roleSwitch").addEventListener("change", (e) => setUser(e.target.value));
   document.getElementById("signOut").addEventListener("click", signOut);
 }
-function setRole(role) {
-  currentRole = role;
-  try { localStorage.setItem("yelloRole", role); } catch (e) {}
+function setUser(name) {
+  currentUser = users.find((u) => u.name === name) || null;
+  currentRole = currentUser ? currentUser.role : null;
+  try { localStorage.setItem("yelloUser", name); } catch (e) {}
   renderNav(); renderUser();
   go(allowed(currentView) ? currentView : "dashboard");
 }
-function signIn(role) {
+function signIn(name) {
   document.body.classList.add("authed");
-  setRole(role);
+  setUser(name);
 }
 function signOut() {
-  currentRole = null;
-  try { localStorage.removeItem("yelloRole"); } catch (e) {}
+  currentUser = null; currentRole = null;
+  try { localStorage.removeItem("yelloUser"); } catch (e) {}
   document.body.classList.remove("authed");
   heroStop();
   renderAuthGate();
@@ -360,46 +398,32 @@ function showUnauthorized(label) {
   setMeta({ eyebrow: "Access", title: "Unauthorized", sub: "This section isn’t available for your role." });
 }
 
-let heroIdx = 0, heroTimer = null;
-
-function heroSlide(f) {
-  return `
-    <span class="hero-pill">${f.id} · ${f.period}</span>
-    <div>
-      <div class="hero-value">${f.moic}<sup>×</sup></div>
-      <div class="hero-label">${f.sub} · ${f.name}</div>
-    </div>
-    <div class="hero-stats">${f.stats.map((s) => `<div class="hero-stat"><strong>${s[0]}</strong><span>${s[1]}</span></div>`).join("")}</div>`;
-}
-
-function updateHero(i) {
-  heroIdx = (i + funds.length) % funds.length;
-  const f = funds[heroIdx];
-  const content = document.getElementById("heroContent");
-  const ringEl = document.getElementById("heroRing");
-  content.innerHTML = heroSlide(f);
-  ringEl.innerHTML = `${ring(f.ringPct, "#fff", 104, true)}<span class="lab">${f.ringLab}</span>`;
-  document.querySelectorAll("#heroDots .hero-dot").forEach((d, di) => d.classList.toggle("is-active", di === heroIdx));
-  [content, ringEl].forEach((el) => { el.classList.remove("hero-anim"); void el.offsetWidth; el.classList.add("hero-anim"); });
-}
-
 const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-function heroStart() { heroStop(); if (prefersReducedMotion) return; heroTimer = setInterval(() => updateHero(heroIdx + 1), 5000); }
-function heroStop() { if (heroTimer) clearInterval(heroTimer); }
+function heroStop() { /* no-op — carousel removed in favor of explicit fund switcher */ }
+function heroStart() { /* no-op */ }
 
 function renderHero() {
-  const el = document.getElementById("hero");
+  const el = document.getElementById("hero"); if (!el) return;
+  const drawnPct = Math.round((fund.drawn / fund.committed) * 100);
   el.innerHTML = `
     <div class="hero-glow"></div>
     <button class="hero-bell" type="button" aria-label="Notifications">🔔</button>
-    <div class="hero-ring" id="heroRing"></div>
-    <div class="hero-content" id="heroContent"></div>
-    <div class="hero-dots" id="heroDots">${funds.map((_, i) => `<button class="hero-dot" type="button" data-slide="${i}" aria-label="Fund ${i + 1}"></button>`).join("")}</div>`;
-  el.querySelectorAll("#heroDots .hero-dot").forEach((d) => d.addEventListener("click", () => { updateHero(+d.dataset.slide); heroStart(); }));
-  el.addEventListener("mouseenter", heroStop);
-  el.addEventListener("mouseleave", heroStart);
-  updateHero(0);
-  heroStart();
+    <div class="hero-ring" id="heroRing">${ring(drawnPct, "#fff", 104, true)}<span class="lab">drawn of committed</span></div>
+    <div class="hero-content hero-anim" id="heroContent">
+      <span class="hero-pill">${fund.id} · Q1 2026</span>
+      <div>
+        <div class="hero-fundname">${fund.fullName} <span class="hero-fundabbrev">(${fund.id})</span></div>
+        <div class="hero-label">${fund.short} · ${fund.lps} LP${fund.lps === 1 ? "" : "s"}</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>$${fund.committed.toFixed(1)}M</strong><span>Committed</span></div>
+        <div class="hero-stat"><strong>$${fund.drawn.toFixed(2)}M</strong><span>Drawn</span></div>
+        <div class="hero-stat"><strong>$${fund.deployed.toFixed(2)}M</strong><span>Deployed</span></div>
+        <div class="hero-stat"><strong>$${fund.gav.toFixed(2)}M</strong><span>GAV</span></div>
+        <div class="hero-stat"><strong>${fund.moic.toFixed(2)}<span style="font-size:0.7em;">×</span></strong><span>Gross MOIC</span></div>
+        <div class="hero-stat"><strong>${companies.length}</strong><span>Companies</span></div>
+      </div>
+    </div>`;
 }
 
 function renderAllocation() {
@@ -420,12 +444,12 @@ function renderAllocation() {
 }
 
 function renderHealthList() {
-  const top = [...companies].sort((a, b) => b.health - a.health).slice(0, 6);
-  document.getElementById("healthList").innerHTML = top.map((c) => `
+  const ordered = [...companies].sort((a, b) => b.health - a.health);
+  document.getElementById("healthList").innerHTML = ordered.map((c) => `
     <div class="health-row" data-company="${c.name}">
       <span class="avatar">${initials(c.name)}</span>
       <div class="health-name"><strong>${c.name}</strong><div class="meta">${c.sector} · ${c.runway} runway</div></div>
-      ${ring(c.health, healthColor(c.health), 46)}
+      ${ring(c.health, healthColor(c.health), 42)}
     </div>`).join("");
   bindCompanyClicks();
 }
@@ -434,7 +458,7 @@ function renderKpis() {
   const critical = companies.filter((c) => c.runwayMo <= 6).length;
   const fundraising = companies.filter((c) => /Series|Seed|Pre-Series/i.test(c.fundraise)).length;
   const kpis = [
-    { label: "Capital deployed", value: moneyM(fund.deployed), foot: `${fund.companies} active companies` },
+    { label: "Capital deployed", value: moneyM(fund.deployed), foot: `${companies.length} active ${companies.length === 1 ? "company" : "companies"}` },
     { label: "Gross asset value", value: moneyM(fund.gav), foot: "Latest stake value" },
     { label: "Critical runway", value: String(critical), foot: "At or below 6 months", tone: "red" },
     { label: "Active fundraises", value: String(fundraising), foot: "Rounds underway", tone: "amber" },
@@ -450,7 +474,9 @@ function renderSectorDonut() {
   const total = sectors.reduce((s, x) => s + x.value, 0);
   let acc = 0;
   const stops = sectors.map((s) => { const from = (acc / total) * 100; acc += s.value; const to = (acc / total) * 100; return `${s.color} ${from.toFixed(1)}% ${to.toFixed(1)}%`; }).join(", ");
-  document.getElementById("sectorDonut").style.background = `conic-gradient(${stops})`;
+  const donutEl = document.getElementById("sectorDonut");
+  donutEl.style.background = `conic-gradient(${stops})`;
+  donutEl.innerHTML = `<div class="donut-center"><strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span></div>`;
   document.getElementById("sectorLegend").innerHTML = sectors.map((s) => `
     <div class="legend-row"><span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((s.value / total) * 100)}%</strong></div>`).join("");
 }
@@ -465,19 +491,26 @@ function renderMoicChart() {
 }
 
 function renderAlerts() {
-  const alerts = [
-    { code: "R1", tone: "red", title: "Alterno runway critical", meta: "4.5 mo · adjust on claimed inflows · Series A2 pipeline" },
-    { code: "R2", tone: "red", title: "3Cat runway critical", meta: "5 mo · Series A closing 15 Jun 2026" },
-    { code: "T3", tone: "amber", title: "Okapi below ARR target", meta: "20% of $1.8M ARR target · support fundraise" },
-    { code: "B4", tone: "amber", title: "Alicia Bots burn acceleration", meta: "$103K/mo · cash $710K (from $1.1M in Jan)" },
-    { code: "S5", tone: "amber", title: "Sirsak revenue stagnation", meta: "-53% QoQ · project-based, recurring lacking" },
-  ];
-  document.getElementById("alertList").innerHTML = alerts.map((a) => `
+  const alertsByFund = {
+    URAF: [
+      { code: "R1", tone: "red", title: "Alterno runway critical", meta: "4.5 mo · adjust on claimed inflows · Series A2 pipeline" },
+      { code: "R2", tone: "red", title: "3Cat runway critical", meta: "5 mo · Series A closing 15 Jun 2026" },
+      { code: "T3", tone: "amber", title: "Okapi below ARR target", meta: "20% of $1.8M ARR target · support fundraise" },
+      { code: "B4", tone: "amber", title: "Alicia Bots burn acceleration", meta: "$103K/mo · cash $710K (from $1.1M in Jan)" },
+      { code: "S5", tone: "amber", title: "Sirsak revenue stagnation", meta: "-53% QoQ · project-based, recurring lacking" },
+    ],
+    UMEF: [
+      { code: "M1", tone: "amber", title: "Metric runway watch", meta: "10 mo · Pre-Series A planning H2 2026 · pipeline diversification" },
+    ],
+  };
+  const alerts = alertsByFund[fund.id] || [];
+  const el = document.getElementById("alertList");
+  el.innerHTML = alerts.length ? alerts.map((a) => `
     <div class="alert-row">
       <span class="alert-icon status-${a.tone}">${a.code}</span>
       <div><h3>${a.title}</h3><p class="meta">${a.meta}</p></div>
       ${status(a.tone, a.tone === "red" ? "Critical" : "Watch")}
-    </div>`).join("");
+    </div>`).join("") : `<div class="meta" style="padding:18px;text-align:center;">No active signals for ${fund.id}.</div>`;
 }
 
 function renderWorkflow() {
@@ -547,21 +580,18 @@ const settingsTemplates = {
       ${field("AI verification agent", "Cross-check submitted figures against source docs.", toggle(true))}
       ${field("Critical runway threshold", "At or below this value flags red.", '<input class="input" value="6 months" />')}
       ${field("Warning runway threshold", "At or below this value flags amber.", '<input class="input" value="9 months" />')}
-      ${field("Reminder cadence", "Days post quarter-end for automated reminders.", '<input class="input" value="15, 25, 30, 40, 50, 55, 58" />')}
+      ${field("Reminder cadence", "Days post quarter-end for automated reminders.", '<input class="input" value="25, 35, 42, 47, 53, 58" />')}
       ${field("Approval order", "Reviewer sequence for quarter close.", select(["Investment Team → CFO → Managing Partner", "CFO → Investment Team → Managing Partner"]))}
     </div>`,
   roles: `
-    <div class="panel-head"><div><h2>Roles &amp; permissions</h2><p class="meta">Five role types enforced at the middleware layer.</p></div><button class="btn btn-muted" type="button">Invite user</button></div>
+    <div class="panel-head"><div><h2>Roles &amp; permissions</h2><p class="meta">Demo access: Admin (full platform) and Portfolio (investment-team scope). Founders submit their own updates.</p></div><button class="btn btn-muted" type="button">Invite user</button></div>
     <div class="panel-body table-scroll">
       <table class="tbl">
-        <thead><tr><th>Role</th><th>Dashboard</th><th>Reporting</th><th>Documents</th><th>Valuation review</th><th>Admin</th></tr></thead>
+        <thead><tr><th>Role</th><th>Members</th><th>Dashboard</th><th>Reporting</th><th>Documents</th><th>Admin</th></tr></thead>
         <tbody>
-          ${roleRow("Admin", "Full", "Full", "Full", "Full", "Full")}
-          ${roleRow("Investment Team", "Full", "Draft", "Full", "—", "—")}
-          ${roleRow("Head of Portfolio", "Full", "Draft", "Full", "Submit", "—")}
-          ${roleRow("CFO", "View", "Approve", "Review", "—", "—")}
-          ${roleRow("LP Viewer", "Read", "Read", "Download", "—", "—")}
-          ${roleRow("Founder", "Own only", "Submit own", "Own uploads", "—", "—")}
+          ${roleRow("Admin", "JJ, Alina, Roo, Shamona, Kolleen", "Full", "Full", "Full", "Full")}
+          ${roleRow("Portfolio", "JJ, Ahmad, Alex", "Full", "Draft", "Full", "—")}
+          ${roleRow("Founder", "1 per portfolio company", "Own only", "Submit own", "Own uploads", "—")}
         </tbody>
       </table>
     </div>`,
@@ -641,15 +671,19 @@ function renderSummary() {
   if (summaryTab === "portfolio") renderSummaryPortfolio(); else renderSummaryInvestment();
 }
 function renderSummaryPortfolio() {
-  const stats = [["2023", "Vintage"], ["$13.8M", "Committed"], ["$5.7M", "Drawn"], ["$1.88M", "Deployed"], ["$2.07M", "GAV"], ["10", "Companies"], ["1.10x", "Gross MOIC"]];
-  const notes = [
+  const stats = [[String(fund.vintage), "Vintage"], [`$${fund.committed.toFixed(1)}M`, "Committed"], [`$${fund.drawn.toFixed(2)}M`, "Drawn"], [`$${fund.deployed.toFixed(2)}M`, "Deployed"], [`$${fund.gav.toFixed(2)}M`, "GAV"], [String(companies.length), companies.length === 1 ? "Company" : "Companies"], [`${fund.moic.toFixed(2)}x`, "Gross MOIC"]];
+  const notes = fund.id === "URAF" ? [
     "Q3 2023–Q2 2024: Gross MOIC held at 1.00x — investments carried at cost; new positions in Arkadiah and Okapi.",
     "Q3–Q4 2024: GAV rose on investments into Alternō, Terra Oleo, Dash and Alicia Bots, plus the first uplift in Okapi’s carrying value.",
     "Q1–Q3 2025: GAV grew on follow-ons into Alicia Bots and Dash, new investments in 3cat, Sirsak, Waterhub and Farmio, and uplifts in Alicia Bots and Alternō.",
     "Q4 2025–Q1 2026: GAV reached $2.07M following the Arkadiah uplift — Gross Portfolio MOIC up to 1.10x.",
+  ] : [
+    "Q3 2025: UMEF first close; initial $0.25M deployed into Metric (UAE climate-tech marketplace).",
+    "Q4 2025–Q1 2026: Portfolio carried at cost; gross MOIC unchanged at 1.00x while pipeline builds across the GCC.",
   ];
+  const totalInvested = companies.reduce((s, c) => s + c.invested, 0);
   document.getElementById("sumContent").innerHTML = `
-    <section class="panel"><div class="panel-head"><div><h2>URAF — The Radical Fund</h2><p class="meta">Overview as of Q1 2026 · $1.88M deployed across 10 companies, GAV $2.07M</p></div><span class="chip">Latest stake value</span></div>
+    <section class="panel"><div class="panel-head"><div><h2>${fund.fullName}</h2><p class="meta">Overview as of Q1 2026 · $${fund.deployed.toFixed(2)}M deployed across ${companies.length} ${companies.length === 1 ? "company" : "companies"}, GAV $${fund.gav.toFixed(2)}M</p></div><span class="chip">Latest stake value</span></div>
       <div class="panel-body"><div class="hero-stats" style="gap:30px;color:var(--text);">${stats.map((s) => `<div class="hero-stat"><strong style="font-size:18px;">${s[0]}</strong><span style="color:var(--muted);">${s[1]}</span></div>`).join("")}</div></div>
     </section>
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Quarterly Portfolio Summary</h2><p class="meta">In order of LTM revenue · click a company for the full overview</p></div></div>
@@ -665,7 +699,7 @@ function renderSummaryPortfolio() {
           <td class="meta">${c.fundraise}</td>
           <td class="meta" style="max-width:240px;">${c.note}</td>
         </tr>`).join("")}
-        <tr><td colspan="3"><strong>Total</strong></td><td class="num"><strong>$1.88M</strong></td><td></td><td class="num"><strong>1.10x</strong></td><td colspan="3"></td></tr>
+        <tr><td colspan="3"><strong>Total</strong></td><td class="num"><strong>$${fund.deployed.toFixed(2)}M</strong></td><td></td><td class="num"><strong>${fund.moic.toFixed(2)}x</strong></td><td colspan="3"></td></tr>
         </tbody>
       </table></div>
     </section>
@@ -713,7 +747,7 @@ function renderExposure() {
       <button class="btn btn-muted" id="expExport" type="button">Export PNG</button>
     </div>
     <div class="grid grid-2">
-      <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : fund.companies + " companies"}</span></div>
+      <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : companies.length + " companies"}</span></div>
         <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expSector"><div class="donut-center"><strong>${sectors.length}</strong><span>sectors</span></div></div><div class="legend">${legend(sectors, acc, sTotal, unit)}</div></div></div>
       </section>
       <section class="panel"><div class="panel-head"><h2>Geographic Exposure</h2><span class="chip">${geos.length} markets</span></div>
@@ -756,10 +790,10 @@ function renderPerfChart() {
   }).join("");
 }
 function fundTrendChart() {
-  const periods = ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"];
-  const inv = [0.25, 0.80, 1.20, 1.60, 1.80, 1.88];
-  const gav = [0.25, 0.82, 1.25, 1.70, 1.95, 2.07];
-  const moic = [1.00, 1.02, 1.04, 1.06, 1.08, 1.10];
+  const periods = fund.trendPeriods || ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"];
+  const inv = fund.trendInv  || [0.25, 0.80, 1.20, 1.60, 1.80, 1.88];
+  const gav = fund.trendGav  || [0.25, 0.82, 1.25, 1.70, 1.95, 2.07];
+  const moic = fund.trendMoic || [1.00, 1.02, 1.04, 1.06, 1.08, 1.10];
   const W = 920, H = 380, L = 64, R = 64, T = 30, B = 50;
   const pL = L, pR = W - R, pT = T, pB = H - B, pW = pR - pL, pH = pB - pT, n = periods.length;
   const maxL = 2.4, minR = 0.95, maxR = 1.15;
@@ -786,7 +820,13 @@ function fundTrendChart() {
 }
 
 function renderPerformance() {
-  const band = [["Capital invested", "$1.88M", "cost basis", ""], ["Holding value", "$2.07M", "GAV · +10% to date", ""], ["Gross MOIC", "1.10x", "1.00x → 1.10x", "accent"], ["No. of investments", "13", "across 10 companies", ""]];
+  const moicDelta = fund.moic > 1 ? `+${((fund.moic - 1) * 100).toFixed(0)}% to date` : "no change yet";
+  const band = [
+    ["Capital invested", `$${fund.deployed.toFixed(2)}M`, "cost basis", ""],
+    ["Holding value", `$${fund.gav.toFixed(2)}M`, `GAV · ${moicDelta}`, ""],
+    ["Gross MOIC", `${fund.moic.toFixed(2)}x`, `1.00x → ${fund.moic.toFixed(2)}x`, "accent"],
+    ["No. of investments", String(fund.investments || companies.length), `across ${companies.length} ${companies.length === 1 ? "company" : "companies"}`, ""],
+  ];
   const kpis = [["1.10x", "Gross MOIC", "GAV / invested"], ["1.10x", "TVPI", "NAV + dist / paid-in"], ["0.00x", "DPI", "no distributions yet"], ["N/A", "Gross IRR", "< 2 cash-flow events"]];
   document.getElementById("performanceBody").innerHTML = `
     <section class="panel"><div class="panel-head"><div><h2>Fund value &amp; MOIC over time</h2><p class="meta">Capital invested vs holding value (left, US$M) and gross MOIC (right, ×)</p></div>
@@ -831,16 +871,17 @@ const corrections = [
   { co: "Metric", field: "Q4 revenue", reason: "Late management accounts", status: "Requested" },
 ];
 const automation = [
-  ["Day 15", "Reminder → 4 companies pending", "fired", "green"],
-  ["Day 25", "Reminder → 2 companies pending", "fired", "green"],
-  ["Day 30", "Financials reminder → Shamona", "fired", "green"],
-  ["Day 42", "Overdue escalation → JJ + Head of Portfolio", "scheduled", "amber"],
-  ["Day 55", "MP review reminder → Alina", "scheduled", "blue"],
+  ["Day 25", "Founder-update reminder → 4 companies pending", "fired", "green"],
+  ["Day 35", "Valuation review prep → Investment team", "fired", "green"],
+  ["Day 42", "Overdue escalation → JJ + Managing Partner", "fired", "green"],
+  ["Day 47", "Financials reminder → Shamona / Ocorian", "scheduled", "amber"],
+  ["Day 53", "Assembly checkpoint → JJ", "scheduled", "blue"],
+  ["Day 58", "MP review reminder → Alina", "scheduled", "blue"],
 ];
 const corrStatusTone = (s) => (s === "Approved" ? "green" : s === "Requested" ? "blue" : "amber");
-let phaseSel = 3;
+let phaseSel = 4;
 function renderReporting() {
-  const reminders = "15 · 25 · 30 · 40 · 50 · 55 · 58";
+  const reminders = "25 · 35 · 42 · 47 · 53 · 58";
   document.getElementById("reportingBody").innerHTML = `
     <section class="panel"><div class="panel-head"><div><h2>Q1 2026 Workflow</h2><p class="meta">Target: Day 60 LP distribution · reminders sent on days ${reminders}</p></div><span class="status status-amber">Assembly · Day 50</span></div>
       <div class="panel-body">
@@ -900,17 +941,17 @@ function renderTasks() {
 
 /* ---------- Forms Hub ---------- */
 const formDefs = [
-  ["A", "New Investment Onboarding", "Capture a new investment at close.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
-  ["B", "New Round / Capital Event", "Record a follow-on round or capital event.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
-  ["C", "Quarterly Company Update", "Pre-meeting founder update, per company.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["A", "New Investment Onboarding", "Capture a new investment at close.", ["Investment Team", "Head of Portfolio"]],
+  ["B", "New Round / Capital Event", "Record a follow-on round or capital event.", ["Investment Team", "Head of Portfolio"]],
+  ["C", "Quarterly Company Update", "Pre-meeting founder update, per company.", ["Investment Team", "Head of Portfolio"]],
   ["D", "Post-Meeting Valuation Review", "Confirm quarterly carrying values.", ["Head of Portfolio"]],
   ["E", "Fund Performance Snapshot", "Authoritative quarterly fund record.", ["CFO"]],
-  ["F", "Climate & Impact KPIs", "Mandatory at Q4 — climate metrics.", ["Portfolio Ops", "Investment Team", "Head of Portfolio"]],
+  ["F", "Climate & Impact KPIs", "Mandatory at Q4 — climate metrics.", ["Investment Team", "Head of Portfolio"]],
   ["G", "Correction Request", "Request a data correction (HoP approves).", ["Any role"]],
 ];
 let formRole = "All roles";
 function renderForms() {
-  const roles = ["All roles", "Portfolio Ops", "Investment Team", "Head of Portfolio", "CFO"];
+  const roles = ["All roles", "Investment Team", "Head of Portfolio", "CFO"];
   document.getElementById("formsBody").innerHTML = `
     <div class="section-title">
       <select class="select" id="formRole" style="width:auto;min-width:180px;">${roles.map((r) => `<option ${r === formRole ? "selected" : ""}>${r}</option>`).join("")}</select>
@@ -1215,7 +1256,8 @@ const renderers = {
 
 function setMeta(m) {
   if (!m) return;
-  document.getElementById("pageEyebrow").textContent = m.eyebrow;
+  const eyebrow = (m.eyebrow || "").replace("$FUND", `${fund.id} · ${fund.fullName}`);
+  document.getElementById("pageEyebrow").textContent = eyebrow;
   document.getElementById("pageTitle").textContent = m.title;
   document.getElementById("pageSub").textContent = m.sub;
 }
@@ -1234,7 +1276,7 @@ const pfState = { q: "", sector: "All sectors", country: "All countries", sort: 
 function renderPortfolioKpis() {
   const critical = companies.filter((c) => c.runwayMo <= 6).length;
   const items = [
-    [String(fund.companies), "Portfolio companies", "Q1 2026"],
+    [String(companies.length), "Portfolio companies", "Q1 2026"],
     [moneyM(fund.deployed), "Capital deployed", "cost basis"],
     [fund.moic.toFixed(2) + "x", "Gross portfolio MOIC", "GAV " + moneyM(fund.gav)],
     [String(critical), "Critical runway", "≤ 6 months"],
@@ -1553,17 +1595,56 @@ function renderCompanyTab(c, d) {
   }
 }
 
+/* ---------- Dashboard render wrapper (so fund switch can re-render it) ---------- */
+function renderDashboard() {
+  renderHero();
+  renderAllocation();
+  renderHealthList();
+  renderKpis();
+  renderSectorDonut();
+  renderMoicChart();
+  renderAlerts();
+  renderWorkflow();
+  renderPortfolioTable();
+  renderInvestSummary();
+}
+renderers.dashboard = renderDashboard;
+
+/* ---------- Fund switcher ---------- */
+function setActiveFund(id) {
+  if (!fundDatasets[id]) return;
+  activeFund = id;
+  fund = fundDatasets[id];
+  companies   = (id === "URAF") ? urafCompanies  : umefCompanies;
+  upcoming    = (id === "URAF") ? urafUpcoming   : umefUpcoming;
+  sectors     = (id === "URAF") ? urafSectors    : umefSectors;
+  geos        = (id === "URAF") ? urafGeos       : umefGeos;
+  moicTrend   = (id === "URAF") ? urafMoicTrend  : umefMoicTrend;
+  try { localStorage.setItem("yelloFund", id); } catch (e) {}
+  // refresh the switcher UI + page eyebrow + re-render current view
+  renderFundSwitcher();
+  // Company view: if the current company isn't in the new fund, route to Portfolio.
+  if (currentView === "company") {
+    if (companies.find((c) => c.name === currentCompany)) {
+      renderCompany();
+    } else {
+      go("portfolio");
+    }
+    setMeta(pageMeta[currentView]);
+    return;
+  }
+  setMeta(pageMeta[currentView]);
+  if (renderers[currentView]) renderers[currentView](); else renderDashboard();
+}
+function renderFundSwitcher() {
+  const el = document.getElementById("fundSwitch"); if (!el) return;
+  el.innerHTML = fundsCatalog.map((f) => `<button class="${f.id === activeFund ? "is-active" : ""}" data-fund="${f.id}" type="button" role="radio" aria-checked="${f.id === activeFund}">${f.id}</button>`).join("");
+  el.querySelectorAll("[data-fund]").forEach((b) => b.addEventListener("click", () => setActiveFund(b.dataset.fund)));
+}
+
 /* ---------- Init ---------- */
-renderHero();
-renderAllocation();
-renderHealthList();
-renderKpis();
-renderSectorDonut();
-renderMoicChart();
-renderAlerts();
-renderWorkflow();
-renderPortfolioTable();
-renderInvestSummary();
+renderFundSwitcher();
+renderDashboard();
 setSettingsTab("workspace");
 
 document.querySelectorAll("[data-settings-tab]").forEach((b) => b.addEventListener("click", () => setSettingsTab(b.dataset.settingsTab)));
@@ -1571,6 +1652,10 @@ document.getElementById("refreshBtn").addEventListener("click", (e) => {
   e.currentTarget.textContent = "Refreshed ✓";
   setTimeout(() => { e.currentTarget.textContent = "Refresh data"; }, 1400);
 });
+
+/* Restore saved active fund (after listeners attached). */
+const savedFund = (() => { try { return localStorage.getItem("yelloFund"); } catch (e) { return null; } })();
+if (savedFund && fundDatasets[savedFund] && savedFund !== activeFund) setActiveFund(savedFund);
 
 /* ---------- Mobile drawer wiring ---------- */
 document.getElementById("navToggle").addEventListener("click", () => {
@@ -1581,5 +1666,5 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav()
 
 /* ---------- Auth bootstrap ---------- */
 renderAuthGate();
-const savedRole = (() => { try { return localStorage.getItem("yelloRole"); } catch (e) { return null; } })();
-if (savedRole && access[savedRole] !== undefined) signIn(savedRole);
+const savedUser = (() => { try { return localStorage.getItem("yelloUser"); } catch (e) { return null; } })();
+if (savedUser && users.find((u) => u.name === savedUser)) signIn(savedUser);
