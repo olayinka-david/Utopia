@@ -343,8 +343,58 @@ function ring(value, color, size = 54, onOrange = false) {
 }
 
 const healthColor = (h) => (h < 60 ? "#e0564c" : h < 75 ? "#ff9a2e" : "#2faa63");
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- Yellow's own analysis (derived from base data) ----------
+   Health score and risk signals are computed from underlying company
+   metrics (runway, revenue, growth, MOIC, burn) — not pulled from
+   submitted reports — so the platform surfaces independent analysis
+   that can feed the reporting workflow. Headline fund figures
+   (committed/drawn/GAV) remain authoritative reporting inputs. */
+function healthScore(c) {
+  const moic = parseFloat(c.moic) || 1;
+  const dRev = metricDeltas(c.name, "revenue");
+  const qoq = dRev ? dRev.qoq : null;
+  const sRunway  = clamp(c.runwayMo / 18, 0, 1);                       // 0 mo → 0, 18 mo+ → 1
+  const sRevenue = c.ltm > 0 ? clamp((Math.log10(c.ltm) - 4) / 3.2, 0, 1) : 0.15; // ~$10K → 0, ~$16M → 1
+  const sGrowth  = qoq === null ? 0.5 : clamp((qoq + 20) / 60, 0, 1);  // −20% → 0, +40% → 1
+  const sValue   = clamp((moic - 1) / 0.5, 0, 1);                      // 1.00x → 0, 1.50x → 1
+  const W = { runway: 35, revenue: 25, growth: 20, value: 20 };
+  const score = Math.round(sRunway * W.runway + sRevenue * W.revenue + sGrowth * W.growth + sValue * W.value);
+  return { score, parts: [
+    ["Runway", c.runway, Math.round(sRunway * 100), W.runway],
+    ["Revenue (LTM)", c.ltm > 0 ? fmtUSD(c.ltm) : "Pre-revenue", Math.round(sRevenue * 100), W.revenue],
+    ["Growth QoQ", qoq === null ? "n/a" : (qoq >= 0 ? "+" : "") + qoq + "%", Math.round(sGrowth * 100), W.growth],
+    ["MOIC", c.moic, Math.round(sValue * 100), W.value],
+  ] };
+}
+function computeHealth() {
+  [...urafCompanies, ...umefCompanies].forEach((c) => { const h = healthScore(c); c.health = h.score; c._health = h.parts; });
+}
+/* Risk signals deduced independently from base data. */
+function computeSignals(list) {
+  const rank = { critical: 0, warning: 1, info: 2 };
+  const out = [];
+  list.forEach((c) => {
+    const f = fin[c.name] || {};
+    const dRev = metricDeltas(c.name, "revenue");
+    const qoq = dRev ? dRev.qoq : null;
+    const months = f.cash && f.burn ? Math.round(f.cash / f.burn) : null;
+    if (c.runwayMo < 6) out.push({ co: c.name, type: "RUNWAY_CRITICAL", sev: "critical", why: `Runway ${c.runway} — below the 6-month threshold${f.cash ? ` (${fmtUSD(f.cash)} cash ÷ ${c.burn})` : ""}.`, resolved: false });
+    else if (c.runwayMo < 9) out.push({ co: c.name, type: "RUNWAY_LOW", sev: "warning", why: `Runway ${c.runway} — approaching the 6-month threshold; track the active fundraise.`, resolved: false });
+    if (qoq !== null && qoq <= -15) out.push({ co: c.name, type: "REVENUE_DECLINE", sev: "warning", why: `Revenue ${qoq}% QoQ — material decline in the latest quarter.`, resolved: false });
+    if (c.runwayMo >= 6 && months !== null && months < 9 && f.burn >= 80000) out.push({ co: c.name, type: "BURN_ACCELERATION", sev: "warning", why: `Burn ${c.burn} against ${fmtUSD(f.cash)} cash — ~${months} months at the current rate.`, resolved: false });
+    if (c.runwayMo >= 6 && c.runwayMo < 12 && /prep|planning|bridge|raising|closing|advanced|pipeline/i.test(c.fundraise || "")) out.push({ co: c.name, type: "FUNDRAISE_NEEDED", sev: "info", why: `Runway ${c.runway} with ${c.fundraise} — close the round to extend runway.`, resolved: false });
+  });
+  return out.sort((a, b) => rank[a.sev] - rank[b.sev]);
+}
 const status = (tone, text) => `<span class="status status-${tone}">${text}</span>`;
 const initials = (name) => name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+/* Company logo placeholder (2-char monogram): "3Cat"→"3C", "Alicia Bots"→"AB". */
+const monogram = (name) => {
+  const words = String(name).replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/);
+  return (words.length >= 2 ? words[0][0] + words[1][0] : words[0].slice(0, 2)).toUpperCase();
+};
 
 /* ---------- Renderers ---------- */
 function renderNav() {
@@ -474,12 +524,18 @@ function renderAllocation() {
 
 function renderHealthList() {
   const ordered = [...companies].sort((a, b) => b.health - a.health);
-  document.getElementById("healthList").innerHTML = ordered.map((c) => `
-    <div class="health-row" data-company="${c.name}">
-      <span class="avatar">${initials(c.name)}</span>
-      <div class="health-name"><strong>${c.name}</strong><div class="meta">${c.sector} · ${c.runway} runway</div></div>
+  const rows = ordered.map((c) => {
+    const parts = c._health || [];
+    const tip = `Health ${c.health}/100 — ${parts.map((p) => `${p[0]} ${p[1]} (${p[2]}/100, w${p[3]}%)`).join(" · ")}`;
+    const rev = c.ltm > 0 ? fmtUSD(c.ltm) + " LTM" : "Pre-revenue";
+    return `<div class="health-row" data-company="${c.name}" title="${tip}">
+      <span class="avatar">${monogram(c.name)}</span>
+      <div class="health-name"><strong>${c.name}</strong><div class="meta">${rev} · ${c.runway} runway · ${c.moic}</div></div>
       ${ring(c.health, healthColor(c.health), 42)}
-    </div>`).join("");
+    </div>`;
+  }).join("");
+  document.getElementById("healthList").innerHTML = rows
+    + `<div class="meta health-foot">Score derived from base data — runway 35% · revenue 25% · growth (QoQ) 20% · MOIC 20%. Hover a row for the breakdown.</div>`;
   bindCompanyClicks();
 }
 
@@ -533,35 +589,25 @@ function renderSectorDonut() {
 }
 
 function renderMoicChart() {
-  const min = 0.98, max = 1.12;
-  document.getElementById("moicChart").innerHTML = moicTrend.map((d, i) => {
-    const h = ((d.v - min) / (max - min)) * 100;
-    const cls = i === moicTrend.length - 1 ? "hot" : i >= moicTrend.length - 3 ? "warm" : "";
-    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d.v.toFixed(2)}x</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d.period}</div></div>`;
-  }).join("");
+  const data = moicTrend.map((d) => [d.period, d.v]);
+  document.getElementById("moicChart").innerHTML = dotLineChart(data, {
+    fmt: (v) => v.toFixed(2) + "x", axisFmt: (v) => v.toFixed(2) + "x",
+    valueLabels: true, h: 230, label: "Gross MOIC development over time",
+  });
 }
 
 function renderAlerts() {
-  const alertsByFund = {
-    URAF: [
-      { code: "R1", tone: "red", title: "Alterno runway critical", meta: "4.5 mo · adjust on claimed inflows · Series A2 pipeline" },
-      { code: "R2", tone: "red", title: "3Cat runway critical", meta: "5 mo · Series A closing 15 Jun 2026" },
-      { code: "T3", tone: "amber", title: "Okapi below ARR target", meta: "20% of $1.8M ARR target · support fundraise" },
-      { code: "B4", tone: "amber", title: "Alicia Bots burn acceleration", meta: "$103K/mo · cash $710K (from $1.1M in Jan)" },
-      { code: "S5", tone: "amber", title: "Sirsak revenue stagnation", meta: "-53% QoQ · project-based, recurring lacking" },
-    ],
-    UMEF: [
-      { code: "M1", tone: "amber", title: "Metric runway watch", meta: "10 mo · Pre-Series A planning H2 2026 · pipeline diversification" },
-    ],
-  };
-  const alerts = alertsByFund[fund.id] || [];
+  // Top signals deduced from base data (shared engine with the Intelligence page).
+  const toneOf = (sev) => (sev === "critical" ? "red" : sev === "warning" ? "amber" : "blue");
+  const alerts = computeSignals(companies).slice(0, 5);
   const el = document.getElementById("alertList");
   el.innerHTML = alerts.length ? alerts.map((a) => `
-    <div class="alert-row">
-      <span class="alert-icon status-${a.tone}">${a.code}</span>
-      <div><h3>${a.title}</h3><p class="meta">${a.meta}</p></div>
-      ${status(a.tone, a.tone === "red" ? "Critical" : "Watch")}
+    <div class="alert-row clickable" data-company="${a.co}">
+      <span class="alert-icon status-${toneOf(a.sev)}">${monogram(a.co)}</span>
+      <div><h3>${a.co} · <span class="meta" style="font-weight:700;">${a.type}</span></h3><p class="meta">${a.why}</p></div>
+      ${status(toneOf(a.sev), a.sev === "critical" ? "Critical" : a.sev === "warning" ? "Watch" : "Info")}
     </div>`).join("") : `<div class="meta" style="padding:18px;text-align:center;">No active signals for ${fund.id}.</div>`;
+  bindCompanyClicks();
 }
 
 function renderWorkflow() {
@@ -578,7 +624,7 @@ function renderPortfolioTable() {
     <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Invested</th><th class="num">LTM Rev</th><th class="num">MOIC</th><th>Runway</th><th>Fundraise</th></tr></thead>
     <tbody>${companies.map((c) => `
       <tr class="clickable" data-company="${c.name}">
-        <td><div class="company-cell"><span class="avatar">${initials(c.name)}</span><strong>${c.name}</strong></div></td>
+        <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
         <td>${c.sector}</td>
         <td>${c.country}</td>
         <td class="num">${moneyK(c.invested)}</td>
@@ -741,7 +787,7 @@ function renderSummaryPortfolio() {
       <div class="panel-body table-scroll"><table class="tbl">
         <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Investment · Own.</th><th class="num">LTM Revenue</th><th class="num">MOIC</th><th>Runway</th><th>Fundraise Status</th><th>Notes</th></tr></thead>
         <tbody>${companies.map((c) => `<tr class="clickable" data-company="${c.name}">
-          <td><div class="company-cell"><span class="avatar">${initials(c.name)}</span><strong>${c.name}</strong></div></td>
+          <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
           <td>${c.sector}</td><td>${c.country}</td>
           <td class="num">${moneyK(c.invested)} · ${c.ownership}</td>
           <td class="num">${c.ltm === 0 ? "Pre-revenue" : "$" + c.ltm.toLocaleString()}</td>
@@ -900,7 +946,7 @@ function moicBreakdown() {
     const w = Math.max((r.uplift / max) * 100, 4);
     const share = totalUplift ? (r.uplift / totalUplift) * 100 : 0;
     return `<div class="mb-row" title="${r.name} · held at ${r.moic.toFixed(2)}x · +$${Math.round(r.uplift)}K uplift · +${r.contribX.toFixed(2)}x to fund MOIC">
-      <div class="mb-name"><span class="avatar" style="width:26px;height:26px;border-radius:8px;font-size:10px;">${initials(r.name)}</span><strong>${r.name}</strong><span class="chip muted">${r.moic.toFixed(2)}x</span></div>
+      <div class="mb-name"><span class="avatar" style="width:26px;height:26px;border-radius:8px;font-size:10px;">${monogram(r.name)}</span><strong>${r.name}</strong><span class="chip muted">${r.moic.toFixed(2)}x</span></div>
       <div class="mb-track"><span class="mb-fill" style="width:${w}%"></span></div>
       <div class="mb-val"><strong class="num">+$${Math.round(r.uplift)}K</strong><span class="num">+${r.contribX.toFixed(2)}x · ${share.toFixed(0)}%</span></div>
     </div>`;
@@ -935,7 +981,7 @@ function renderPerformance() {
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x · +$192K uplift</span></div>
       <div class="panel-body table-scroll"><table class="tbl">
         <thead><tr><th>Company</th><th>Event</th><th>Period</th><th class="num">Uplift ($K)</th><th class="num">Fund MOIC contribution</th><th>Impact</th></tr></thead>
-        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${initials(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
+        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${monogram(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
       </table></div>
     </section>
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>MOIC Contribution by Company</h2><p class="meta">Carrying-value uplift over cost · share of the +${((fund.moic - 1) * 100).toFixed(0)}% gross MOIC gain</p></div><span class="chip">by uplift</span></div>
@@ -1100,15 +1146,9 @@ function renderDocTable() {
 }
 
 /* ---------- Intelligence ---------- */
-const signals = [
-  { co: "Alterno", type: "RUNWAY_CRITICAL", sev: "critical", why: "Reported runway 4.5 months — below the 6-month threshold. Claimed inflows not yet reflected in cash.", resolved: false },
-  { co: "3Cat", type: "RUNWAY_CRITICAL", sev: "critical", why: "Runway 5 months; dependent on Series A closing 15 Jun 2026.", resolved: false },
-  { co: "Okapi", type: "TARGET_MISS", sev: "warning", why: "ARR at 20% of plan ($524K vs $1.8M). Lead investor stalled.", resolved: false },
-  { co: "Alicia Bots", type: "BURN_ACCELERATION", sev: "warning", why: "Cash fell from $1.1M (Jan) to $710K; monthly burn $103K with revenue-recognition lag.", resolved: false },
-  { co: "Sirsak", type: "REVENUE_STAGNATION", sev: "warning", why: "Quarterly revenue -53% QoQ; revenue remains largely project-based.", resolved: false },
-  { co: "Arkadiah", type: "REVENUE_STAGNATION", sev: "warning", why: "Revenue -81% QoQ; Q1 collections near-zero against a >$1M pipeline (timing).", resolved: false },
-  { co: "Sirsak", type: "FUNDRAISE_NEEDED", sev: "info", why: "Runway 9 months with a Seed bridge in preparation.", resolved: false },
-];
+/* Signals are derived from base data via computeSignals() (see engine above),
+   recomputed on fund switch; resolve/reopen state lives on this array. */
+let signals = [];
 let sevFilter = "all";
 function renderIntelligence() {
   const counts = { critical: signals.filter((s) => s.sev === "critical").length, warning: signals.filter((s) => s.sev === "warning").length, info: signals.filter((s) => s.sev === "info").length };
@@ -1119,7 +1159,7 @@ function renderIntelligence() {
     <div class="section-title">
       <div class="seg" id="sevSeg">${[["all", "All"], ["critical", "Critical"], ["warning", "Warning"], ["info", "Info"]].map((s) => `<button class="${s[0] === sevFilter ? "is-active" : ""}" data-sev="${s[0]}" type="button">${s[1]}</button>`).join("")}</div>
     </div>
-    <section class="panel"><div class="panel-head"><h2>Risk Signals</h2><span class="meta">AI-explained · 7 signal types · daily cron</span></div>
+    <section class="panel"><div class="panel-head"><div><h2>Risk Signals</h2><p class="meta">Deduced by Yellow from base data (runway, burn, revenue, MOIC) — independent of submitted reports · daily cron</p></div><span class="chip">${fund.id}</span></div>
       <div class="panel-body"><div class="alert-list" id="sigList"></div></div>
     </section>`;
   renderSignals();
@@ -1155,7 +1195,7 @@ function renderAuditTable() {
   const tone = (s) => (s === 3 ? "green" : s === 0 ? "blue" : "amber");
   document.getElementById("auditTable").innerHTML = `
     <thead><tr><th>Company</th><th>Letter status</th><th>Stage</th><th></th></tr></thead>
-    <tbody>${auditRows.map((r, i) => `<tr><td><div class="company-cell"><span class="avatar">${initials(r.co)}</span><strong>${r.co}</strong></div></td><td>${status(tone(r.stage), auditStages[r.stage].replace(/_/g, " "))}</td><td class="meta">${r.stage + 1} of 4</td><td>${r.stage < 3 ? `<button class="btn btn-muted adv" data-row="${i}" type="button">Advance →</button>` : `<span class="chip">Complete</span>`}</td></tr>`).join("")}</tbody>`;
+    <tbody>${auditRows.map((r, i) => `<tr><td><div class="company-cell"><span class="avatar">${monogram(r.co)}</span><strong>${r.co}</strong></div></td><td>${status(tone(r.stage), auditStages[r.stage].replace(/_/g, " "))}</td><td class="meta">${r.stage + 1} of 4</td><td>${r.stage < 3 ? `<button class="btn btn-muted adv" data-row="${i}" type="button">Advance →</button>` : `<span class="chip">Complete</span>`}</td></tr>`).join("")}</tbody>`;
   document.querySelectorAll("#auditTable .adv").forEach((b) => b.addEventListener("click", () => { const r = auditRows[+b.dataset.row]; r.stage = Math.min(3, r.stage + 1); renderAudit(); }));
 }
 
@@ -1295,7 +1335,7 @@ function renderCompliance() {
       </div>
       <section class="panel"><div class="panel-head"><h2>Climate & impact by company</h2><span class="chip">Form F · ${aggLabel[compAgg]}</span></div>
         <div class="panel-body table-scroll"><table class="tbl"><thead><tr><th>Company</th><th>Metric</th><th>Latest</th></tr></thead>
-        <tbody>${climateRows.map((r) => `<tr class="clickable" data-company="${r[0]}"><td><div class="company-cell"><span class="avatar">${initials(r[0])}</span><strong>${r[0]}</strong></div></td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("")}</tbody></table></div>
+        <tbody>${climateRows.map((r) => `<tr class="clickable" data-company="${r[0]}"><td><div class="company-cell"><span class="avatar">${monogram(r[0])}</span><strong>${r[0]}</strong></div></td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("")}</tbody></table></div>
       </section>
       <p class="meta" style="margin-top:12px;">Methodology: climate KPIs aggregated across reporting companies with per-company audit trail. Scope 1–2 and Scope 4 (avoided) tracked where available.</p>`;
     bindCompanyClicks();
@@ -1427,7 +1467,7 @@ function renderPortfolioTableFull() {
     <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Invested</th><th class="num">Own.</th><th class="num">LTM Rev</th><th class="num">MOIC</th><th>Runway</th><th>Health</th><th>Fundraise</th></tr></thead>
     <tbody>${list.map((c) => `
       <tr class="clickable" data-company="${c.name}">
-        <td><div class="company-cell"><span class="avatar">${initials(c.name)}</span><strong>${c.name}</strong></div></td>
+        <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
         <td>${c.sector}</td><td>${c.country}</td>
         <td class="num">${moneyK(c.invested)}</td>
         <td class="num">${c.ownership}</td>
@@ -1580,6 +1620,43 @@ function capsuleChart(data, fmt) {
   return `<div class="chart">${data.map((d, i) => { const h = (d[1] / max) * 100; const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : ""; return `<div class="chart-col" title="${d[0]} · ${fmt(d[1])}"><div class="chart-barwrap"><span class="chart-v num">${fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`; }).join("")}</div>`;
 }
 function companyChart(data) { return capsuleChart(data, fmtUSD); }
+/* Finance-standard time-series: data-point markers ("dots") on a connecting
+   line + a dashed linear-regression trend line, gridlines and axis labels.
+   Returns an <svg> string sized to its container. */
+function dotLineChart(data, opts) {
+  opts = opts || {};
+  const fmt = opts.fmt || ((v) => String(v));
+  const axisFmt = opts.axisFmt || fmt;
+  const color = opts.color || "#F2691E";
+  const W = 760, H = opts.h || 248, L = 58, R = 20, T = 20, Bm = 34;
+  const n = data.length, ys = data.map((d) => d[1]);
+  let lo = opts.min, hi = opts.max;
+  if (lo === undefined || hi === undefined) {
+    const mn = Math.min(...ys), mx = Math.max(...ys);
+    const pad = (mx - mn) * 0.2 || Math.abs(mx) * 0.12 || 1;
+    if (lo === undefined) lo = mn - pad;
+    if (hi === undefined) hi = mx + pad;
+  }
+  if (hi === lo) hi = lo + 1;
+  const px = (i) => L + (W - L - R) * (n <= 1 ? 0.5 : i / (n - 1));
+  const py = (v) => T + (H - T - Bm) * (1 - (v - lo) / (hi - lo));
+  let grid = "";
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (hi - lo) * (k / 4), y = py(v).toFixed(1);
+    grid += `<line x1="${L}" y1="${y}" x2="${W - R}" y2="${y}" stroke="rgba(28,27,26,0.07)"/><text x="${L - 9}" y="${(+y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#8a8884" font-family="Manrope,Arial">${axisFmt(v)}</text>`;
+  }
+  const xlab = data.map((d, i) => `<text x="${px(i).toFixed(1)}" y="${H - 11}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6b6863" font-family="Manrope,Arial">${d[0]}</text>`).join("");
+  // least-squares trend line over index → value
+  const meanX = (n - 1) / 2, meanY = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) { num += (i - meanX) * (ys[i] - meanY); den += (i - meanX) ** 2; }
+  const slope = den ? num / den : 0, b0 = meanY - slope * meanX;
+  const trend = `<line x1="${px(0).toFixed(1)}" y1="${py(b0).toFixed(1)}" x2="${px(n - 1).toFixed(1)}" y2="${py(b0 + slope * (n - 1)).toFixed(1)}" stroke="#b8b4ac" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"><title>Trend</title></line>`;
+  const line = `<polyline points="${data.map((d, i) => `${px(i).toFixed(1)},${py(d[1]).toFixed(1)}`).join(" ")}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const dots = data.map((d, i) => `<g><circle cx="${px(i).toFixed(1)}" cy="${py(d[1]).toFixed(1)}" r="11" fill="transparent"><title>${d[0]} · ${fmt(d[1])}</title></circle><circle cx="${px(i).toFixed(1)}" cy="${py(d[1]).toFixed(1)}" r="4.5" fill="#fff" stroke="${color}" stroke-width="2.5" pointer-events="none"/></g>`).join("");
+  const vlabs = opts.valueLabels ? data.map((d, i) => `<text x="${px(i).toFixed(1)}" y="${(py(d[1]) - 13).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="800" fill="${color}" font-family="Manrope,Arial">${fmt(d[1])}</text>`).join("") : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;" role="img" aria-label="${opts.label || "time series"}"><rect width="${W}" height="${H}" fill="transparent"/>${grid}${trend}${line}${dots}${vlabs}${xlab}</svg>`;
+}
 function renderCoChart(c) {
   const elc = document.getElementById("coChart"); if (!elc) return;
   const elD = document.getElementById("coDeltas");
@@ -1589,7 +1666,7 @@ function renderCoChart(c) {
     if (elD) elD.innerHTML = "";
     return;
   }
-  elc.innerHTML = capsuleChart(s, metricFmt[companyMetric]);
+  elc.innerHTML = dotLineChart(s, { fmt: metricFmt[companyMetric], valueLabels: true, label: "Performance over time" });
   if (elD) {
     const d = metricDeltas(c.name, companyMetric);
     const inverse = (companyMetric === "burn" || companyMetric === "ebitda");
@@ -1648,7 +1725,7 @@ function renderCompany() {
     <section class="panel"><div class="panel-body">
       <div class="co-header">
         <div class="co-id">
-          <span class="avatar" style="width:54px;height:54px;border-radius:15px;font-size:17px;">${initials(c.name)}</span>
+          <span class="avatar" style="width:54px;height:54px;border-radius:15px;font-size:17px;">${monogram(c.name)}</span>
           <div>
             <h2>${c.name}</h2>
             <div class="co-chips">
@@ -1797,6 +1874,7 @@ function setActiveFund(id) {
   sectors     = (id === "URAF") ? urafSectors    : umefSectors;
   geos        = ((id === "URAF") ? urafGeoLenses : umefGeoLenses)[geoLens];
   moicTrend   = (id === "URAF") ? urafMoicTrend  : umefMoicTrend;
+  signals     = computeSignals(companies);
   try { localStorage.setItem("yelloFund", id); } catch (e) {}
   // refresh the switcher UI + page eyebrow + re-render current view
   renderFundSwitcher();
@@ -1820,6 +1898,8 @@ function renderFundSwitcher() {
 }
 
 /* ---------- Init ---------- */
+computeHealth();                       // derive health scores from base data
+signals = computeSignals(companies);  // derive risk signals from base data
 renderFundSwitcher();
 renderDashboard();
 setSettingsTab("workspace");
