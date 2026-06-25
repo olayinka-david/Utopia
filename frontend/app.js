@@ -749,6 +749,7 @@ function renderSummary() {
       <div class="seg" id="sumSeg">
         <button class="${summaryTab === "portfolio" ? "is-active" : ""}" data-tab="portfolio" type="button">Portfolio Summary</button>
         <button class="${summaryTab === "investment" ? "is-active" : ""}" data-tab="investment" type="button">Investment Summary</button>
+        <button class="${summaryTab === "novus" ? "is-active" : ""}" data-tab="novus" type="button">QIA Novus</button>
       </div>
       <button class="btn btn-muted" id="sumExport" type="button">Export CSV</button>
     </div>
@@ -756,16 +757,54 @@ function renderSummary() {
   document.querySelectorAll("#sumSeg button").forEach((b) => b.addEventListener("click", () => { summaryTab = b.dataset.tab; renderSummary(); }));
   document.getElementById("sumExport").addEventListener("click", () => {
     if (summaryTab === "portfolio") {
-      exportCSV("URAF-Q1-2026-portfolio-summary.csv",
+      exportCSV(`${fund.id}-Q1-2026-portfolio-summary.csv`,
         ["Company", "Sector", "Country", "Invested", "Ownership", "LTM Revenue", "MOIC", "Runway", "Fundraise", "Notes"],
         companies.map((c) => [c.name, c.sector, c.country, moneyK(c.invested), c.ownership, c.ltm === 0 ? "Pre-revenue" : c.ltm, c.moic, c.runway, c.fundraise, c.note]));
-    } else {
-      exportCSV("URAF-Q2-2026-investment-summary.csv",
+    } else if (summaryTab === "investment") {
+      exportCSV(`${fund.id}-Q2-2026-investment-summary.csv`,
         ["Company", "HQ", "Round", "URAF", "Sidecar", "Co-Investors", "Sector", "Status"],
         upcoming.map((u) => [u.name, u.hq, u.round, u.uraf, u.sidecar, u.coInvestors, u.sector, u.status]));
+    } else {
+      exportCSV(`${fund.id}-Q1-2026-QIA-Novus.csv`,
+        ["Company", "Quarterly Revenue", "EBITDA", "Net Debt", "Equity Value", "Total Enterprise Value"],
+        novusRows().map((r) => [r.name, r.rev ?? "n/a", r.ebitda ?? "n/a", r.netDebt ?? "n/a", r.equity ?? "n/a", r.tev ?? "n/a"]));
     }
   });
-  if (summaryTab === "portfolio") renderSummaryPortfolio(); else renderSummaryInvestment();
+  if (summaryTab === "portfolio") renderSummaryPortfolio(); else if (summaryTab === "investment") renderSummaryInvestment(); else renderSummaryNovus();
+}
+/* QIA Novus — quarterly financial report generated from platform data:
+   revenue & EBITDA from financials; equity value implied from our marked
+   holding ÷ ownership; net debt as the net cash position; TEV = equity + net debt. */
+function novusRows() {
+  return companies.map((c) => {
+    const f = fin[c.name] || {};
+    const moic = parseFloat(c.moic) || 1;
+    const own = parseFloat(c.ownership) || null;
+    const holding = c.invested * moic * 1000;                 // our stake value, $
+    const equity = own ? Math.round(holding / (own / 100)) : null; // implied 100% equity value, $
+    const netDebt = (f.cash || f.cash === 0) ? -f.cash : null; // net cash → negative net debt
+    const tev = equity !== null ? equity + (netDebt || 0) : null;
+    return { name: c.name, rev: f.rev ?? null, ebitda: (f.ebitda ?? null), netDebt, equity, tev };
+  });
+}
+function renderSummaryNovus() {
+  const rows = novusRows();
+  const sum = (k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
+  const cell = (v, opts) => v === null || v === undefined ? `<td class="num meta">n/a</td>` : `<td class="num">${(opts && opts.signed && v < 0 ? "−" : "") + fmtUSD(Math.abs(v))}</td>`;
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>QIA Novus — Quarterly Financials</h2><p class="meta">${fund.fullName} · Q1 2026 · generated from platform data (financials + valuations)</p></div><span class="chip">Spreadsheet view</span></div>
+      <div class="panel-body table-scroll"><table class="tbl tbl-sheet">
+        <thead><tr><th>Company</th><th class="num">Quarterly Revenue</th><th class="num">EBITDA</th><th class="num">Net Debt</th><th class="num">Equity Value</th><th class="num">Total Enterprise Value</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr class="clickable" data-company="${r.name}">
+          <td><div class="company-cell"><span class="avatar">${monogram(r.name)}</span><strong>${r.name}</strong></div></td>
+          ${cell(r.rev)}${r.ebitda === null ? `<td class="num meta">n/a</td>` : `<td class="num">−${fmtUSD(Math.abs(r.ebitda))}</td>`}${cell(r.netDebt, { signed: true })}${cell(r.equity)}${cell(r.tev)}
+        </tr>`).join("")}
+        <tr class="tbl-total"><td><strong>Portfolio total</strong></td><td class="num"><strong>${fmtUSD(sum("rev"))}</strong></td><td class="num"><strong>−${fmtUSD(Math.abs(sum("ebitda")))}</strong></td><td class="num"><strong>−${fmtUSD(Math.abs(sum("netDebt")))}</strong></td><td class="num"><strong>${fmtUSD(sum("equity"))}</strong></td><td class="num"><strong>${fmtUSD(sum("tev"))}</strong></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <p class="meta source-note">Net debt is shown as the net cash position (negative = net cash). Equity value is implied from our marked holding ÷ ownership; TEV = equity value + net debt. Figures are platform-derived for review — confirm against management accounts before distribution.</p>`;
+  bindCompanyClicks();
 }
 function renderSummaryPortfolio() {
   const stats = [[String(fund.vintage), "Vintage"], [`$${fund.committed.toFixed(1)}M`, "Committed"], [`$${fund.drawn.toFixed(2)}M`, "Drawn"], [`$${fund.deployed.toFixed(2)}M`, "Deployed"], [`$${fund.gav.toFixed(2)}M`, "GAV"], [String(companies.length), companies.length === 1 ? "Company" : "Companies"], [`${fund.moic.toFixed(2)}x`, "Gross MOIC"]];
@@ -1006,9 +1045,9 @@ const reportDocs = [
   ["Audit Confirmations", ".docx", "Draft", "blue"],
 ];
 const corrections = [
-  { co: "Okapi", field: "LTM revenue", reason: "IFRS lease revenue restatement", status: "Under Review" },
-  { co: "Farmio", field: "Net debt treatment", reason: "Exclude SAFE-related balances", status: "Approved" },
-  { co: "Metric", field: "Q4 revenue", reason: "Late management accounts", status: "Requested" },
+  { co: "Okapi", field: "LTM revenue", from: "$524,000", to: "$473,000", reason: "IFRS lease revenue restatement", requestedBy: "Alex Tan", status: "Under Review" },
+  { co: "Farmio", field: "Net debt treatment", from: "Includes SAFE balances", to: "Excludes SAFE balances", reason: "Exclude SAFE-related balances from net debt", requestedBy: "Ahmad Hashim", status: "Approved" },
+  { co: "Metric", field: "Q4 revenue", from: "—", to: "$1,180,000", reason: "Late management accounts received", requestedBy: "Ahmad Hashim", status: "Requested" },
 ];
 const automation = [
   ["Day 25", "Founder-update reminder → 4 companies pending", "fired", "green"],
@@ -1018,7 +1057,7 @@ const automation = [
   ["Day 53", "Assembly checkpoint → JJ", "scheduled", "blue"],
   ["Day 58", "MP review reminder → Alina", "scheduled", "blue"],
 ];
-const corrStatusTone = (s) => (s === "Approved" ? "green" : s === "Requested" ? "blue" : "amber");
+const corrStatusTone = (s) => (s === "Approved" ? "green" : s === "Rejected" ? "red" : s === "Requested" ? "blue" : "amber");
 let phaseSel = 4;
 function renderReporting() {
   const reminders = "25 · 35 · 42 · 47 · 53 · 58";
@@ -1056,10 +1095,47 @@ function renderCorrections() {
   document.getElementById("corrCount").textContent = `${open} open`;
   document.getElementById("corrList").innerHTML = `<div class="alert-list">${corrections.map((c, i) => `
     <div class="alert-row"><span class="alert-icon status-${corrStatusTone(c.status)}">G</span>
-      <div><h3>${c.co} · ${c.field}</h3><p class="meta">${c.reason}</p></div>
-      <div style="display:flex;gap:8px;align-items:center;">${status(corrStatusTone(c.status), c.status)}${c.status !== "Approved" ? `<button class="btn btn-muted corr-approve" data-i="${i}" type="button">Approve</button>` : ""}</div>
+      <div><h3>${c.co} · ${c.field}</h3><p class="meta">${c.from} → ${c.to} · ${c.reason}</p></div>
+      <div style="display:flex;gap:8px;align-items:center;">${status(corrStatusTone(c.status), c.status)}<button class="btn btn-muted corr-review" data-i="${i}" type="button">${c.status === "Approved" || c.status === "Rejected" ? "View →" : "Review →"}</button></div>
     </div>`).join("")}</div>`;
-  document.querySelectorAll(".corr-approve").forEach((b) => b.addEventListener("click", () => { corrections[+b.dataset.i].status = "Approved"; renderCorrections(); }));
+  document.querySelectorAll(".corr-review").forEach((b) => b.addEventListener("click", () => openAmendment(+b.dataset.i)));
+}
+/* Back-end amendment view (Form G) — approval gated to JJ (Head of Operations). */
+function openAmendment(i) {
+  const c = corrections[i];
+  const isJJ = currentUser && currentUser.name === "JJ Erpaiboon";
+  const settled = c.status === "Approved" || c.status === "Rejected";
+  const m = document.getElementById("modalRoot");
+  m.innerHTML = `<div class="modal-scrim" id="modalScrim"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Amendment review">
+      <div class="modal-head"><div><div class="eyebrow">Back-end amendment · Form G</div><h2>${c.co} · ${c.field}</h2></div><button class="modal-close" id="modalClose" type="button" aria-label="Close">✕</button></div>
+      <div class="modal-body">
+        <div class="amend-diff">
+          <div class="amend-col"><div class="lab">Current (of record)</div><div class="amend-val from">${c.from}</div></div>
+          <div class="amend-arrow">→</div>
+          <div class="amend-col"><div class="lab">Proposed amendment</div><div class="amend-val to">${c.to}</div></div>
+        </div>
+        <div class="amend-meta">
+          <div><div class="lab">Requested by</div><strong>${c.requestedBy}</strong></div>
+          <div><div class="lab">Reason</div><span>${c.reason}</span></div>
+          <div><div class="lab">Status</div>${status(corrStatusTone(c.status), c.status)}</div>
+        </div>
+        <p class="meta">On approval the amendment is written to the back-end record of account and the audit trail. Authorised approver: <strong>JJ Erpaiboon · Head of Operations</strong>.</p>
+      </div>
+      <div class="modal-foot">
+        ${settled ? `<span class="chip">${c.status}</span>` : isJJ
+          ? `<button class="btn btn-muted" id="amendReject" type="button">Reject</button><button class="btn btn-primary" id="amendApprove" type="button">Approve amendment</button>`
+          : `<span class="meta">Only JJ (Head of Operations) can approve amendments — sign in as JJ to action.</span>`}
+      </div>
+    </div>`;
+  m.classList.add("is-open");
+  const close = () => { m.classList.remove("is-open"); m.innerHTML = ""; };
+  document.getElementById("modalScrim").addEventListener("click", close);
+  document.getElementById("modalClose").addEventListener("click", close);
+  if (isJJ && !settled) {
+    document.getElementById("amendApprove").addEventListener("click", () => { corrections[i].status = "Approved"; close(); renderCorrections(); });
+    document.getElementById("amendReject").addEventListener("click", () => { corrections[i].status = "Rejected"; close(); renderCorrections(); });
+  }
 }
 function renderPhaseDetail() {
   const w = workflow[phaseSel];
