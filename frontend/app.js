@@ -884,6 +884,7 @@ const drivers = [
   ["Alterno",     "Follow-on",  "Q2 2025", "Additional carrying-value uplift",      5, "+0.00x"],
   ["Arkadiah",    "Series A",   "Q3 2025", "Uplift to 1.49x — top performer",     122, "+0.07x"],
 ];
+const periodRank = (p) => { const m = /Q(\d)\s*'?(\d{2,4})/.exec(p || ""); return m ? (m[2].length === 2 ? 2000 + +m[2] : +m[2]) * 4 + +m[1] : 0; };
 let perfMetric = "MOIC";
 function renderPerfChart() {
   const s = perfSeries[perfMetric];
@@ -933,7 +934,7 @@ function moicContributions() {
     return { name: c.name, moic: m, invested: c.invested, uplift, contribX: uplift / deployedK };
   }).sort((a, b) => b.uplift - a.uplift);
   const totalUplift = rows.reduce((s, r) => s + r.uplift, 0);
-  return { rows, totalUplift, contributors: rows.filter((r) => r.uplift > 0.5) };
+  return { rows, totalUplift, contributors: rows.filter((r) => r.uplift > 0.5).slice(0, 10) };
 }
 function moicBreakdown() {
   const { rows, totalUplift, contributors } = moicContributions();
@@ -978,10 +979,10 @@ function renderPerformance() {
       </div>
     </section>
     <div class="grid grid-4" style="margin-top:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
-    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Value Drivers</h2><span class="status status-green">▲ 1.00x → 1.10x · +$192K uplift</span></div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Value Drivers</h2><p class="meta">Top 10 most recent valuation events</p></div><span class="status status-green">▲ 1.00x → 1.10x · +$192K uplift</span></div>
       <div class="panel-body table-scroll"><table class="tbl">
         <thead><tr><th>Company</th><th>Event</th><th>Period</th><th class="num">Uplift ($K)</th><th class="num">Fund MOIC contribution</th><th>Impact</th></tr></thead>
-        <tbody>${drivers.map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${monogram(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
+        <tbody>${drivers.slice().sort((a, b) => periodRank(b[2]) - periodRank(a[2])).slice(0, 10).map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${monogram(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
       </table></div>
     </section>
     <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>MOIC Contribution by Company</h2><p class="meta">Carrying-value uplift over cost · share of the +${((fund.moic - 1) * 100).toFixed(0)}% gross MOIC gain</p></div><span class="chip">by uplift</span></div>
@@ -1713,13 +1714,37 @@ function fundingSection(c) {
     </div></div>
   </section>`;
 }
+/* Per-company media & brand assets (placeholders — wired for real assets,
+   feeds the future LP view): founder photos, media ticker, brand logos. */
+function mediaSection(c) {
+  const founders = [["Founder name", "Founder & CEO"], ["Founder name", "Co-founder & CTO"]];
+  const press = [
+    ["TechCrunch", `${c.name} scales its ${c.sector.toLowerCase()} platform`, "Press · placeholder"],
+    ["DealStreetAsia", `Inside ${c.name}'s expansion across ${c.country}`, "Feature · placeholder"],
+    ["e27", `${c.name} named one to watch in ${c.sector}`, "List · placeholder"],
+    ["Tech in Asia", `${c.name} on building in ${c.country}`, "Interview · placeholder"],
+  ];
+  return `
+    <section class="panel"><div class="panel-head"><div><h2>Media &amp; brand assets</h2><p class="meta">Founder photos, press and logos — feeds the LP view</p></div><span class="chip">Placeholder</span></div>
+      <div class="panel-body">
+        <p class="meta media-note">Asset files to be supplied — the layout and ticker are wired so real founder photos, logos and press links drop straight in.</p>
+        <h3 style="margin-top:14px;">Founders</h3>
+        <div class="founder-row">${founders.map((f) => `<div class="founder"><span class="founder-photo">${monogram(c.name)}</span><div><strong>${f[0]}</strong><div class="meta">${f[1]}</div></div></div>`).join("")}</div>
+        <h3 style="margin-top:18px;">Brand assets</h3>
+        <div class="brand-tile"><span class="avatar" style="width:48px;height:48px;font-size:16px;border-radius:13px;">${monogram(c.name)}</span><div style="flex:1;"><strong>${c.name} logomark</strong><div class="meta">SVG / PNG · placeholder</div></div><button class="btn btn-muted" type="button" disabled>Download</button></div>
+      </div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Media ticker</h2><p class="meta">Recent mentions &amp; coverage</p></div><span class="chip">${press.length} mentions</span></div>
+      <div class="panel-body"><div class="media-ticker">${press.map((p) => `<div class="media-card"><div class="media-outlet">${p[0]}</div><div class="media-head">${p[1]}</div><div class="meta">${p[2]}</div></div>`).join("")}</div></div>
+    </section>`;
+}
 
 
 function renderCompany() {
   const c = companies.find((x) => x.name === currentCompany);
   const d = details[c.name] || {};
   const runwayTone = c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green";
-  const tabs = [["overview", "Overview"], ["financials", "Financials"], ["valuations", "Valuations"], ["funding", "Funding"], ["documents", "Documents"]];
+  const tabs = [["overview", "Overview"], ["valuations", "Valuations"], ["funding", "Funding"], ["media", "Media"], ["documents", "Documents"]];
   document.getElementById("companyBody").innerHTML = `
     <button class="btn btn-ghost" type="button" data-nav="portfolio" style="margin-bottom:14px;">← Back to portfolio</button>
     <section class="panel"><div class="panel-body">
@@ -1752,8 +1777,13 @@ function renderCompanyTab(c, d) {
   const el = document.getElementById("companyTab");
   const metrics = d.metrics || [["—", "No metrics"]];
   if (companyTab === "overview") {
+    const opLabel = (fin[c.name] && fin[c.name].op) || "KPI";
+    const metricDefs = [["revenue", "Revenue"], ["ebitda", "EBITDA"], ["burn", "Burn"], ["cash", "Cash"], ["headcount", "Headcount"], ["op", opLabel]];
+    if (!fin[c.name]) companyMetric = "revenue";
+    const hp = c._health || [];
+    const healthTip = `Yellow health score · ${hp.map((p) => `${p[0]} ${p[1]} (${p[2]}/100, w${p[3]}%)`).join(" · ")}`;
     el.innerHTML = `
-      <div class="grid grid-2">
+      <div class="grid grid-2" style="align-items:start;">
         <section class="panel"><div class="panel-head"><h2>About</h2><span class="chip">${d.invested ? "Invested " + d.invested : "URAF"}</span></div>
           <div class="panel-body">
             <p class="meta" style="font-size:13px;line-height:1.65;">${d.desc || "—"}</p>
@@ -1765,7 +1795,7 @@ function renderCompanyTab(c, d) {
             </div>
           </div>
         </section>
-        <section class="panel"><div class="panel-head"><h2>Key Metrics</h2><span class="chip">Q1 2026</span></div>
+        <section class="panel"><div class="panel-head"><h2>Key Metrics</h2><span class="chip" title="${healthTip}">Health ${c.health}/100</span></div>
           <div class="panel-body">
             <div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div>
             ${d.rag && d.rag.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">${d.rag.map((r) => status(r[0], r[1])).join("")}</div>` : ""}
@@ -1777,17 +1807,12 @@ function renderCompanyTab(c, d) {
           <div class="narr"><h3>Highlights</h3><ul>${(d.highlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
           <div class="narr"><h3>Low-lights</h3><ul>${(d.lowlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
           <div class="narr"><h3>Goals</h3><ul>${(d.goals || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
-        </div></div></section>` : ""}`;
-  } else if (companyTab === "financials") {
-    const opLabel = (fin[c.name] && fin[c.name].op) || "KPI";
-    const metricDefs = [["revenue", "Revenue"], ["ebitda", "EBITDA"], ["burn", "Burn"], ["cash", "Cash"], ["headcount", "Headcount"], ["op", opLabel]];
-    if (!fin[c.name]) companyMetric = "revenue";
-    el.innerHTML = `
-      <section class="panel"><div class="panel-head"><div><h2>Performance over time</h2><p class="meta">Financial &amp; operational metrics · last 6 quarters</p></div>
+        </div></div></section>` : ""}
+      <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Performance over time</h2><p class="meta">Financial &amp; operational metrics · last 6 quarters</p></div>
         <div class="seg" id="coMetricSeg">${metricDefs.map((m) => `<button class="${m[0] === companyMetric ? "is-active" : ""}" data-metric="${m[0]}" type="button">${m[1]}</button>`).join("")}</div></div>
         <div class="panel-body"><div id="coDeltas" class="co-deltas"></div><div id="coChart"></div></div>
       </section>
-      <div class="grid grid-2" style="margin-top:16px;">
+      <div class="grid grid-2" style="margin-top:16px;align-items:start;">
         <section class="panel"><div class="panel-head"><h2>Runway</h2><span class="chip">threshold 6 / 12 mo</span></div>
           <div class="panel-body">
             <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
@@ -1809,16 +1834,15 @@ function renderCompanyTab(c, d) {
       </div>`;
     renderCoChart(c);
     document.querySelectorAll("#coMetricSeg button").forEach((b) => b.addEventListener("click", () => { companyMetric = b.dataset.metric; document.querySelectorAll("#coMetricSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderCoChart(c); }));
+  } else if (companyTab === "media") {
+    el.innerHTML = mediaSection(c);
   } else if (companyTab === "funding") {
     el.innerHTML = fundingSection(c);
   } else if (companyTab === "valuations") {
     const cost = c.invested, cur = Math.round(c.invested * parseFloat(c.moic));
     const step = [["Entry", cost * 1000], ["Q2'25", cost * 1000], ["Q3'25", cost * 1000], ["Q4'25", Math.round((cost + (cur - cost) * 0.6) * 1000)], ["Q1'26", cur * 1000]];
     el.innerHTML = `
-      <div class="grid grid-2">
-        <section class="panel"><div class="panel-head"><h2>Carrying value</h2><span class="status status-green">${c.moic}</span></div>
-          <div class="panel-body">${companyChart(step)}</div>
-        </section>
+      <div class="grid grid-2" style="align-items:start;">
         <section class="panel"><div class="panel-head"><h2>Position</h2><span class="chip">${d.security || "—"}</span></div>
           <div class="panel-body" style="display:flex;gap:30px;flex-wrap:wrap;">
             <div><div class="num" style="font-weight:800;font-size:22px;">${moneyK(cost)}</div><div class="meta">Invested (cost)</div></div>
@@ -1826,6 +1850,9 @@ function renderCompanyTab(c, d) {
             <div><div class="num" style="font-weight:800;font-size:22px;">${c.moic}</div><div class="meta">MOIC</div></div>
             <div><div class="num" style="font-weight:800;font-size:22px;">${c.ownership}</div><div class="meta">Ownership</div></div>
           </div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Carrying value</h2><span class="status status-green">${c.moic}</span></div>
+          <div class="panel-body">${companyChart(step)}</div>
         </section>
       </div>
       <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Valuation history</h2></div>
