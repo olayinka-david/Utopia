@@ -25,16 +25,25 @@ below are design/UX + IA decisions to carry into that build._
 - **Capsule (pill) bar charts** on a `#F1EEE9` track with gradient fills + rounded caps — the standard bar style.
 - **Circular indicators:** health rings, runway **gauge** (red <6 / amber 6–12 / green >12 mo), donut with centered value/label.
 - **Dual-axis line chart** (new) for fund-level trends.
+- **Finance-standard line chart** (`dotLineChart`, new): data-point markers on a
+  connecting line + dashed **linear-regression trend line** + gridlines + axis
+  labels + hover tooltips. Used for the dashboard MOIC chart and the company
+  "Performance over time" chart. *(Interim style — to be matched to the
+  portfolio-management deck.)*
 - **RAG status chips**, KPI cards incl. a **gradient accent KPI**, segmented toggles.
-- **Hero = auto-rotating fund carousel** (URAF ↔ UMEF) with dots, pause-on-hover, reduced-motion aware.
+- **Modal / dialog** (scrim + centered card) — used for the back-end amendment view.
+- **Hero** = **fund name primary (large)**, MOIC a smaller secondary stat
+  (superseded the earlier auto-rotating carousel — see §7).
 
 ## 3. Information architecture / pages (added vs blueprint)
 - **Quarterly Summary** page — two tabs: **Quarterly Portfolio Summary** (page-3 table: company, sector, country, investment/ownership, LTM revenue, MOIC, runway, fundraise, notes + totals + MOIC-development narrative) and **Quarterly Investment Summary** (Q2'26 sidecar pipeline w/ URAF + QDB amounts).
 - **Compliance** module — Climate & Impact + **Gender (2X)** tabs, **Form F Q4-lock** banner.
-- **Company deep-dive** is **tabbed**: Overview · Financials · Valuations · **Funding** · Documents.
-  - **Financials:** “Performance over time” time-series with a **metric toggle** (Revenue / EBITDA / Burn / Cash / Headcount / company KPI) + runway gauge + snapshot.
-  - **Funding (new):** fundraising history table — round, date, **round size**, **URAF participation**, **valuation**, **lead/co-investors** — plus a “How URAF adds value” panel (modeled on the Gobi/Carsome reference). Same section also surfaced in Valuations.
-- **Performance:** **fund-level time series** — KPI band (Capital invested / Holding value / MOIC / # investments) + **dual-axis line chart** (Capital invested + Holding value on US$M axis, MOIC on × axis) + value-driver attribution.
+- **Company deep-dive** is **tabbed**: **Overview (combined)** · Valuations · **Funding** · **Media** · Documents.
+  - **Overview (combined Overview + Financials):** About w/ **Key Metrics top-right** (incl. derived health score) → **Notable Updates** → **Performance over time** (metric toggle: Revenue / EBITDA / Burn / Cash / Headcount / company KPI, as a dot+trend chart with QoQ/YoY deltas) → **Runway** (gauge + 6-quarter history) + Financial snapshot.
+  - **Valuations:** **Position (left)** + **Carrying value (right)** + valuation history; funding section surfaced here too.
+  - **Funding:** fundraising history table — round, date, **round size**, **URAF participation**, **valuation**, **lead/co-investors** — plus a “How URAF adds value” panel (Gobi/Carsome reference).
+  - **Media (new):** per-company **founder photos**, **brand logomark**, **media ticker** of press mentions — placeholders wired for real assets; **feeds the future LP view**.
+- **Performance:** **fund-level time series** — KPI band (Capital invested / Holding value / MOIC / # investments) + **dual-axis line chart** + **value-driver attribution** (per-driver $K uplift + fund-MOIC contribution, top-10 most recent) + **MOIC contribution by company** (horizontal breakdown of carrying-value uplift, top 10).
 - **Design System** as an Admin nav item + standalone page.
 
 ## 4. Auth, roles, exports, a11y (added)
@@ -46,7 +55,72 @@ below are design/UX + IA decisions to carry into that build._
 ## 5. Data
 - All dummy data anchored to **URAF Q1 2026 Quarterly Portfolio Summary** (10 companies; $13.8M committed / $5.7M drawn / $1.88M deployed; GAV $2.07M; gross MOIC 1.10x). Fundraising rounds + per-company time-series values are placeholder where the doc doesn’t specify, but **anchored to known facts** (entry amounts/dates/security, known rounds, Q2'26 sidecars).
 
-## 6. Carry-over notes for the production blueprints
+## 7. Q1 2026 review deltas (latest iteration)
+
+Folded in from the Q1 review feedback (`docs/q1-feedback-adjustments.md`) across
+three rounds (P0/P1/P2 → corrections → tab/data restructure). Carry into the
+blueprints:
+
+**Fund delineation & shell**
+- **Top-bar fund switcher** (segmented `URAF`/`UMEF`) replacing the cosmetic carousel;
+  selecting a fund **rescopes every view** (KPIs, portfolio, health, exposure,
+  performance, impact, intelligence, reporting) and **persists** across navigation.
+- Hero = **fund name primary**, MOIC secondary. Page eyebrow shows full legal name.
+- **Scroll model:** the **main column is its own scroll container** (`height:100dvh`
+  + `overflow-y:auto`, app-shell fixed) — fixes the "only the sidebar scrolls" bug in
+  embedded/webview contexts. Mobile = slide-in **drawer** (hamburger + scrim).
+
+**Roles & users (demo)**
+- Real users wired: Admin = JJ (**Head of Operations**), Alina, Roo, Shamona,
+  **Colleen**; Portfolio = JJ, Ahmad, Alex. Nav/permissions gate per role.
+
+**Yellow's own analysis (data-source = HYBRID; to be confirmed)**
+- **Health score derived from base data** — weighted: runway 35% · revenue 25% ·
+  growth (QoQ) 20% · MOIC 20% — surfaced with the driving metrics (LTM revenue,
+  runway, MOIC) + full breakdown on hover + methodology caption.
+- **Risk signals deduced independently from base data** (runway, burn, revenue QoQ,
+  fundraise state) via one engine shared by the dashboard panel and the Intelligence
+  page; recomputed on fund switch. **Not** pulled from submitted reports.
+- **Headline fund figures** (committed/drawn/deployed/GAV/MOIC) remain **authoritative
+  reporting inputs**; a source note states the reported-vs-derived split. *(Backend:
+  needs a `source` provenance enum + a financials time-series — see QIA Novus scope.)*
+
+**Charts**
+- Dashboard **MOIC Development** and company **Performance over time** → **dot graph
+  with trend line** (finance-standard interim; match the portfolio-management deck).
+- Hover exact values on all charts; capsule bars retained where dense bars read better.
+
+**Module changes**
+- **Exposure:** Geographic exposure **HQ / Operations / Revenue base** toggle (HQ default).
+- **Impact Reporting** (renamed from Compliance): **aggregate toggle** (this fund /
+  all funds / cumulative) drives climate KPIs + workforce-gender stats.
+- **Forms Hub:** added **Valuation Meeting Minutes** + **Quarter Tasks**; removed
+  "Portfolio Ops" submitter tag.
+- **Reporting workflow:** Day 0/30/40/45/50/55/60 with owners (founder data → portfolio
+  & valuation review → Ocorian financials → assembly → MP review → distribution).
+- **Data corrections → back-end amendment view** (modal): current→proposed diff,
+  requester, reason; **Approve/Reject gated to JJ** (Head of Operations); writes to
+  record + audit trail on approval.
+- **Company logos:** 2-char **monogram** placeholders across all views ("3Cat"→"3C").
+
+**New reporting module**
+- **QIA Novus** spreadsheet report (Quarterly Summary tab) — quarterly Revenue,
+  EBITDA, Net Debt, Equity Value, TEV per company + portfolio totals + CSV export,
+  **generated from platform data**. Full production spec in
+  **`docs/qia-novus-scope-8090.md`** (data model, generation, governance) — use it to
+  update the **backend + reporting-service + work orders**.
+
+**Still open / deferred**
+- Data-source policy (calculate vs pull) to be **confirmed**, then enforced platform-wide.
+- Finance-standard chart styling pending the **portfolio-management deck**.
+- Quarter-tasks checklist ↔ workflow-graphic linkage (acknowledged not active yet).
+- Attio CRM sync for Deal Flow — deprioritized (Attio has its own dashboard).
+
+## 8. Carry-over notes for the production blueprints
 - Keep per-fund accent-color system from the original blueprint **as an option**, but the prototype standardized on the warm orange brand (Direction-2/Buildora aesthetic).
 - The **Phase 1–19** mapping in `docs/frontend-gap-analysis.md` is *inferred*; replace with the real 8090 Work Orders when updating.
-- Charts in production should use **Recharts** equivalents of: capsule bar, dual-axis line, donut, gauge, runway-vs-revenue scatter (scatter still TODO).
+- Charts in production should use **Recharts** equivalents of: capsule bar, **dot + trend line**, dual-axis line, donut, gauge, **horizontal contribution bars**, runway-vs-revenue scatter (scatter still TODO).
+- **Backend / data model** work implied by this iteration: per-fund datasets, a
+  **financials time-series** (powers QIA Novus, QoQ/YoY deltas, historical runway —
+  currently synthesized), valuation records with ownership/method, a derived-metrics
+  service (health, signals), and a report-generation layer (XLSX/PDF + audit).
