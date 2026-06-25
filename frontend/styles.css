@@ -77,7 +77,9 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---------- App shell ---------- */
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden; /* outer shell is fixed; the main column scrolls on its own */
   display: grid;
   grid-template-columns: var(--nav) minmax(0, 1fr);
 }
@@ -139,7 +141,7 @@ h1, h2, h3, p { margin: 0; }
 .user-meta span { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
 
 /* ---------- Main ---------- */
-.main { min-width: 0; padding: 28px 34px 64px; }
+.main { min-width: 0; padding: 28px 34px 64px; height: 100vh; height: 100dvh; overflow-y: auto; }
 
 /* Mobile drawer nav (hidden on desktop) */
 .mobile-topbar { display: none; }

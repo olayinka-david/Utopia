@@ -53,7 +53,7 @@ const urafCompanies = [
 
 /* UMEF — minimal launched-state dataset. */
 const umefCompanies = [
-  { name: "Metric", sector: "Climate Tech", country: "UAE", invested: 250, ownership: "1.70%", ltm: 1300000, moic: "1.00x", runway: "10 mo", runwayMo: 10, burn: "$32K/mo", burnTone: "amber", health: 72, fundraise: "Pre-Series A · planning H2 2026", note: "Marketplace ARR $1.3M; pilots across GCC" },
+  { name: "Metric", sector: "Fintech", country: "UAE", invested: 250, ownership: "1.70%", ltm: 1300000, moic: "1.00x", runway: "10 mo", runwayMo: 10, burn: "$32K/mo", burnTone: "amber", health: 72, fundraise: "Pre-Series A · planning H2 2026", note: "Marketplace ARR $1.3M; pilots across GCC" },
 ];
 
 let companies = urafCompanies;
@@ -180,7 +180,7 @@ const urafSectors = [
   { label: "Water", value: 50, count: 1, color: "#ded9d0", companies: ["Waterhub"] },
 ];
 const umefSectors = [
-  { label: "Climate Tech", value: 250, count: 1, color: "#f2691e", companies: ["Metric"] },
+  { label: "Fintech", value: 250, count: 1, color: "#f2691e", companies: ["Metric"] },
 ];
 let sectors = urafSectors;
 
@@ -291,11 +291,11 @@ const svgIcon = (k) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke=
 
 /* ---------- Users, roles & access control (mock) ---------- */
 const users = [
-  { name: "JJ Erpaiboon",    role: "Admin",     title: "Investment Operations Lead" },
+  { name: "JJ Erpaiboon",    role: "Admin",     title: "Head of Operations" },
   { name: "Alina Truhina",   role: "Admin",     title: "Managing Partner" },
   { name: "Roo Rogers",      role: "Admin",     title: "Managing Partner" },
   { name: "Shamona Maharaj", role: "Admin",     title: "CFO" },
-  { name: "Kolleen Wright",  role: "Admin",     title: "Operations" },
+  { name: "Colleen Wright",  role: "Admin",     title: "Operations" },
   { name: "Ahmad Hashim",    role: "Portfolio", title: "Investment Team" },
   { name: "Alex Tan",        role: "Portfolio", title: "Investment Team" },
 ];
@@ -640,7 +640,7 @@ const settingsTemplates = {
       <table class="tbl">
         <thead><tr><th>Role</th><th>Members</th><th>Dashboard</th><th>Reporting</th><th>Documents</th><th>Admin</th></tr></thead>
         <tbody>
-          ${roleRow("Admin", "JJ, Alina, Roo, Shamona, Kolleen", "Full", "Full", "Full", "Full")}
+          ${roleRow("Admin", "JJ, Alina, Roo, Shamona, Colleen", "Full", "Full", "Full", "Full")}
           ${roleRow("Portfolio", "JJ, Ahmad, Alex", "Full", "Draft", "Full", "—")}
           ${roleRow("Founder", "1 per portfolio company", "Own only", "Submit own", "Own uploads", "—")}
         </tbody>
@@ -1482,13 +1482,13 @@ function openNav() {
   document.querySelector(".sidebar").classList.add("is-open");
   document.getElementById("navScrim").classList.add("is-open");
   const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "true");
-  document.body.style.overflow = "hidden";
+  const m = document.querySelector(".main"); if (m) m.style.overflow = "hidden";
 }
 function closeNav() {
   const sb = document.querySelector(".sidebar"); if (sb) sb.classList.remove("is-open");
   const sc = document.getElementById("navScrim"); if (sc) sc.classList.remove("is-open");
   const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "false");
-  document.body.style.overflow = "";
+  const m = document.querySelector(".main"); if (m) m.style.overflow = "";
 }
 
 function gauge(months) {
