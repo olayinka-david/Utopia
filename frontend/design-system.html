@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Design System — Yellow</title>
+    <meta name="description" content="Yellow design system — brand tokens, typography, components and data-visualization language for the Utopia Radical platform." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ds-layout">
+      <aside class="ds-nav" aria-label="Design system navigation">
+        <div class="brand">
+          <a class="brand-mark" href="./design-system.html" aria-label="Yellow design system home" style="display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;">
+            <span class="brand-icon">Y</span><span>Yellow DS</span>
+          </a>
+          <div class="brand-sub">Visualization component language</div>
+        </div>
+        <nav class="nav-group" style="margin-top:18px;">
+          <div class="nav-label">Reference</div>
+          <a class="nav-item is-active" href="#tokens">Tokens <span>01</span></a>
+          <a class="nav-item" href="#buttons">Buttons <span>02</span></a>
+          <a class="nav-item" href="#metrics">Metrics <span>03</span></a>
+          <a class="nav-item" href="#visuals">Visualizations <span>04</span></a>
+          <a class="nav-item" href="#settings">Settings <span>05</span></a>
+        </nav>
+        <div class="sidebar-footer">
+          <a class="btn btn-muted" href="./index.html" style="width:100%;">Back to application ↗</a>
+        </div>
+      </aside>
+
+      <main class="ds-main">
+        <section class="topbar">
+          <div>
+            <div class="eyebrow">Design System</div>
+            <h1>Yellow visualization system</h1>
+            <p class="subcopy">Tokens, button hierarchy, KPI cards, RAG tables, capsule charts, rings, donut, and settings patterns — the shared language for the Utopia Radical platform.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-muted" href="./index.html">Application</a>
+          </div>
+        </section>
+
+        <div id="dsRoot" style="margin-top:8px;"></div>
+      </main>
+    </div>
+
+    <script src="./design-system.js"></script>
+    <script>renderDesignSystemInto("dsRoot");</script>
+  </body>
+</html>

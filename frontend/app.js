@@ -1,0 +1,2033 @@
+/* ============================================================
+   Yello — Utopia Radical operating system
+   Dummy data sourced from URAF Q1 2026 Quarterly Portfolio Summary.
+   ============================================================ */
+
+const fundsCatalog = [
+  { id: "URAF", fullName: "Utopia Radical Asia Fund 1", short: "The Radical Fund" },
+  { id: "UMEF", fullName: "Utopia Middle East Fund 1",  short: "Middle East Fund" },
+];
+
+/* Per-fund data — switching funds rescopes everything. */
+const fundDatasets = {
+  URAF: {
+    id: "URAF",
+    fullName: "Utopia Radical Asia Fund 1",
+    short: "The Radical Fund",
+    vintage: 2023,
+    committed: 13.8, drawn: 5.7, deployed: 1.88, reserved: 3.1, gav: 2.07, moic: 1.10, lps: 12, investments: 13,
+    /* Per-period fund trend (Capital invested / GAV / MOIC). */
+    trendPeriods: ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"],
+    trendInv:  [0.25, 0.80, 1.20, 1.60, 1.80, 1.88],
+    trendGav:  [0.25, 0.82, 1.25, 1.70, 1.95, 2.07],
+    trendMoic: [1.00, 1.02, 1.04, 1.06, 1.08, 1.10],
+  },
+  UMEF: {
+    id: "UMEF",
+    fullName: "Utopia Middle East Fund 1",
+    short: "Middle East Fund",
+    vintage: 2025,
+    committed: 5.0, drawn: 0.5, deployed: 0.25, reserved: 4.75, gav: 0.25, moic: 1.00, lps: 1, investments: 1,
+    trendPeriods: ["Q3'25", "Q4'25", "Q1'26"],
+    trendInv:  [0.10, 0.20, 0.25],
+    trendGav:  [0.10, 0.20, 0.25],
+    trendMoic: [1.00, 1.00, 1.00],
+  },
+};
+let activeFund = "URAF";
+let fund = fundDatasets[activeFund];
+
+/* In order of LTM revenue (per summary table p.2-3). invested in $K. */
+const urafCompanies = [
+  { name: "3Cat", sector: "Circular Economy", country: "Malaysia", invested: 150, ownership: "1.20%", ltm: 14835012, moic: "1.00x", runway: "5 mo", runwayMo: 5, burn: "$90K/mo", burnTone: "amber", health: 55, fundraise: "Series A · closing 15 Jun 2026", note: "Monitor Series A close to extend runway" },
+  { name: "Farmio", sector: "Agri-Food", country: "Singapore", invested: 300, ownership: "2.21%", ltm: 6761021, moic: "1.00x", runway: "12 mo", runwayMo: 12, burn: "$94.6K/mo", burnTone: "amber", health: 84, fundraise: "Pre-Series A · in prep", note: "ARR doubled to $10.2M; HK expansion" },
+  { name: "Dash", sector: "Clean Mobility", country: "Indonesia", invested: 250, ownership: "7.53%", ltm: 2073887, moic: "1.00x", runway: "12+ mo", runwayMo: 12, burn: "$40K/mo", burnTone: "green", health: 82, fundraise: "Series A · healthy pipeline", note: "Closed $800K bridge in Q2; nearing profitability" },
+  { name: "Alterno", sector: "Energy (TES)", country: "Vietnam", invested: 250, ownership: "4.40%", ltm: 1095310, moic: "1.02x", runway: "4.5 mo", runwayMo: 4.5, burn: "$39K/mo", burnTone: "red", health: 48, fundraise: "Series A2 · healthy pipeline", note: "Adjust runway on claimed inflows; growth slow" },
+  { name: "Alicia Bots", sector: "Robotics", country: "Singapore", invested: 250, ownership: "2.30%", ltm: 699139, moic: "1.16x", runway: "10 mo", runwayMo: 10, burn: "$103K/mo", burnTone: "amber", health: 72, fundraise: "Series A · advanced pipeline", note: "High cash burn; ARR +17% QoQ to $1.12M" },
+  { name: "Okapi", sector: "Energy (Solar)", country: "Malaysia", invested: 175, ownership: "6.05%", ltm: 422000, moic: "1.14x", runway: "20 mo", runwayMo: 20, burn: "$10K/mo", burnTone: "green", health: 88, fundraise: "Seed $3M · lead stalled", note: "20% of ARR target; support fundraise" },
+  { name: "Arkadiah", sector: "NbS / Carbon", country: "Singapore", invested: 250, ownership: "1.50%", ltm: 261000, moic: "1.49x", runway: "21 mo", runwayMo: 21, burn: "$158K/mo", burnTone: "amber", health: 94, fundraise: "N/A · just closed round", note: "Order book $5.9M; Q1 collections near-zero" },
+  { name: "Sirsak", sector: "Circular Economy", country: "Indonesia", invested: 50, ownership: "1.75%", ltm: 122052, moic: "1.00x", runway: "9 mo", runwayMo: 9, burn: "$17K/mo", burnTone: "green", health: 60, fundraise: "Seed bridge $1M · in prep", note: "Revenue -53% QoQ; project-based" },
+  { name: "Waterhub", sector: "Water", country: "Indonesia", invested: 50, ownership: "3.30%", ltm: 46228, moic: "1.00x", runway: "13 mo", runwayMo: 13, burn: "$6.4K/mo", burnTone: "green", health: 70, fundraise: "Pre-seed · early planning", note: "420K L/mo; capacity-constrained" },
+  { name: "Terra Oleo", sector: "Biotech", country: "Singapore", invested: 150, ownership: "1.76%", ltm: 0, moic: "1.00x", runway: "14 mo", runwayMo: 14, burn: "$67K/mo", burnTone: "amber", health: 64, fundraise: "N/A · pending grant", note: "Pre-revenue; TRL behind, purity 80–90% vs 95%" },
+];
+
+/* UMEF — minimal launched-state dataset. */
+const umefCompanies = [
+  { name: "Metric", sector: "Fintech", country: "UAE", invested: 250, ownership: "1.70%", ltm: 1300000, moic: "1.00x", runway: "10 mo", runwayMo: 10, burn: "$32K/mo", burnTone: "amber", health: 72, fundraise: "Pre-Series A · planning H2 2026", note: "Marketplace ARR $1.3M; pilots across GCC" },
+];
+
+let companies = urafCompanies;
+
+/* Rich per-company detail (URAF Q1 2026 Quarterly Portfolio Summary). */
+const details = {
+  "3Cat": {
+    stage: "Pre-Series A", security: "SAFE", invested: "May 2025", holding: "$150,000 (cost)",
+    desc: "Omnicommerce platform for buying, trading and repairing second-hand smartphones in Malaysia — an online marketplace plus a physical retail network.",
+    model: "Sources used devices from consumers and distributors, then resells across its online marketplace and network of retail stores.",
+    metrics: [["$4.75M", "Quarterly revenue (+104% YoY)"], ["$19.8M", "Revenue run rate"], ["18%", "Gross margin"], ["$75K", "Monthly store revenue"], ["5 mo", "Runway*"], ["$432K", "Cash on hand"], ["$90K", "Monthly burn"], ["113", "Employees"]],
+    highlights: ["Series A targeted to close 15 Jun 2026 — $4M led by Foxmont Capital, with ADB Ventures, GGV and existing investors.", "Growth consistent and margins improving."],
+    lowlights: ["Growth stalled somewhat while the Series A is being closed."],
+    goals: ["Close the Series A fundraise.", "Strategic partnerships with XOX and Aeon — first shop-in-shop concept in Q3 2026."],
+    rag: [["green", "Revenue 62% of target — $4.7M vs $7.6M"], ["green", "Stores 65% of target — 22 vs 34"]],
+  },
+  "Farmio": {
+    stage: "Pre-Series A", security: "SAFE", invested: "Oct 2025", holding: "$300,000 (cost)",
+    desc: "Singapore-based AI-powered food supply-chain platform streamlining B2B procurement for suppliers and buyers.",
+    model: "Three models: licensing AI software for recurring revenue, a marketplace earning transaction fees, and a licensed intermediary capturing trading margins.",
+    metrics: [["$1.8M", "Quarterly revenue (+2.6%)"], ["$7.4M", "Revenue run rate"], ["25.1%", "Lifetime gross margin"], ["$16M", "2026 revenue forecast"], ["12 mo", "Runway"], ["$1.1M", "Cash on hand"], ["$94.6K", "Monthly burn"], ["12", "Employees"]],
+    highlights: ["ARR nearly doubled from $5.2M a year ago to $10.2M.", "Hong Kong: 400 active customers, targeting ~700 by year end.", "New brand 'Alba' extends AI to hospitality; Middle East traction with Hassad Food."],
+    lowlights: ["Top-line growth slowed in Q1 (oil prices, CNY, Ramadan).", "Just-in-time model pressures price competitiveness."],
+    goals: ["Fundraising — introductions to food, supply-chain and government partners."],
+    rag: [["green", "ARR doubled in 12 months"]],
+  },
+  "Dash": {
+    stage: "Series A", security: "Equity", invested: "Jul 2024", holding: "$250,000 (cost)",
+    desc: "White-label fleet-management service combining riders, electric vehicles and integrated fleet-management software.",
+    model: "Lease-to-own EV fleet and 'driver-as-a-service' — riders, customisable white-label EVs and proprietary logistics software for middle/last-mile operations.",
+    metrics: [["$1M", "Quarterly revenue (+53%)"], ["$4.7M", "Revenue run rate"], ["24%", "Gross margin"], ["1,224", "Active workers (+32%)"], ["12+ mo", "Runway*"], ["$65K", "Cash on hand"], ["$40K", "Monthly burn"], ["59", "Employees"]],
+    highlights: ["Revenue & margins improved while burn stayed stable.", "EBITDA margin at -11% (from -41% in Q4'25) — approaching profitability.", "Raised $800K bridge from existing investors."],
+    lowlights: ["Equity round taking longer amid tough Indonesian macro conditions."],
+    goals: ["Close Series A (advanced pipeline: Intudo, Beacon VC, Twynam).", "Reach $10M ARR and profitability by EOY 2026."],
+    rag: [["green", "Revenue 150% of target — $1M vs $652K"], ["green", "Gross margin 126% of target"]],
+  },
+  "Alterno": {
+    stage: "Series A2", security: "Equity", invested: "Mar 2024", holding: "$255,000 (no change)",
+    desc: "Thermal energy storage (TES) and hybrid electrification — sand-battery technology for high-temperature industrial heat, plus Alternō E for clean power.",
+    model: "B2B clean-energy: TES systems and Alternō E units sold to industrial customers; revenue from equipment sale, project deployment and engineering services.",
+    metrics: [["$39K", "Quarterly revenue (-53%)"], ["$1M", "Total 2025 revenue"], ["46%", "Gross margin"], ["12", "Clients"], ["14 mo", "Runway"], ["$180K", "Cash on hand"], ["$39K", "Monthly burn"], ["22", "Employees"]],
+    highlights: ["Renegotiated $400K Arista contract into monthly $39K instalments — recurring revenue.", "100% supply-chain independence for core battery material.", "$1.2M Yamaha proposal just approved."],
+    lowlights: ["Growth slow; little movement on new clients last quarter."],
+    goals: ["Series A2: $5M equity at $25M valuation, targeting early-2027 close.", "Continue Alternō E development; pursue $4.58M non-dilutive pipeline."],
+    rag: [["red", "1.29% of FY revenue target"], ["amber", "50% of battery deployment target"]],
+  },
+  "Alicia Bots": {
+    stage: "Series A", security: "Equity", invested: "Jul 2024", holding: "$289,900 (no change)",
+    desc: "Robotic solutions for maintaining steel structures — hull inspection, cleaning and corrosion repair to boost operational efficiency and sustainability.",
+    model: "B2B robotics-as-a-service — paid pilots and annual recurring contracts via direct sales and resellers; robots manufactured in China, core IP in SG and Greece.",
+    metrics: [["$105K", "Quarterly revenue (-49%)"], ["$1.12M", "ARR (+17%)"], ["29", "Customers (+9)"], ["10 mo", "Runway"], ["$710K", "Cash on hand"], ["$103K", "Monthly burn"], ["61", "Robots deployed (+6)"], ["26", "Employees"]],
+    highlights: ["March production record — 15 robots in SG; 27 deployments in Q1 with zero churn.", "ARR +17% QoQ to $1.12M; 9 new customers.", "MPA Singapore Maritime Week; VARD EU Horizon partnership targeting €1M grant."],
+    lowlights: ["Costamare contract cancelled; avg contract price -12.6%.", "Revenue recognition lag ($1.33M billed YTD vs $105K recognised); high burn."],
+    goals: ["Convert 15 committed contracts and collect $380K + $567K renewals to confirm 19-month runway.", "Maintain 15 robots/month; advance Jetson + propeller inspection tool."],
+    rag: [["green", "ARR compounding steadily"]],
+  },
+  "Okapi": {
+    stage: "Seed", security: "Equity", invested: "Mar 2024", holding: "$200,000 (no change)",
+    desc: "Residential solar leasing platform providing zero-upfront financing to homeowners, expanding energy access while generating predictable lease income.",
+    model: "B2B2C solar financing-as-a-service — partners originate leads; Okapi finances capex and collects 5–10 year leases. Debt funds capex; equity funds working capital.",
+    metrics: [["$131K", "Quarterly revenue (+16%)"], ["$524K", "Revenue run rate"], ["55%", "Gross margin"], ["473", "Leases closed"], ["20 mo", "Runway"], ["$313K", "Cash on hand"], ["$10K", "Monthly op. loss"], ["6", "Employees"]],
+    highlights: ["Traction recovering after Solar ATAP confirmation — back to peak demand, Q2 uptick expected.", "Mosque installations emerging as a new growth vertical."],
+    lowlights: ["Public holidays & macro disruptions caused slowdowns.", "Trirec (intended lead investor) talks stalled."],
+    goals: ["Kick off $3M Seed round (discussing Iterative as lead).", "Explore Thailand market expansion."],
+    rag: [["red", "20% of ARR target — $524K vs $1.8M"], ["red", "28% of leases target — 473 vs 1,715"]],
+  },
+  "Arkadiah": {
+    stage: "Series A", security: "Equity", invested: "Sep 2023", holding: "$372,400 (no change)",
+    desc: "Carbon-project technology company building MRV/DMRV systems and end-to-end nature-based solutions across Asia, LATAM and Africa.",
+    model: "B2B/B2G carbon project services — fee-based land-restoration & DMRV contracts, government tenders, and technology-driven MRV.",
+    metrics: [["$23K", "Quarterly revenue (-81%)"], ["$261K", "Implied LTM revenue"], ["9", "Signed active clients"], ["$5.9M", "5Y contracted order book"], ["21 mo", "Runway"], ["$3.4M", "Cash on hand"], ["$158K", "Monthly burn"], ["15", "Employees"]],
+    highlights: ["GAR Kalimantan (SGD 521K) fully signed — largest single contract.", "LatAm mission yielded ~4.5M ha addressable dMRV pipeline.", "AI tools deployed internally to cut cost and time-to-delivery."],
+    lowlights: ["Revenue collection backloaded — only ~SGD 31K collected in Q1 vs >USD 1M pipeline.", "Ghana (Ga East) behind schedule — key risk to Africa revenue."],
+    goals: ["Achieve GAR project kickoff and data-collection mobilisation.", "Close 1–2 LatAm conversion contracts; resolve Ghana billing restart."],
+    rag: [["amber", "Order book $5.9M healthy; Q1 collections near-zero"]],
+  },
+  "Sirsak": {
+    stage: "Seed", security: "SAFE", invested: "May 2025", holding: "$50,000 (cost)",
+    desc: "Waste-management technology platform helping FMCG brands and e-commerce players recover packaging waste via waste banks, drop points and digital traceability (S-POP).",
+    model: "B2B packaging recovery — PRP programs with FMCG/e-commerce, project-based collection, and sale of recycled multilayer plastics (in development).",
+    metrics: [["$27.7K", "Quarterly revenue (-53.2%)"], ["$110.8K", "Revenue run rate"], ["51.9%", "Gross margin"], ["670", "Collection points (+6.3%)"], ["9 mo", "Runway*"], ["$366K", "Cash on hand"], ["$17K", "Monthly burn"], ["20", "Employees (11 female)"]],
+    highlights: ["Revenue YoY +226% — $53K to $122K.", "670 collection points and 177 tons of waste managed cumulatively — biggest impact yet.", "Three products expected in motion within Q2 2026."],
+    lowlights: ["Much of revenue is still project-based; recurring elements lacking.", "Q1'26 revenue dipped vs Q4'25 (likely temporary)."],
+    goals: ["Fundraising — introductions to impact/climate-focused investors.", "Refine and launch the SirCle RVM MVP."],
+    rag: [],
+  },
+  "Waterhub": {
+    stage: "Pre-seed", security: "SAFE", invested: "Jul 2025", holding: "$50,000 (cost)",
+    desc: "Indonesia's first quota-based water refill station — sustainable, great-tasting water with advanced filtration to cut plastic waste and carbon emissions.",
+    model: "Works with manufacturing partners to assemble filtration machines providing clean water to B2C and B2B customers; monetised per litre consumed.",
+    metrics: [["$16K", "Quarterly revenue (+21%)"], ["$56K", "Revenue run rate"], ["81%", "Gross margin"], ["420K L", "Monthly water volume"], ["6 mo", "Runway*"], ["$36K", "Cash on hand"], ["$6.4K", "Monthly burn"], ["15", "Employees"]],
+    highlights: ["Achieved 420,000-litre monthly water volume.", "Strong inbound interest from hotels, F&B and industrial segments."],
+    lowlights: ["Growth constrained by production and deployment capacity, not demand."],
+    goals: ["Expand B2B client base across hospitality, F&B and industrial estates.", "Engage 2–3 more manufacturing vendors for quality and timelines."],
+    rag: [["red", "~36% of monthly ARR target"], ["red", "~49% of machines-installed target"]],
+  },
+  "Terra Oleo": {
+    stage: "Seed", security: "Equity", invested: "Jun 2024", holding: "$150,000 (cost)",
+    desc: "Precision-fermentation platform producing sustainable oleochemicals and cocoa-butter equivalents (CBE) from engineered yeast for food, personal-care and specialty chemicals.",
+    model: "B2B ingredient licensing and co-development — validates demand with consumer-goods companies and licenses manufacturing to major producers for scale.",
+    metrics: [["Pre-rev", "Revenue"], ["~$67K", "Monthly burn (+29%)"], ["14 mo", "Runway"], ["TRL 4", "Tech readiness"], ["80–90%", "Purity (target 95%)"], ["6", "FTE"], ["3", "CBE variants scaled"], ["8", "Leaders testing"]],
+    highlights: ["Three cocoa-butter variants scaled to 40–100L; kilogram-scale material delivered.", "Patent filed Dec'25 (19 claims).", "New product-testing LOI with a Japan-HQ fats & oils leader."],
+    lowlights: ["TRL behind target; purity not yet at 95%.", "No commercial contracts signed — H2 2026 at risk.", "DSP bottleneck at CMO partners slowing sample processing."],
+    goals: ["Run 300–1000L pilot in Q2 2026.", "Secure EnterpriseSG POV Stage 2 grant to extend runway to end-2027."],
+    rag: [["amber", "Product & tech behind plan"], ["green", "Commercial pipeline building"]],
+  },
+};
+
+const urafUpcoming = [
+  { name: "Aleph Technologies", hq: "Singapore", desc: "AI-powered industrial digital twins driving efficiency, predictive insights and energy savings.", round: "$2M · Pre-Series A", uraf: "$250K", sidecar: "$150K", coInvestors: "NUS Grip, Cocoon Capital", sector: "Infra Intelligence", status: "IC approved · pending QDB" },
+  { name: "N&E Innovations", hq: "Singapore", desc: "Upcycles food waste into natural antimicrobial materials for sustainable packaging.", round: "$3.9M · Series A", uraf: "$250K", sidecar: "$150K", coInvestors: "Mandalay VP (lead), SGInnovate, SEEDS Capital, Cercano", sector: "Low Carbon Materials", status: "IC approved · pending QDB" },
+];
+const umefUpcoming = [];
+let upcoming = urafUpcoming;
+
+/* Sector exposure by capital deployed ($K). */
+const urafSectors = [
+  { label: "Agri-Food", value: 450, count: 2, color: "#f2691e", companies: ["Farmio", "Terra Oleo"] },
+  { label: "Energy", value: 425, count: 2, color: "#ff7a1a", companies: ["Alterno", "Okapi"] },
+  { label: "Clean Mobility", value: 250, count: 1, color: "#ff9a2e", companies: ["Dash"] },
+  { label: "Robotics", value: 250, count: 1, color: "#ffb338", companies: ["Alicia Bots"] },
+  { label: "NbS / Carbon", value: 250, count: 1, color: "#ffc233", companies: ["Arkadiah"] },
+  { label: "Circular Economy", value: 200, count: 2, color: "#e9b27a", companies: ["3Cat", "Sirsak"] },
+  { label: "Water", value: 50, count: 1, color: "#ded9d0", companies: ["Waterhub"] },
+];
+const umefSectors = [
+  { label: "Fintech", value: 250, count: 1, color: "#f2691e", companies: ["Metric"] },
+];
+let sectors = urafSectors;
+
+/* Geographic exposure — by HQ / Operations / Revenue base. */
+const urafGeoLenses = {
+  hq: [
+    { label: "Singapore", value: 950, count: 4, color: "#f2691e" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
+    { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
+  ],
+  operations: [
+    { label: "Singapore", value: 650, count: 3, color: "#f2691e" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff8a2a" },
+    { label: "Malaysia", value: 325, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 250, count: 1, color: "#ffd27a" },
+    { label: "Thailand", value: 150, count: 1, color: "#e9b27a" },
+    { label: "Japan", value: 150, count: 1, color: "#ded9d0" },
+  ],
+  revenue: [
+    { label: "Hong Kong", value: 600, count: 2, color: "#f2691e" },
+    { label: "Singapore", value: 500, count: 4, color: "#ff7a1a" },
+    { label: "Indonesia", value: 350, count: 3, color: "#ff9a2e" },
+    { label: "Malaysia", value: 250, count: 2, color: "#ffb338" },
+    { label: "Vietnam", value: 100, count: 1, color: "#ffd27a" },
+    { label: "Middle East", value: 80, count: 1, color: "#e9b27a" },
+  ],
+};
+const umefGeoLenses = {
+  hq:         [{ label: "UAE",          value: 250, count: 1, color: "#f2691e" }],
+  operations: [{ label: "UAE",          value: 250, count: 1, color: "#f2691e" }],
+  revenue:    [{ label: "GCC region",   value: 250, count: 1, color: "#f2691e" }],
+};
+const urafGeos = urafGeoLenses.hq;
+const umefGeos = umefGeoLenses.hq;
+let geos = urafGeos;
+let geoLens = "hq";
+
+const urafMoicTrend = [
+  { period: "Q2'24", v: 1.0 },
+  { period: "Q4'24", v: 1.02 },
+  { period: "Q1'25", v: 1.04 },
+  { period: "Q2'25", v: 1.06 },
+  { period: "Q3'25", v: 1.08 },
+  { period: "Q1'26", v: 1.1 },
+];
+const umefMoicTrend = [
+  { period: "Q3'25", v: 1.0 },
+  { period: "Q4'25", v: 1.0 },
+  { period: "Q1'26", v: 1.0 },
+];
+let moicTrend = urafMoicTrend;
+
+const workflow = [
+  { day: "Day 0",  title: "Quarter End",                                          owner: "—",                 status: "Closed",      state: "done" },
+  { day: "Day 30", title: "Founder Data Collection Complete",                     owner: "JJ Erpaiboon",      status: "Complete",    state: "done" },
+  { day: "Day 40", title: "Portfolio Management & Valuation Review Completed",   owner: "JJ Erpaiboon",      status: "Complete",    state: "done" },
+  { day: "Day 45", title: "Financial Draft Received from Ocorian",                owner: "Shamona Maharaj",   status: "Received",    state: "done" },
+  { day: "Day 50", title: "Report Assembly (Financials + Portfolio + Letter)",   owner: "JJ Erpaiboon",      status: "In progress", state: "current" },
+  { day: "Day 55", title: "Managing Partner Review & Approval",                   owner: "Alina Truhina",     status: "Pending",     state: "" },
+  { day: "Day 60", title: "Distributed via Ocorian",                              owner: "Ocorian",           status: "Pending",     state: "" },
+];
+
+/* ---------- Navigation (full application shell) ---------- */
+const nav = [
+  { group: "Overview", items: [
+    { id: "dashboard", label: "Dashboard", view: "dashboard", route: "/dashboard", icon: "dashboard" },
+    { id: "portfolio", label: "Portfolio", view: "portfolio", route: "/dashboard/companies", icon: "portfolio" },
+    { id: "exposure", label: "Exposure", view: "exposure", route: "/dashboard/exposure", icon: "exposure" },
+    { id: "performance", label: "Performance", view: "performance", route: "/dashboard/performance", icon: "performance" },
+    { id: "summary", label: "Quarterly Summary", view: "summary", route: "/dashboard/summary", icon: "summary" },
+  ]},
+  { group: "Workflow", items: [
+    { id: "reporting", label: "Reporting", view: "reporting", route: "/reporting", icon: "reporting" },
+    { id: "forms", label: "Forms Hub", view: "forms", route: "/forms", icon: "forms" },
+    { id: "documents", label: "Documents", view: "documents", route: "/documents", icon: "documents" },
+  ]},
+  { group: "Intelligence", items: [
+    { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "intelligence" },
+    { id: "reasoning", label: "Reasoning Trail", view: "reasoning", route: "/intelligence/reasoning", icon: "reasoning" },
+    { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "audit" },
+    { id: "compliance", label: "Impact Reporting", view: "compliance", route: "/impact", icon: "compliance" },
+    { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "dealflow" },
+  ]},
+  { group: "Admin", items: [
+    { id: "designsystem", label: "Design System", view: "designsystem", route: "/settings/design", icon: "design" },
+    { id: "settings", label: "Settings", view: "settings", route: "/settings", icon: "settings" },
+  ]},
+];
+
+/* Lucide icons (MIT) — inline SVG, no external dependency. */
+const icons = {
+  dashboard: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  portfolio: '<rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  exposure: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  performance: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  summary: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>',
+  reporting: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+  forms: '<path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"/><polyline points="14 2 14 8 20 8"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/>',
+  documents: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  intelligence: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/>',
+  reasoning: '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h6a3 3 0 0 1 3 3v6"/>',
+  audit: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  compliance: '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+  dealflow: '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  design: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+};
+const svgIcon = (k) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[k] || ""}</svg>`;
+
+/* ---------- Users, roles & access control (mock) ---------- */
+const users = [
+  { name: "JJ Erpaiboon",    role: "Admin",     title: "Head of Operations" },
+  { name: "Alina Truhina",   role: "Admin",     title: "Managing Partner" },
+  { name: "Roo Rogers",      role: "Admin",     title: "Managing Partner" },
+  { name: "Shamona Maharaj", role: "Admin",     title: "CFO" },
+  { name: "Colleen Wright",  role: "Admin",     title: "Operations" },
+  { name: "Ahmad Hashim",    role: "Portfolio", title: "Investment Team" },
+  { name: "Alex Tan",        role: "Portfolio", title: "Investment Team" },
+];
+const access = {
+  "Admin": null, // null = all views
+  "Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "reasoning", "compliance", "dealflow"],
+};
+let currentUser = null;
+let currentRole = null;
+let currentView = "dashboard";
+const allowed = (view) => { const a = access[currentRole]; return !a || a.includes(view); };
+
+const pageMeta = {
+  dashboard: { eyebrow: "$FUND", title: "Fund Dashboard", sub: "Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026." },
+  portfolio: { eyebrow: "$FUND", title: "Portfolio", sub: "All 10 portfolio companies — search, filter, and open any company for the full overview." },
+  exposure: { eyebrow: "$FUND", title: "Exposure", sub: "Sector and geographic concentration — by capital allocated and by company count." },
+  performance: { eyebrow: "$FUND", title: "Performance", sub: "MOIC development, capital deployment, and fund multiples to date." },
+  summary: { eyebrow: "$FUND", title: "Quarterly Summary", sub: "Quarterly Portfolio Summary and Investment Summary — Q1 2026 (URAF)." },
+  reporting: { eyebrow: "$FUND", title: "Quarterly Reporting", sub: "The Q1 2026 LP reporting cycle — workflow phases, tasks, and report generation." },
+  forms: { eyebrow: "Workflow", title: "Forms Hub", sub: "Platform-wide form taxonomy (A–G) with role-based submission permissions." },
+  documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
+  intelligence: { eyebrow: "Intelligence", title: "Risk Intelligence", sub: "Automated risk signals across the portfolio — filter by severity and track resolution." },
+  reasoning: { eyebrow: "Intelligence", title: "Reasoning Trail", sub: "Every derived number — health scores, risk signals, runway posture — traced to its inputs, rules, and provenance." },
+  audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
+  compliance: { eyebrow: "Impact Reporting", title: "Impact Reporting", sub: "Climate & impact and gender (2X) reporting · aggregate views are toggleable · Form F locks at Q4." },
+  dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
+  designsystem: { eyebrow: "Configuration", title: "Design System", sub: "Yellow brand tokens — palette, type, radii, elevation, and components." },
+  settings: { eyebrow: "Configuration", title: "Settings", sub: "Workspace defaults, reporting thresholds, roles, and visual system." },
+};
+
+/* ---------- Formatting helpers ---------- */
+const fmtUSD = (n) => (n >= 1000000 ? "$" + (n / 1000000).toFixed(2) + "M" : n >= 1000 ? "$" + Math.round(n / 1000) + "K" : "$" + n);
+const moneyM = (m) => "$" + m + "M";
+const moneyK = (k) => (k >= 1000 ? "$" + (k / 1000).toFixed(2) + "M" : "$" + k + "K");
+
+function ring(value, color, size = 54, onOrange = false) {
+  const r = (size - 8) / 2;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - value / 100);
+  const track = onOrange ? "rgba(255,255,255,0.28)" : "rgba(28,27,26,0.08)";
+  return `<div class="ring ${onOrange ? "on-orange" : ""}" style="--size:${size}px">
+    <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
+      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${track}" stroke-width="6"></circle>
+      <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle>
+    </svg><strong>${value}${onOrange ? "%" : ""}</strong></div>`;
+}
+
+const healthColor = (h) => (h < 60 ? "#e0564c" : h < 75 ? "#ff9a2e" : "#2faa63");
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- Yellow's own analysis (derived from base data) ----------
+   Health score and risk signals are computed from underlying company
+   metrics (runway, revenue, growth, MOIC, burn) — not pulled from
+   submitted reports — so the platform surfaces independent analysis
+   that can feed the reporting workflow. Headline fund figures
+   (committed/drawn/GAV) remain authoritative reporting inputs. */
+function healthScore(c) {
+  const moic = parseFloat(c.moic) || 1;
+  const dRev = metricDeltas(c.name, "revenue");
+  const qoq = dRev ? dRev.qoq : null;
+  const sRunway  = clamp(c.runwayMo / 18, 0, 1);                       // 0 mo → 0, 18 mo+ → 1
+  const sRevenue = c.ltm > 0 ? clamp((Math.log10(c.ltm) - 4) / 3.2, 0, 1) : 0.15; // ~$10K → 0, ~$16M → 1
+  const sGrowth  = qoq === null ? 0.5 : clamp((qoq + 20) / 60, 0, 1);  // −20% → 0, +40% → 1
+  const sValue   = clamp((moic - 1) / 0.5, 0, 1);                      // 1.00x → 0, 1.50x → 1
+  const W = { runway: 35, revenue: 25, growth: 20, value: 20 };
+  const score = Math.round(sRunway * W.runway + sRevenue * W.revenue + sGrowth * W.growth + sValue * W.value);
+  return { score, parts: [
+    ["Runway", c.runway, Math.round(sRunway * 100), W.runway],
+    ["Revenue (LTM)", c.ltm > 0 ? fmtUSD(c.ltm) : "Pre-revenue", Math.round(sRevenue * 100), W.revenue],
+    ["Growth QoQ", qoq === null ? "n/a" : (qoq >= 0 ? "+" : "") + qoq + "%", Math.round(sGrowth * 100), W.growth],
+    ["MOIC", c.moic, Math.round(sValue * 100), W.value],
+  ] };
+}
+function computeHealth() {
+  [...urafCompanies, ...umefCompanies].forEach((c) => { const h = healthScore(c); c.health = h.score; c._health = h.parts; });
+}
+/* Risk signals deduced independently from base data. */
+function computeSignals(list) {
+  const rank = { critical: 0, warning: 1, info: 2 };
+  const out = [];
+  list.forEach((c) => {
+    const f = fin[c.name] || {};
+    const dRev = metricDeltas(c.name, "revenue");
+    const qoq = dRev ? dRev.qoq : null;
+    const months = f.cash && f.burn ? Math.round(f.cash / f.burn) : null;
+    if (c.runwayMo < 6) out.push({ co: c.name, type: "RUNWAY_CRITICAL", sev: "critical", why: `Runway ${c.runway} — below the 6-month threshold${f.cash ? ` (${fmtUSD(f.cash)} cash ÷ ${c.burn})` : ""}.`, resolved: false });
+    else if (c.runwayMo < 9) out.push({ co: c.name, type: "RUNWAY_LOW", sev: "warning", why: `Runway ${c.runway} — approaching the 6-month threshold; track the active fundraise.`, resolved: false });
+    if (qoq !== null && qoq <= -15) out.push({ co: c.name, type: "REVENUE_DECLINE", sev: "warning", why: `Revenue ${qoq}% QoQ — material decline in the latest quarter.`, resolved: false });
+    if (c.runwayMo >= 6 && months !== null && months < 9 && f.burn >= 80000) out.push({ co: c.name, type: "BURN_ACCELERATION", sev: "warning", why: `Burn ${c.burn} against ${fmtUSD(f.cash)} cash — ~${months} months at the current rate.`, resolved: false });
+    if (c.runwayMo >= 6 && c.runwayMo < 12 && /prep|planning|bridge|raising|closing|advanced|pipeline/i.test(c.fundraise || "")) out.push({ co: c.name, type: "FUNDRAISE_NEEDED", sev: "info", why: `Runway ${c.runway} with ${c.fundraise} — close the round to extend runway.`, resolved: false });
+  });
+  return out.sort((a, b) => rank[a.sev] - rank[b.sev]);
+}
+const status = (tone, text) => `<span class="status status-${tone}">${text}</span>`;
+const initials = (name) => name.replace(/[^A-Za-z0-9 ]/g, "").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+/* Company logo placeholder (2-char monogram): "3Cat"→"3C", "Alicia Bots"→"AB". */
+const monogram = (name) => {
+  const words = String(name).replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/);
+  return (words.length >= 2 ? words[0][0] + words[1][0] : words[0].slice(0, 2)).toUpperCase();
+};
+
+/* ---------- Renderers ---------- */
+function renderNav() {
+  document.getElementById("nav").innerHTML = nav.map((g) => {
+    const items = g.items.filter((it) => allowed(it.view));
+    if (!items.length) return "";
+    return `<div class="nav-group"><div class="nav-label">${g.group}</div>${items.map((it) => `
+      <button class="nav-item ${it.id === currentView ? "is-active" : ""}" data-nav="${it.id}" type="button">
+        ${svgIcon(it.icon)}<span>${it.label}</span></button>`).join("")}</div>`;
+  }).join("");
+  document.querySelectorAll("#nav [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
+}
+
+/* ---------- Auth (mock) ---------- */
+function renderAuthGate() {
+  const groups = [
+    ["Admin · Full platform access", users.filter((u) => u.role === "Admin")],
+    ["Portfolio · Investment Team access", users.filter((u) => u.role === "Portfolio")],
+  ];
+  document.getElementById("authgate").innerHTML = `
+    <div class="auth-card panel"><div class="panel-body" style="padding:28px;">
+      <div class="collect-brand"><span class="brand-icon">Y</span><span>Yellow</span></div>
+      <h2 style="margin-top:16px;">Sign in</h2>
+      <p class="meta" style="margin-top:6px;">Utopia Radical operating system · choose a user to explore the demo.</p>
+      ${groups.map((g) => `
+        <div class="auth-group-label">${g[0]}</div>
+        ${g[1].map((u) => `
+          <button class="auth-role" data-user="${u.name}" type="button">
+            <span class="user-avatar" style="width:32px;height:32px;border-radius:9px;font-size:12px;flex:none;">${initials(u.name)}</span>
+            <span style="flex:1;text-align:left;"><strong>${u.name}</strong><div class="meta" style="font-weight:600;">${u.title}</div></span>
+            <span style="color:var(--orange);font-weight:800;">→</span>
+          </button>`).join("")}`).join("")}
+    </div></div>`;
+  document.querySelectorAll("#authgate .auth-role").forEach((b) => b.addEventListener("click", () => signIn(b.dataset.user)));
+}
+function renderUser() {
+  const u = currentUser || { name: "User", role: "—", title: "" };
+  const switchOpts = users.map((x) => `<option value="${x.name}" ${x.name === u.name ? "selected" : ""}>${x.name} · ${x.role}</option>`).join("");
+  document.getElementById("sidebarFoot").innerHTML = `
+    <div class="user-chip">
+      <span class="user-avatar">${initials(u.name)}</span>
+      <div class="user-meta"><strong>${u.name}</strong><span>${u.role} · ${u.title}</span></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <select class="select" id="roleSwitch" style="flex:1;min-height:34px;font-size:12px;padding-left:10px;">${switchOpts}</select>
+      <button class="btn btn-ghost" id="signOut" type="button" style="min-height:32px;">Sign out</button>
+    </div>`;
+  document.getElementById("roleSwitch").addEventListener("change", (e) => setUser(e.target.value));
+  document.getElementById("signOut").addEventListener("click", signOut);
+}
+function setUser(name) {
+  currentUser = users.find((u) => u.name === name) || null;
+  currentRole = currentUser ? currentUser.role : null;
+  try { localStorage.setItem("yelloUser", name); } catch (e) {}
+  renderNav(); renderUser();
+  go(allowed(currentView) ? currentView : "dashboard");
+}
+function signIn(name) {
+  document.body.classList.add("authed");
+  setUser(name);
+}
+function signOut() {
+  currentUser = null; currentRole = null;
+  try { localStorage.removeItem("yelloUser"); } catch (e) {}
+  document.body.classList.remove("authed");
+  heroStop();
+  renderAuthGate();
+}
+function showUnauthorized(label) {
+  document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+  document.getElementById("unauthorized").classList.add("is-active");
+  document.getElementById("unauthBody").textContent = `Your role (${currentRole}) doesn’t have access to ${label || "this section"}.`;
+  document.querySelectorAll("#unauthorized [data-nav]").forEach((b) => b.onclick = () => go(b.dataset.nav));
+  setMeta({ eyebrow: "Access", title: "Unauthorized", sub: "This section isn’t available for your role." });
+}
+
+const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function heroStop() { /* no-op — carousel removed in favor of explicit fund switcher */ }
+function heroStart() { /* no-op */ }
+
+function renderHero() {
+  const el = document.getElementById("hero"); if (!el) return;
+  const drawnPct = Math.round((fund.drawn / fund.committed) * 100);
+  el.innerHTML = `
+    <div class="hero-glow"></div>
+    <button class="hero-bell" type="button" aria-label="Notifications">🔔</button>
+    <div class="hero-ring" id="heroRing">${ring(drawnPct, "#fff", 104, true)}<span class="lab">drawn of committed</span></div>
+    <div class="hero-content hero-anim" id="heroContent">
+      <span class="hero-pill">${fund.id} · Q1 2026</span>
+      <div>
+        <div class="hero-fundname">${fund.fullName} <span class="hero-fundabbrev">(${fund.id})</span></div>
+        <div class="hero-label">${fund.short} · ${fund.lps} LP${fund.lps === 1 ? "" : "s"}</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>$${fund.committed.toFixed(1)}M</strong><span>Committed</span></div>
+        <div class="hero-stat"><strong>$${fund.drawn.toFixed(2)}M</strong><span>Drawn</span></div>
+        <div class="hero-stat"><strong>$${fund.deployed.toFixed(2)}M</strong><span>Deployed</span></div>
+        <div class="hero-stat"><strong>$${fund.gav.toFixed(2)}M</strong><span>GAV</span></div>
+        <div class="hero-stat"><strong>${fund.moic.toFixed(2)}<span style="font-size:0.7em;">×</span></strong><span>Gross MOIC</span></div>
+        <div class="hero-stat"><strong>${companies.length}</strong><span>Companies</span></div>
+      </div>
+    </div>`;
+}
+
+function renderAllocation() {
+  const deployed = fund.deployed, reserved = fund.reserved;
+  const total = fund.committed;
+  // Top contributors by invested (compact)
+  const top = [...companies].sort((a, b) => b.invested - a.invested).slice(0, 3);
+  const extra = Math.max(0, companies.length - top.length);
+  document.getElementById("allocation").innerHTML = `
+    <div class="alloc-stats">
+      <div class="alloc-stat"><span class="dot" style="background:#F2691E"></span><span class="lab">Deployed</span><strong class="num">${moneyM(deployed)}</strong></div>
+      <div class="alloc-stat"><span class="dot" style="background:#FFC233"></span><span class="lab">Reserved</span><strong class="num">${moneyM(reserved)}</strong></div>
+      <div class="alloc-stat right"><span class="lab">Committed</span><strong class="num">${moneyM(total)}</strong></div>
+    </div>
+    <div class="alloc-bar">
+      <div class="alloc-seg deployed" style="width:${(deployed / total) * 100}%"></div>
+      <div class="alloc-seg reserved" style="width:${(reserved / total) * 100}%"></div>
+    </div>
+    <div class="alloc-contrib">
+      <span class="lab">Top contributors</span>
+      ${top.map((c) => `<span class="chip">${c.name} · ${moneyK(c.invested)}</span>`).join("")}
+      ${extra ? `<span class="chip muted">+${extra} more</span>` : ""}
+    </div>`;
+}
+
+function renderHealthList() {
+  const ordered = [...companies].sort((a, b) => b.health - a.health);
+  const rows = ordered.map((c) => {
+    const parts = c._health || [];
+    const tip = `Health ${c.health}/100 — ${parts.map((p) => `${p[0]} ${p[1]} (${p[2]}/100, w${p[3]}%)`).join(" · ")}`;
+    const rev = c.ltm > 0 ? fmtUSD(c.ltm) + " LTM" : "Pre-revenue";
+    return `<div class="health-row" data-company="${c.name}" title="${tip}">
+      <span class="avatar">${monogram(c.name)}</span>
+      <div class="health-name"><strong>${c.name}</strong><div class="meta">${rev} · ${c.runway} runway · ${c.moic}</div></div>
+      ${ring(c.health, healthColor(c.health), 42)}
+    </div>`;
+  }).join("");
+  document.getElementById("healthList").innerHTML = rows
+    + `<div class="meta health-foot">Score derived from base data — runway 35% · revenue 25% · growth (QoQ) 20% · MOIC 20%. Hover a row for the breakdown.</div>`;
+  bindCompanyClicks();
+}
+
+function renderKpis() {
+  const critical = companies.filter((c) => c.runwayMo <= 6).length;
+  const fundraising = companies.filter((c) => /Series|Seed|Pre-Series/i.test(c.fundraise)).length;
+  const kpis = [
+    { label: "Capital deployed", value: moneyM(fund.deployed), foot: `${companies.length} active ${companies.length === 1 ? "company" : "companies"}` },
+    { label: "Gross asset value", value: moneyM(fund.gav), foot: "Latest stake value" },
+    { label: "Critical runway", value: String(critical), foot: "At or below 6 months", tone: "red" },
+    { label: "Active fundraises", value: String(fundraising), foot: "Rounds underway", tone: "amber" },
+  ];
+  document.getElementById("kpiGrid").innerHTML = kpis.map((k, i) => `
+    <section class="panel kpi ${i === 0 ? "kpi-accent" : ""}">
+      <div class="kpi-label"><span>${k.label}</span>${k.tone ? status(k.tone, k.tone === "red" ? "Watch" : "Active") : '<span class="chip">Q1</span>'}</div>
+      <div><div class="kpi-value num">${k.value}</div><div class="kpi-foot">${k.foot}</div></div>
+    </section>`).join("");
+}
+
+function renderSectorDonut() {
+  const total = sectors.reduce((s, x) => s + x.value, 0);
+  let acc = 0;
+  const stops = sectors.map((s) => { const from = (acc / total) * 100; acc += s.value; const to = (acc / total) * 100; return `${s.color} ${from.toFixed(1)}% ${to.toFixed(1)}%`; }).join(", ");
+  const donutEl = document.getElementById("sectorDonut");
+  donutEl.style.background = `conic-gradient(${stops})`;
+  donutEl.innerHTML = `<div class="donut-center" id="sectorDonutCenter"><strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span></div>`;
+  const defaultCenter = `<strong>$${fund.deployed.toFixed(2)}M</strong><span>deployed</span>`;
+  document.getElementById("sectorLegend").innerHTML = sectors.map((s, i) => `
+    <div class="legend-row sector-row" tabindex="0" role="button" aria-label="${s.label} sector — ${s.companies.join(", ") || "no companies"}" data-sector="${i}">
+      <span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((s.value / total) * 100)}%</strong>
+      <div class="sector-pop">${s.companies.length ? s.companies.map((c) => `<span class="chip clickable" data-company="${c}">${c}</span>`).join("") : `<span class="meta">No companies</span>`}</div>
+    </div>`).join("");
+  // wire hover / focus → donut center swap
+  document.querySelectorAll("#sectorLegend .sector-row").forEach((row) => {
+    const i = +row.dataset.sector;
+    const s = sectors[i];
+    const enter = () => {
+      const center = document.getElementById("sectorDonutCenter");
+      if (center) center.innerHTML = `<strong style="color:${s.color}">${s.label}</strong><span>${s.companies.length} ${s.companies.length === 1 ? "company" : "companies"} · $${(s.value / 1000).toFixed(2)}M</span>`;
+    };
+    const leave = () => {
+      const center = document.getElementById("sectorDonutCenter");
+      if (center) center.innerHTML = defaultCenter;
+    };
+    row.addEventListener("mouseenter", enter);
+    row.addEventListener("mouseleave", leave);
+    row.addEventListener("focus", enter);
+    row.addEventListener("blur", leave);
+  });
+  bindCompanyClicks();
+}
+
+function renderMoicChart() {
+  const data = moicTrend.map((d) => [d.period, d.v]);
+  document.getElementById("moicChart").innerHTML = dotLineChart(data, {
+    fmt: (v) => v.toFixed(2) + "x", axisFmt: (v) => v.toFixed(2) + "x",
+    valueLabels: true, h: 230, label: "Gross MOIC development over time",
+  });
+}
+
+function renderAlerts() {
+  // Top signals deduced from base data (shared engine with the Intelligence page).
+  const toneOf = (sev) => (sev === "critical" ? "red" : sev === "warning" ? "amber" : "blue");
+  const alerts = computeSignals(companies).slice(0, 5);
+  const el = document.getElementById("alertList");
+  el.innerHTML = alerts.length ? alerts.map((a) => `
+    <div class="alert-row clickable" data-company="${a.co}">
+      <span class="alert-icon status-${toneOf(a.sev)}">${monogram(a.co)}</span>
+      <div><h3>${a.co} · <span class="meta" style="font-weight:700;">${a.type}</span></h3><p class="meta">${a.why}</p></div>
+      ${status(toneOf(a.sev), a.sev === "critical" ? "Critical" : a.sev === "warning" ? "Watch" : "Info")}
+    </div>`).join("") : `<div class="meta" style="padding:18px;text-align:center;">No active signals for ${fund.id}.</div>`;
+  bindCompanyClicks();
+}
+
+function renderWorkflow() {
+  document.getElementById("workflow").innerHTML = workflow.map((w) => `
+    <div class="timeline-item ${w.state}">
+      <span class="day">${w.day}</span>
+      <div><h3>${w.title}</h3><p class="meta">Owner · ${w.owner}</p></div>
+      ${status(w.state === "done" ? "green" : w.state === "current" ? "amber" : "blue", w.status)}
+    </div>`).join("");
+}
+
+function renderPortfolioTable() {
+  document.getElementById("portfolioTable").innerHTML = `
+    <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Invested</th><th class="num">LTM Rev</th><th class="num">MOIC</th><th>Runway</th><th>Fundraise</th></tr></thead>
+    <tbody>${companies.map((c) => `
+      <tr class="clickable" data-company="${c.name}">
+        <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
+        <td>${c.sector}</td>
+        <td>${c.country}</td>
+        <td class="num">${moneyK(c.invested)}</td>
+        <td class="num">${c.ltm === 0 ? "Pre-rev" : fmtUSD(c.ltm)}</td>
+        <td class="num">${c.moic}</td>
+        <td>${status(c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green", c.runway)}</td>
+        <td class="meta">${c.fundraise}</td>
+      </tr>`).join("")}</tbody>`;
+  bindCompanyClicks();
+}
+
+function renderInvestSummary() {
+  document.getElementById("investSummary").innerHTML = upcoming.map((u) => `
+    <div class="inv-row">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;"><strong>${u.name}</strong><span class="chip">${u.hq}</span><span class="chip">${u.sector}</span></div>
+        <p class="desc">${u.desc}</p>
+        <p class="meta" style="margin-top:6px;">Co-investors · ${u.coInvestors}</p>
+      </div>
+      <div style="text-align:right;min-width:160px;">
+        <div class="num" style="font-weight:800;font-size:15px;">${u.uraf} <span class="meta">URAF</span></div>
+        <div class="num meta" style="margin-top:2px;">${u.sidecar} sidecar · ${u.round}</div>
+        <div style="margin-top:8px;">${status("blue", u.status)}</div>
+      </div>
+    </div>`).join("");
+}
+
+/* ---------- Settings ---------- */
+const field = (label, help, control) => `<div class="field-row"><div><div class="label">${label}</div><p class="meta">${help}</p></div><div>${control}</div></div>`;
+const toggle = (on) => `<button class="toggle ${on ? "is-on" : ""}" type="button" aria-label="Toggle"><span></span></button>`;
+const select = (opts) => `<select class="select">${opts.map((o) => `<option>${o}</option>`).join("")}</select>`;
+const roleRow = (r, ...cols) => `<tr><td><strong>${r}</strong></td>${cols.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+const formRow = (k, name, who) => `<tr><td><span class="chip">Form ${k}</span></td><td><strong>${name}</strong></td><td class="meta">${who}</td></tr>`;
+const swatchInput = (hex) => `<div class="swatch-row"><span class="swatch" style="background:${hex}"></span><input class="input" value="${hex}" style="max-width:140px;" /></div>`;
+
+const settingsTemplates = {
+  workspace: `
+    <div class="panel-head"><div><h2>Workspace identity</h2><p class="meta">Core fund workspace naming and defaults.</p></div><span class="chip">Application settings</span></div>
+    <div class="panel-body field-grid">
+      ${field("Workspace name", "Visible to internal users.", '<input class="input" value="Yellow — Utopia Radical" />')}
+      ${field("Default fund", "Used for dashboard and reporting defaults.", select(["URAF — The Radical Fund", "UMEF — A-Typical"]))}
+      ${field("Reporting period", "Primary reporting quarter.", select(["Q1 2026", "Q4 2025", "Q3 2025"]))}
+      ${field("Fund administrator", "Liaison for NAV and distribution.", '<input class="input" value="Ocorian" />')}
+      ${field("Workspace note", "Shown in reporting context panels.", '<textarea class="textarea">Quarterly workflow focused on portfolio summary, investment summary, and LP reporting readiness.</textarea>')}
+    </div>`,
+  reporting: `
+    <div class="panel-head"><div><h2>Reporting workflow</h2><p class="meta">Thresholds and the quarterly LP cycle behaviour.</p></div><span class="status status-amber">Q1 2026 · Assembly</span></div>
+    <div class="panel-body field-grid">
+      ${field("Auto-validation", "Run completeness checks on founder upload.", toggle(true))}
+      ${field("AI verification agent", "Cross-check submitted figures against source docs.", toggle(true))}
+      ${field("Critical runway threshold", "At or below this value flags red.", '<input class="input" value="6 months" />')}
+      ${field("Warning runway threshold", "At or below this value flags amber.", '<input class="input" value="9 months" />')}
+      ${field("Reminder cadence", "Days post quarter-end for automated reminders.", '<input class="input" value="25, 35, 42, 47, 53, 58" />')}
+      ${field("Approval order", "Reviewer sequence for quarter close.", select(["Investment Team → CFO → Managing Partner", "CFO → Investment Team → Managing Partner"]))}
+    </div>`,
+  roles: `
+    <div class="panel-head"><div><h2>Roles &amp; permissions</h2><p class="meta">Demo access: Admin (full platform) and Portfolio (investment-team scope). Founders submit their own updates.</p></div><button class="btn btn-muted" type="button">Invite user</button></div>
+    <div class="panel-body table-scroll">
+      <table class="tbl">
+        <thead><tr><th>Role</th><th>Members</th><th>Dashboard</th><th>Reporting</th><th>Documents</th><th>Admin</th></tr></thead>
+        <tbody>
+          ${roleRow("Admin", "JJ, Alina, Roo, Shamona, Colleen", "Full", "Full", "Full", "Full")}
+          ${roleRow("Portfolio", "JJ, Ahmad, Alex", "Full", "Draft", "Full", "—")}
+          ${roleRow("Founder", "1 per portfolio company", "Own only", "Submit own", "Own uploads", "—")}
+        </tbody>
+      </table>
+    </div>`,
+  forms: `
+    <div class="panel-head"><div><h2>Forms taxonomy</h2><p class="meta">Platform-wide named forms surfaced across the Forms Hub, activity feed, and audit logs.</p></div></div>
+    <div class="panel-body table-scroll">
+      <table class="tbl">
+        <thead><tr><th>Form</th><th>Name</th><th>Submitters</th></tr></thead>
+        <tbody>
+          ${formRow("A", "New Investment Onboarding", "Portfolio Ops, Investment Team, Head of Portfolio")}
+          ${formRow("B", "New Round / Capital Event", "Portfolio Ops, Investment Team, Head of Portfolio")}
+          ${formRow("C", "Quarterly Company Update", "Portfolio Ops, Investment Team, Head of Portfolio")}
+          ${formRow("D", "Post-Meeting Valuation Review", "Head of Portfolio only")}
+          ${formRow("E", "Fund Performance Snapshot", "CFO only")}
+          ${formRow("F", "Climate &amp; Impact KPIs (Q4)", "Portfolio Ops, Investment Team, Head of Portfolio")}
+          ${formRow("G", "Correction Request", "Anyone · approved by Head of Portfolio")}
+        </tbody>
+      </table>
+    </div>`,
+  visuals: `
+    <div class="panel-head"><div><h2>Visual system</h2><p class="meta">Flat palette, soft elevation, no gradients.</p></div></div>
+    <div class="panel-body field-grid">
+      ${field("Typeface", "System UI typeface.", '<input class="input" value="Manrope" />')}
+      ${field("Primary accent", "Flat orange for primary actions and active states.", swatchInput("#F2691E"))}
+      ${field("Amber", "Secondary warm accent.", swatchInput("#FF9A2E"))}
+      ${field("Yellow", "Tertiary warm accent.", swatchInput("#FFC233"))}
+      ${field("Gradients", "Disabled — flat fills only.", toggle(false))}
+      ${field("Card style", "Soft elevation, faint hairline, 16px radius.", '<input class="input" value="Elevation + hairline" />')}
+    </div>`,
+};
+
+function setSettingsTab(tab) {
+  document.querySelectorAll("[data-settings-tab]").forEach((b) => b.classList.toggle("is-active", b.dataset.settingsTab === tab));
+  document.getElementById("settingsPanel").innerHTML = settingsTemplates[tab];
+  document.querySelectorAll(".toggle").forEach((t) => t.addEventListener("click", () => t.classList.toggle("is-on")));
+}
+
+/* ============================================================
+   Additional module pages
+   ============================================================ */
+
+/* Shared helpers */
+function donut(el, items, accessor) {
+  const total = items.reduce((s, x) => s + accessor(x), 0);
+  let acc = 0;
+  el.style.background = `conic-gradient(${items.map((s) => { const f = (acc / total) * 100; acc += accessor(s); return `${s.color} ${f.toFixed(1)}% ${((acc / total) * 100).toFixed(1)}%`; }).join(", ")})`;
+  return total;
+}
+function legend(items, accessor, total, unit) {
+  return items.map((s) => `<div class="legend-row"><span class="dot" style="background:${s.color}"></span><span>${s.label}</span><strong>${Math.round((accessor(s) / total) * 100)}%${unit ? ` · ${unit(s)}` : ""}</strong></div>`).join("");
+}
+
+/* ---------- Quarterly Summary (Portfolio + Investment) ---------- */
+let summaryTab = "portfolio";
+function renderSummary() {
+  document.getElementById("summaryBody").innerHTML = `
+    <div class="section-title">
+      <div class="seg" id="sumSeg">
+        <button class="${summaryTab === "portfolio" ? "is-active" : ""}" data-tab="portfolio" type="button">Portfolio Summary</button>
+        <button class="${summaryTab === "investment" ? "is-active" : ""}" data-tab="investment" type="button">Investment Summary</button>
+        <button class="${summaryTab === "novus" ? "is-active" : ""}" data-tab="novus" type="button">QIA Novus</button>
+      </div>
+      <button class="btn btn-muted" id="sumExport" type="button">Export CSV</button>
+    </div>
+    <div id="sumContent"></div>`;
+  document.querySelectorAll("#sumSeg button").forEach((b) => b.addEventListener("click", () => { summaryTab = b.dataset.tab; renderSummary(); }));
+  document.getElementById("sumExport").addEventListener("click", () => {
+    if (summaryTab === "portfolio") {
+      exportCSV(`${fund.id}-Q1-2026-portfolio-summary.csv`,
+        ["Company", "Sector", "Country", "Invested", "Ownership", "LTM Revenue", "MOIC", "Runway", "Fundraise", "Notes"],
+        companies.map((c) => [c.name, c.sector, c.country, moneyK(c.invested), c.ownership, c.ltm === 0 ? "Pre-revenue" : c.ltm, c.moic, c.runway, c.fundraise, c.note]));
+    } else if (summaryTab === "investment") {
+      exportCSV(`${fund.id}-Q2-2026-investment-summary.csv`,
+        ["Company", "HQ", "Round", "URAF", "Sidecar", "Co-Investors", "Sector", "Status"],
+        upcoming.map((u) => [u.name, u.hq, u.round, u.uraf, u.sidecar, u.coInvestors, u.sector, u.status]));
+    } else {
+      exportCSV(`${fund.id}-Q1-2026-QIA-Novus.csv`,
+        ["Company", "Quarterly Revenue", "EBITDA", "Net Debt", "Equity Value", "Total Enterprise Value"],
+        novusRows().map((r) => [r.name, r.rev ?? "n/a", r.ebitda ?? "n/a", r.netDebt ?? "n/a", r.equity ?? "n/a", r.tev ?? "n/a"]));
+    }
+  });
+  if (summaryTab === "portfolio") renderSummaryPortfolio(); else if (summaryTab === "investment") renderSummaryInvestment(); else renderSummaryNovus();
+}
+/* QIA Novus — quarterly financial report generated from platform data:
+   revenue & EBITDA from financials; equity value implied from our marked
+   holding ÷ ownership; net debt as the net cash position; TEV = equity + net debt. */
+function novusRows() {
+  return companies.map((c) => {
+    const f = fin[c.name] || {};
+    const moic = parseFloat(c.moic) || 1;
+    const own = parseFloat(c.ownership) || null;
+    const holding = c.invested * moic * 1000;                 // our stake value, $
+    const equity = own ? Math.round(holding / (own / 100)) : null; // implied 100% equity value, $
+    const netDebt = (f.cash || f.cash === 0) ? -f.cash : null; // net cash → negative net debt
+    const tev = equity !== null ? equity + (netDebt || 0) : null;
+    return { name: c.name, rev: f.rev ?? null, ebitda: (f.ebitda ?? null), netDebt, equity, tev };
+  });
+}
+function renderSummaryNovus() {
+  const rows = novusRows();
+  const sum = (k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
+  const cell = (v, opts) => v === null || v === undefined ? `<td class="num meta">n/a</td>` : `<td class="num">${(opts && opts.signed && v < 0 ? "−" : "") + fmtUSD(Math.abs(v))}</td>`;
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>QIA Novus — Quarterly Financials</h2><p class="meta">${fund.fullName} · Q1 2026 · generated from platform data (financials + valuations)</p></div><span class="chip">Spreadsheet view</span></div>
+      <div class="panel-body table-scroll"><table class="tbl tbl-sheet">
+        <thead><tr><th>Company</th><th class="num">Quarterly Revenue</th><th class="num">EBITDA</th><th class="num">Net Debt</th><th class="num">Equity Value</th><th class="num">Total Enterprise Value</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr class="clickable" data-company="${r.name}">
+          <td><div class="company-cell"><span class="avatar">${monogram(r.name)}</span><strong>${r.name}</strong></div></td>
+          ${cell(r.rev)}${r.ebitda === null ? `<td class="num meta">n/a</td>` : `<td class="num">−${fmtUSD(Math.abs(r.ebitda))}</td>`}${cell(r.netDebt, { signed: true })}${cell(r.equity)}${cell(r.tev)}
+        </tr>`).join("")}
+        <tr class="tbl-total"><td><strong>Portfolio total</strong></td><td class="num"><strong>${fmtUSD(sum("rev"))}</strong></td><td class="num"><strong>−${fmtUSD(Math.abs(sum("ebitda")))}</strong></td><td class="num"><strong>−${fmtUSD(Math.abs(sum("netDebt")))}</strong></td><td class="num"><strong>${fmtUSD(sum("equity"))}</strong></td><td class="num"><strong>${fmtUSD(sum("tev"))}</strong></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <p class="meta source-note">Net debt is shown as the net cash position (negative = net cash). Equity value is implied from our marked holding ÷ ownership; TEV = equity value + net debt. Figures are platform-derived for review — confirm against management accounts before distribution.</p>`;
+  bindCompanyClicks();
+}
+function renderSummaryPortfolio() {
+  const stats = [[String(fund.vintage), "Vintage"], [`$${fund.committed.toFixed(1)}M`, "Committed"], [`$${fund.drawn.toFixed(2)}M`, "Drawn"], [`$${fund.deployed.toFixed(2)}M`, "Deployed"], [`$${fund.gav.toFixed(2)}M`, "GAV"], [String(companies.length), companies.length === 1 ? "Company" : "Companies"], [`${fund.moic.toFixed(2)}x`, "Gross MOIC"]];
+  const notes = fund.id === "URAF" ? [
+    "Q3 2023–Q2 2024: Gross MOIC held at 1.00x — investments carried at cost; new positions in Arkadiah and Okapi.",
+    "Q3–Q4 2024: GAV rose on investments into Alternō, Terra Oleo, Dash and Alicia Bots, plus the first uplift in Okapi’s carrying value.",
+    "Q1–Q3 2025: GAV grew on follow-ons into Alicia Bots and Dash, new investments in 3cat, Sirsak, Waterhub and Farmio, and uplifts in Alicia Bots and Alternō.",
+    "Q4 2025–Q1 2026: GAV reached $2.07M following the Arkadiah uplift — Gross Portfolio MOIC up to 1.10x.",
+  ] : [
+    "Q3 2025: UMEF first close; initial $0.25M deployed into Metric (UAE climate-tech marketplace).",
+    "Q4 2025–Q1 2026: Portfolio carried at cost; gross MOIC unchanged at 1.00x while pipeline builds across the GCC.",
+  ];
+  const totalInvested = companies.reduce((s, c) => s + c.invested, 0);
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>${fund.fullName}</h2><p class="meta">Overview as of Q1 2026 · $${fund.deployed.toFixed(2)}M deployed across ${companies.length} ${companies.length === 1 ? "company" : "companies"}, GAV $${fund.gav.toFixed(2)}M</p></div><span class="chip">Latest stake value</span></div>
+      <div class="panel-body"><div class="hero-stats" style="gap:30px;color:var(--text);">${stats.map((s) => `<div class="hero-stat"><strong style="font-size:18px;">${s[0]}</strong><span style="color:var(--muted);">${s[1]}</span></div>`).join("")}</div></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Quarterly Portfolio Summary</h2><p class="meta">In order of LTM revenue · click a company for the full overview</p></div></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Investment · Own.</th><th class="num">LTM Revenue</th><th class="num">MOIC</th><th>Runway</th><th>Fundraise Status</th><th>Notes</th></tr></thead>
+        <tbody>${companies.map((c) => `<tr class="clickable" data-company="${c.name}">
+          <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
+          <td>${c.sector}</td><td>${c.country}</td>
+          <td class="num">${moneyK(c.invested)} · ${c.ownership}</td>
+          <td class="num">${c.ltm === 0 ? "Pre-revenue" : "$" + c.ltm.toLocaleString()}</td>
+          <td class="num">${c.moic}</td>
+          <td>${status(c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green", c.runway)}</td>
+          <td class="meta">${c.fundraise}</td>
+          <td class="meta" style="max-width:240px;">${c.note}</td>
+        </tr>`).join("")}
+        <tr><td colspan="3"><strong>Total</strong></td><td class="num"><strong>$${fund.deployed.toFixed(2)}M</strong></td><td></td><td class="num"><strong>${fund.moic.toFixed(2)}x</strong></td><td colspan="3"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Gross Portfolio MOIC — development to date</h2><span class="status status-green">1.00x → 1.10x</span></div>
+      <div class="panel-body"><div class="narr"><ul>${notes.map((n) => `<li>${n}</li>`).join("")}</ul></div></div>
+    </section>`;
+  bindCompanyClicks();
+}
+function renderSummaryInvestment() {
+  document.getElementById("sumContent").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Quarterly Investment Summary</h2><p class="meta">Planned for closing in Q2 2026 · Decarb Industry POD · sidecar co-investment with Qatar Development Bank (QDB)</p></div><span class="chip">IC approved · pending QDB</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>HQ</th><th>Description</th><th>Round</th><th class="num">URAF</th><th class="num">Sidecar*</th><th>Co-Investors</th><th>Sector</th><th>Status</th></tr></thead>
+        <tbody>${upcoming.map((u) => `<tr>
+          <td><div class="company-cell"><span class="avatar">${initials(u.name)}</span><strong>${u.name}</strong></div></td>
+          <td>${u.hq}</td>
+          <td class="meta" style="max-width:280px;">${u.desc}</td>
+          <td>${u.round}</td>
+          <td class="num">${u.uraf}</td>
+          <td class="num">${u.sidecar}</td>
+          <td class="meta" style="max-width:200px;">${u.coInvestors}</td>
+          <td>${u.sector}</td>
+          <td>${status("blue", u.status)}</td>
+        </tr>`).join("")}
+        <tr><td colspan="4"><strong>Total</strong></td><td class="num"><strong>$500K</strong></td><td class="num"><strong>$300K</strong></td><td colspan="3"></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+    <p class="meta" style="margin-top:12px;">* Sidecar investment represents co-investment from Qatar Development Bank.</p>`;
+}
+
+/* ---------- Exposure ---------- */
+let expMode = "value"; // "value" | "count"
+function renderExposure() {
+  const acc = (x) => (expMode === "value" ? x.value : x.count);
+  const unit = (x) => (expMode === "value" ? moneyK(x.value) : `${x.count} co`);
+  const sTotal = sectors.reduce((s, x) => s + acc(x), 0);
+  const gTotal = geos.reduce((s, x) => s + acc(x), 0);
+  document.getElementById("exposureBody").innerHTML = `
+    <div class="section-title">
+      <div class="seg" id="expSeg">
+        <button class="${expMode === "value" ? "is-active" : ""}" data-mode="value" type="button">By capital</button>
+        <button class="${expMode === "count" ? "is-active" : ""}" data-mode="count" type="button">By company count</button>
+      </div>
+      <button class="btn btn-muted" id="expExport" type="button">Export PNG</button>
+    </div>
+    <div class="grid grid-2">
+      <section class="panel"><div class="panel-head"><h2>Sector Exposure</h2><span class="chip">${expMode === "value" ? moneyM(fund.deployed) : companies.length + " companies"}</span></div>
+        <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expSector"><div class="donut-center"><strong>${sectors.length}</strong><span>sectors</span></div></div><div class="legend">${legend(sectors, acc, sTotal, unit)}</div></div></div>
+      </section>
+      <section class="panel"><div class="panel-head" style="flex-wrap:wrap;gap:12px;"><div><h2>Geographic Exposure</h2><p class="meta">${geoLens === "hq" ? "By company HQ" : geoLens === "operations" ? "By country of operations" : "By revenue base"}</p></div>
+        <div class="seg" id="geoLensSeg"><button class="${geoLens === "hq" ? "is-active" : ""}" data-lens="hq" type="button">HQ</button><button class="${geoLens === "operations" ? "is-active" : ""}" data-lens="operations" type="button">Operations</button><button class="${geoLens === "revenue" ? "is-active" : ""}" data-lens="revenue" type="button">Revenue base</button></div></div>
+        <div class="panel-body"><div class="donut-wrap"><div class="donut" id="expGeo"><div class="donut-center"><strong>${geos.length}</strong><span>markets</span></div></div><div class="legend">${legend(geos, acc, gTotal, unit)}</div></div></div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Concentration Table</h2><span class="chip">${expMode === "value" ? "by capital" : "by count"}</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Sector</th><th class="num">Capital</th><th class="num">Companies</th><th class="num">% of fund</th></tr></thead>
+        <tbody>${sectors.map((s) => `<tr><td><div class="company-cell"><span class="dot" style="background:${s.color};width:12px;height:12px;"></span><strong>${s.label}</strong></div></td><td class="num">${moneyK(s.value)}</td><td class="num">${s.count}</td><td class="num">${Math.round((acc(s) / sTotal) * 100)}%</td></tr>`).join("")}</tbody>
+      </table></div>
+    </section>`;
+  donut(document.getElementById("expSector"), sectors, acc);
+  donut(document.getElementById("expGeo"), geos, acc);
+  document.querySelectorAll("#expSeg button").forEach((b) => b.addEventListener("click", () => { expMode = b.dataset.mode; renderExposure(); }));
+  document.querySelectorAll("#geoLensSeg button").forEach((b) => b.addEventListener("click", () => {
+    geoLens = b.dataset.lens;
+    geos = ((activeFund === "URAF") ? urafGeoLenses : umefGeoLenses)[geoLens];
+    renderExposure();
+  }));
+  document.getElementById("expExport").addEventListener("click", () => {
+    exportPNG("URAF-sector-exposure.png", seriesSVG(sectors.map((s) => [s.label, s.value]), (v) => "$" + v + "K", "URAF — Sector Exposure (by capital)"));
+  });
+}
+
+/* ---------- Performance ---------- */
+const perfSeries = {
+  MOIC: { fmt: (v) => v.toFixed(2) + "x", min: 0.98, max: 1.12, data: [["Q2'24", 1.0], ["Q4'24", 1.02], ["Q1'25", 1.04], ["Q2'25", 1.06], ["Q3'25", 1.08], ["Q1'26", 1.1]] },
+  GAV: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.2, data: [["Q2'24", 0.85], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.8], ["Q3'25", 1.95], ["Q1'26", 2.07]] },
+  Deployed: { fmt: (v) => "$" + v.toFixed(2) + "M", min: 0, max: 2.0, data: [["Q2'24", 0.8], ["Q4'24", 1.2], ["Q1'25", 1.55], ["Q2'25", 1.7], ["Q3'25", 1.8], ["Q1'26", 1.88]] },
+};
+/* [company, event, period, impact, uplift in $K, MOIC contribution at fund level] */
+const drivers = [
+  ["Okapi",       "Up-round",   "Q4 2024", "First uplift in carrying value",       25, "+0.01x"],
+  ["Alicia Bots", "Seed round", "Q1 2025", "Priced round — uplift to 1.16x",       40, "+0.02x"],
+  ["Alterno",     "Follow-on",  "Q2 2025", "Additional carrying-value uplift",      5, "+0.00x"],
+  ["Arkadiah",    "Series A",   "Q3 2025", "Uplift to 1.49x — top performer",     122, "+0.07x"],
+];
+const periodRank = (p) => { const m = /Q(\d)\s*'?(\d{2,4})/.exec(p || ""); return m ? (m[2].length === 2 ? 2000 + +m[2] : +m[2]) * 4 + +m[1] : 0; };
+let perfMetric = "MOIC";
+function renderPerfChart() {
+  const s = perfSeries[perfMetric];
+  document.getElementById("perfChart").innerHTML = s.data.map((d, i) => {
+    const h = ((d[1] - s.min) / (s.max - s.min)) * 100;
+    const cls = i === s.data.length - 1 ? "hot" : i >= s.data.length - 3 ? "warm" : "";
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${s.fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
+  }).join("");
+}
+function fundTrendChart() {
+  const periods = fund.trendPeriods || ["H1'23", "H1'24", "H2'24", "H1'25", "Q3'25", "Q1'26"];
+  const inv = fund.trendInv  || [0.25, 0.80, 1.20, 1.60, 1.80, 1.88];
+  const gav = fund.trendGav  || [0.25, 0.82, 1.25, 1.70, 1.95, 2.07];
+  const moic = fund.trendMoic || [1.00, 1.02, 1.04, 1.06, 1.08, 1.10];
+  const W = 920, H = 380, L = 64, R = 64, T = 30, B = 50;
+  const pL = L, pR = W - R, pT = T, pB = H - B, pW = pR - pL, pH = pB - pT, n = periods.length;
+  const maxL = 2.4, minR = 0.95, maxR = 1.15;
+  const x = (i) => pL + pW * (i / (n - 1));
+  const yL = (v) => pB - (v / maxL) * pH;
+  const yR = (v) => pB - ((v - minR) / (maxR - minR)) * pH;
+  const pts = (arr, sc) => arr.map((v, i) => `${x(i).toFixed(1)},${sc(v).toFixed(1)}`).join(" ");
+  const dots = (arr, sc, color, label, fmt) => arr.map((v, i) => `<g class="trend-dot"><circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="9" fill="transparent"><title>${periods[i]} · ${label}: ${fmt(v)}</title></circle><circle cx="${x(i).toFixed(1)}" cy="${sc(v).toFixed(1)}" r="3.6" fill="#fff" stroke="${color}" stroke-width="2.5" pointer-events="none"/></g>`).join("");
+  const grid = [0, 0.6, 1.2, 1.8, 2.4].map((t) => `<line x1="${pL}" y1="${yL(t).toFixed(1)}" x2="${pR}" y2="${yL(t).toFixed(1)}" stroke="rgba(28,27,26,0.07)"/><text x="${pL - 10}" y="${(yL(t) + 4).toFixed(1)}" text-anchor="end" font-size="12" fill="#8a8884" font-family="Manrope,Arial">$${t.toFixed(1)}</text>`).join("");
+  const rTicks = [0.95, 1.00, 1.05, 1.10, 1.15].map((t) => `<text x="${pR + 10}" y="${(yR(t) + 4).toFixed(1)}" text-anchor="start" font-size="12" fill="#8a8884" font-family="Manrope,Arial">${t.toFixed(2)}x</text>`).join("");
+  const xL = periods.map((p, i) => `<text x="${x(i).toFixed(1)}" y="${pB + 24}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b6863" font-family="Manrope,Arial">${p}</text>`).join("");
+  const moicLab = moic.map((v, i) => `<text x="${x(i).toFixed(1)}" y="${(yR(v) - 12).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="#F2691E" font-family="Manrope,Arial">${v.toFixed(2)}</text>`).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;" role="img" aria-label="URAF capital invested, holding value and MOIC over time">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>
+    ${grid}${rTicks}
+    <text x="${pL}" y="16" font-size="11" fill="#8a8884" font-family="Manrope,Arial">US$ millions</text>
+    <text x="${pR}" y="16" text-anchor="end" font-size="11" fill="#8a8884" font-family="Manrope,Arial">MOIC (x)</text>
+    <polyline points="${pts(inv, yL)}" fill="none" stroke="#c9c5bd" stroke-width="2.5"/>
+    <polyline points="${pts(gav, yL)}" fill="none" stroke="#8a8884" stroke-width="2.5"/>
+    <polyline points="${pts(moic, yR)}" fill="none" stroke="#F2691E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots(inv, yL, "#c9c5bd", "Capital invested", (v) => "$" + v.toFixed(2) + "M")}${dots(gav, yL, "#8a8884", "Holding value", (v) => "$" + v.toFixed(2) + "M")}${dots(moic, yR, "#F2691E", "MOIC", (v) => v.toFixed(2) + "x")}
+    ${moicLab}${xL}
+  </svg>`;
+}
+
+/* Per-company contribution to the fund's MOIC uplift.
+   uplift($K) = invested × (company MOIC − 1); fund-MOIC contribution(x) = uplift / deployed. */
+function moicContributions() {
+  const deployedK = (fund.deployed || 1) * 1000;
+  const rows = companies.map((c) => {
+    const m = parseFloat(String(c.moic)) || 1;
+    const uplift = c.invested * (m - 1);
+    return { name: c.name, moic: m, invested: c.invested, uplift, contribX: uplift / deployedK };
+  }).sort((a, b) => b.uplift - a.uplift);
+  const totalUplift = rows.reduce((s, r) => s + r.uplift, 0);
+  return { rows, totalUplift, contributors: rows.filter((r) => r.uplift > 0.5).slice(0, 10) };
+}
+function moicBreakdown() {
+  const { rows, totalUplift, contributors } = moicContributions();
+  if (!contributors.length) {
+    return `<p class="meta">No carrying-value uplift yet — all companies held at cost (1.00x). Contribution breakdown appears once positions are marked up.</p>`;
+  }
+  const max = contributors[0].uplift;
+  const flat = rows.length - contributors.length;
+  const bars = contributors.map((r) => {
+    const w = Math.max((r.uplift / max) * 100, 4);
+    const share = totalUplift ? (r.uplift / totalUplift) * 100 : 0;
+    return `<div class="mb-row" title="${r.name} · held at ${r.moic.toFixed(2)}x · +$${Math.round(r.uplift)}K uplift · +${r.contribX.toFixed(2)}x to fund MOIC">
+      <div class="mb-name"><span class="avatar" style="width:26px;height:26px;border-radius:8px;font-size:10px;">${monogram(r.name)}</span><strong>${r.name}</strong><span class="chip muted">${r.moic.toFixed(2)}x</span></div>
+      <div class="mb-track"><span class="mb-fill" style="width:${w}%"></span></div>
+      <div class="mb-val"><strong class="num">+$${Math.round(r.uplift)}K</strong><span class="num">+${r.contribX.toFixed(2)}x · ${share.toFixed(0)}%</span></div>
+    </div>`;
+  }).join("");
+  return `<div class="moic-break">${bars}</div>
+    <div class="alloc-contrib" style="margin-top:14px;"><span class="lab">Total uplift</span><span class="chip">+$${Math.round(totalUplift)}K → ${fund.moic.toFixed(2)}x gross MOIC</span>${flat ? `<span class="chip muted">${flat} held at cost</span>` : ""}</div>`;
+}
+
+function renderPerformance() {
+  const moicDelta = fund.moic > 1 ? `+${((fund.moic - 1) * 100).toFixed(0)}% to date` : "no change yet";
+  const band = [
+    ["Capital invested", `$${fund.deployed.toFixed(2)}M`, "cost basis", ""],
+    ["Holding value", `$${fund.gav.toFixed(2)}M`, `GAV · ${moicDelta}`, ""],
+    ["Gross MOIC", `${fund.moic.toFixed(2)}x`, `1.00x → ${fund.moic.toFixed(2)}x`, "accent"],
+    ["No. of investments", String(fund.investments || companies.length), `across ${companies.length} ${companies.length === 1 ? "company" : "companies"}`, ""],
+  ];
+  const kpis = [["1.10x", "Gross MOIC", "GAV / invested"], ["1.10x", "TVPI", "NAV + dist / paid-in"], ["0.00x", "DPI", "no distributions yet"], ["N/A", "Gross IRR", "< 2 cash-flow events"]];
+  document.getElementById("performanceBody").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Fund value &amp; MOIC over time</h2><p class="meta">Capital invested vs holding value (left, US$M) and gross MOIC (right, ×)</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn btn-muted" id="perfPng" type="button">Export PNG</button><button class="btn btn-muted" id="perfCsv" type="button">Board report</button></div></div>
+      <div class="panel-body">
+        <div class="fund-band">${band.map((b) => `<div class="box"><div class="hd">${b[0]}</div><div class="val num" style="${b[3] === "accent" ? "color:var(--orange);" : ""}">${b[1]}</div><div class="sub">${b[2]}</div></div>`).join("")}</div>
+        <div id="fundTrend" style="margin-top:18px;">${fundTrendChart()}</div>
+        <div class="chart-legend">
+          <span><i style="background:#c9c5bd"></i>Capital invested</span>
+          <span><i style="background:#8a8884"></i>Holding value</span>
+          <span><i style="background:#F2691E"></i>MOIC</span>
+        </div>
+      </div>
+    </section>
+    <div class="grid grid-4" style="margin-top:16px;">${kpis.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">Q1'26</span></div><div><div class="kpi-value num">${k[0]}</div><div class="kpi-foot">${k[2]}</div></div></section>`).join("")}</div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Value Drivers</h2><p class="meta">Top 10 most recent valuation events</p></div><span class="status status-green">▲ 1.00x → 1.10x · +$192K uplift</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Company</th><th>Event</th><th>Period</th><th class="num">Uplift ($K)</th><th class="num">Fund MOIC contribution</th><th>Impact</th></tr></thead>
+        <tbody>${drivers.slice().sort((a, b) => periodRank(b[2]) - periodRank(a[2])).slice(0, 10).map((d) => `<tr class="clickable" data-company="${d[0]}"><td><div class="company-cell"><span class="avatar">${monogram(d[0])}</span><strong>${d[0]}</strong></div></td><td>${status("green", d[1])}</td><td class="num">${d[2]}</td><td class="num"><strong>+$${d[4]}K</strong></td><td class="num"><span class="delta-badge green">${d[5]}</span></td><td class="meta">${d[3]}</td></tr>`).join("")}</tbody>
+      </table></div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>MOIC Contribution by Company</h2><p class="meta">Carrying-value uplift over cost · share of the +${((fund.moic - 1) * 100).toFixed(0)}% gross MOIC gain</p></div><span class="chip">by uplift</span></div>
+      <div class="panel-body">${moicBreakdown()}</div>
+    </section>`;
+  document.getElementById("perfPng").addEventListener("click", () => exportPNG("URAF-fund-trend.png", fundTrendChart()));
+  document.getElementById("perfCsv").addEventListener("click", () => {
+    const rows = [["Committed", "$13.8M"], ["Drawn", "$5.7M"], ["Deployed", "$1.88M"], ["GAV", "$2.07M"], ["Gross MOIC", "1.10x"], ["TVPI", "1.10x"], ["DPI", "0.00x"], ["Gross IRR", "N/A"], [], ["Company", "Sector", "Invested", "MOIC", "Runway"], ...companies.map((c) => [c.name, c.sector, moneyK(c.invested), c.moic, c.runway])];
+    downloadFile("URAF-Q1-2026-board-report.csv", rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n"), "text/csv;charset=utf-8");
+  });
+  bindCompanyClicks();
+}
+
+/* ---------- Reporting ---------- */
+const reportDocs = [
+  ["QIA Deal Team", ".xlsx", "Approved", "green"],
+  ["QIA Novus", ".xlsx", "Under Review", "amber"],
+  ["QIA Master", ".xlsx", "Draft", "blue"],
+  ["Board Reporting Pack", ".docx", "Draft", "blue"],
+  ["Commentary Letter", ".docx", "Not started", "blue"],
+  ["Audit Confirmations", ".docx", "Draft", "blue"],
+];
+const corrections = [
+  { co: "Okapi", field: "LTM revenue", from: "$524,000", to: "$473,000", reason: "IFRS lease revenue restatement", requestedBy: "Alex Tan", status: "Under Review" },
+  { co: "Farmio", field: "Net debt treatment", from: "Includes SAFE balances", to: "Excludes SAFE balances", reason: "Exclude SAFE-related balances from net debt", requestedBy: "Ahmad Hashim", status: "Approved" },
+  { co: "Metric", field: "Q4 revenue", from: "—", to: "$1,180,000", reason: "Late management accounts received", requestedBy: "Ahmad Hashim", status: "Requested" },
+];
+const automation = [
+  ["Day 25", "Founder-update reminder → 4 companies pending", "fired", "green"],
+  ["Day 35", "Valuation review prep → Investment team", "fired", "green"],
+  ["Day 42", "Overdue escalation → JJ + Managing Partner", "fired", "green"],
+  ["Day 47", "Financials reminder → Shamona / Ocorian", "scheduled", "amber"],
+  ["Day 53", "Assembly checkpoint → JJ", "scheduled", "blue"],
+  ["Day 58", "MP review reminder → Alina", "scheduled", "blue"],
+];
+const corrStatusTone = (s) => (s === "Approved" ? "green" : s === "Rejected" ? "red" : s === "Requested" ? "blue" : "amber");
+let phaseSel = 4;
+function renderReporting() {
+  const reminders = "25 · 35 · 42 · 47 · 53 · 58";
+  document.getElementById("reportingBody").innerHTML = `
+    <section class="panel"><div class="panel-head"><div><h2>Q1 2026 Workflow</h2><p class="meta">Target: Day 60 LP distribution · reminders sent on days ${reminders}</p></div><span class="status status-amber">Assembly · Day 50</span></div>
+      <div class="panel-body">
+        <div class="phases" id="phases">${workflow.map((w, i) => `<div class="phase ${w.state} ${i === phaseSel ? "is-active" : ""}" data-phase="${i}"><div class="ph-k">${w.day}</div><strong>${w.title}</strong><div class="meta">${w.owner}</div></div>`).join("")}</div>
+        <div id="phaseDetail" style="margin-top:14px;"></div>
+      </div>
+    </section>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <section class="panel"><div class="panel-head"><h2>Report Generation</h2><span class="chip">6 outputs</span></div>
+        <div class="panel-body"><div class="alert-list">${reportDocs.map((r) => `<div class="alert-row"><span class="alert-icon status-${r[3]}">${r[1].replace(".", "").toUpperCase()}</span><div><h3>${r[0]}</h3><p class="meta">${r[1]} · auto-generated from stored data</p></div><div style="display:flex;gap:8px;align-items:center;">${status(r[3], r[2])}<button class="btn btn-muted gen" type="button">Generate</button></div></div>`).join("")}</div></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Quarter Tasks</h2><span class="chip" id="taskCount"></span></div>
+        <div class="panel-body" id="taskList"></div>
+      </section>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px;">
+      <section class="panel"><div class="panel-head"><div><h2>Data Corrections</h2><p class="meta">Form G · routed to Head of Portfolio for approval</p></div><span class="chip" id="corrCount"></span></div>
+        <div class="panel-body" id="corrList"></div>
+      </section>
+      <section class="panel"><div class="panel-head"><div><h2>Automation & escalations</h2><p class="meta">Auto-triggers via daily cron</p></div></div>
+        <div class="panel-body"><div class="timeline">${automation.map((a) => `<div class="timeline-item ${a[2] === "fired" ? "done" : ""}"><span class="day">${a[0]}</span><div><h3>${a[1]}</h3><p class="meta">${a[2] === "fired" ? "Triggered" : "Scheduled"}</p></div>${status(a[3], a[2] === "fired" ? "Fired" : "Scheduled")}</div>`).join("")}</div></div>
+      </section>
+    </div>`;
+  renderCorrections();
+  renderPhaseDetail();
+  document.querySelectorAll("#phases .phase").forEach((p) => p.addEventListener("click", () => { phaseSel = +p.dataset.phase; document.querySelectorAll("#phases .phase").forEach((x) => x.classList.toggle("is-active", x === p)); renderPhaseDetail(); }));
+  document.querySelectorAll(".gen").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Generated ✓"; setTimeout(() => { e.currentTarget.textContent = "Generate"; }, 1400); }));
+  renderTasks();
+}
+function renderCorrections() {
+  const open = corrections.filter((c) => c.status !== "Approved").length;
+  document.getElementById("corrCount").textContent = `${open} open`;
+  document.getElementById("corrList").innerHTML = `<div class="alert-list">${corrections.map((c, i) => `
+    <div class="alert-row"><span class="alert-icon status-${corrStatusTone(c.status)}">G</span>
+      <div><h3>${c.co} · ${c.field}</h3><p class="meta">${c.from} → ${c.to} · ${c.reason}</p></div>
+      <div style="display:flex;gap:8px;align-items:center;">${status(corrStatusTone(c.status), c.status)}<button class="btn btn-muted corr-review" data-i="${i}" type="button">${c.status === "Approved" || c.status === "Rejected" ? "View →" : "Review →"}</button></div>
+    </div>`).join("")}</div>`;
+  document.querySelectorAll(".corr-review").forEach((b) => b.addEventListener("click", () => openAmendment(+b.dataset.i)));
+}
+/* Back-end amendment view (Form G) — approval gated to JJ (Head of Operations). */
+function openAmendment(i) {
+  const c = corrections[i];
+  const isJJ = currentUser && currentUser.name === "JJ Erpaiboon";
+  const settled = c.status === "Approved" || c.status === "Rejected";
+  const m = document.getElementById("modalRoot");
+  m.innerHTML = `<div class="modal-scrim" id="modalScrim"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Amendment review">
+      <div class="modal-head"><div><div class="eyebrow">Back-end amendment · Form G</div><h2>${c.co} · ${c.field}</h2></div><button class="modal-close" id="modalClose" type="button" aria-label="Close">✕</button></div>
+      <div class="modal-body">
+        <div class="amend-diff">
+          <div class="amend-col"><div class="lab">Current (of record)</div><div class="amend-val from">${c.from}</div></div>
+          <div class="amend-arrow">→</div>
+          <div class="amend-col"><div class="lab">Proposed amendment</div><div class="amend-val to">${c.to}</div></div>
+        </div>
+        <div class="amend-meta">
+          <div><div class="lab">Requested by</div><strong>${c.requestedBy}</strong></div>
+          <div><div class="lab">Reason</div><span>${c.reason}</span></div>
+          <div><div class="lab">Status</div>${status(corrStatusTone(c.status), c.status)}</div>
+        </div>
+        <p class="meta">On approval the amendment is written to the back-end record of account and the audit trail. Authorised approver: <strong>JJ Erpaiboon · Head of Operations</strong>.</p>
+      </div>
+      <div class="modal-foot">
+        ${settled ? `<span class="chip">${c.status}</span>` : isJJ
+          ? `<button class="btn btn-muted" id="amendReject" type="button">Reject</button><button class="btn btn-primary" id="amendApprove" type="button">Approve amendment</button>`
+          : `<span class="meta">Only JJ (Head of Operations) can approve amendments — sign in as JJ to action.</span>`}
+      </div>
+    </div>`;
+  m.classList.add("is-open");
+  const close = () => { m.classList.remove("is-open"); m.innerHTML = ""; };
+  document.getElementById("modalScrim").addEventListener("click", close);
+  document.getElementById("modalClose").addEventListener("click", close);
+  if (isJJ && !settled) {
+    document.getElementById("amendApprove").addEventListener("click", () => { corrections[i].status = "Approved"; close(); renderCorrections(); });
+    document.getElementById("amendReject").addEventListener("click", () => { corrections[i].status = "Rejected"; close(); renderCorrections(); });
+  }
+}
+function renderPhaseDetail() {
+  const w = workflow[phaseSel];
+  document.getElementById("phaseDetail").innerHTML = `<div class="panel-muted" style="border-radius:12px;padding:16px;"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div><h3>${w.day} · ${w.title}</h3><p class="meta" style="margin-top:4px;">Owner — ${w.owner}</p></div>${status(w.state === "done" ? "green" : w.state === "current" ? "amber" : "blue", w.status)}</div></div>`;
+}
+const tasks = [
+  { t: "Collect founder updates (10 companies)", done: true },
+  { t: "Compile financials with Ocorian", done: true },
+  { t: "Assemble QIA Deal Team export", done: true },
+  { t: "Review QIA Novus & Master", done: false },
+  { t: "Managing Partner approval", done: false },
+  { t: "Distribute to LPs via Ocorian", done: false },
+];
+function renderTasks() {
+  document.getElementById("taskList").innerHTML = tasks.map((x, i) => `<div class="check ${x.done ? "is-done" : ""}" data-task="${i}"><span class="box">${x.done ? "✓" : ""}</span><span class="lbl">${x.t}</span></div>`).join("");
+  document.getElementById("taskCount").textContent = `${tasks.filter((x) => x.done).length}/${tasks.length} done`;
+  document.querySelectorAll("#taskList .check").forEach((c) => c.addEventListener("click", () => { tasks[+c.dataset.task].done = !tasks[+c.dataset.task].done; renderTasks(); }));
+}
+
+/* ---------- Forms Hub ---------- */
+const formDefs = [
+  ["A", "New Investment Onboarding", "Capture a new investment at close.", ["Investment Team", "Head of Portfolio"]],
+  ["B", "New Round / Capital Event", "Record a follow-on round or capital event.", ["Investment Team", "Head of Portfolio"]],
+  ["C", "Quarterly Company Update", "Pre-meeting founder update, per company.", ["Investment Team", "Head of Portfolio"]],
+  ["D", "Post-Meeting Valuation Review", "Confirm quarterly carrying values.", ["Head of Portfolio"]],
+  ["E", "Fund Performance Snapshot", "Authoritative quarterly fund record.", ["CFO"]],
+  ["F", "Climate & Impact KPIs", "Mandatory at Q4 — climate metrics.", ["Investment Team", "Head of Portfolio"]],
+  ["G", "Correction Request", "Request a data correction (HoP approves).", ["Any role"]],
+  ["H", "Valuation Meeting Minutes", "Capture committee decisions, attendees, and per-company marks.", ["Investment Team", "Head of Portfolio"]],
+  ["I", "Quarter Tasks", "Per-cycle task checklist tied to the reporting workflow.", ["Investment Team", "Head of Portfolio"]],
+];
+let formRole = "All roles";
+function renderForms() {
+  const roles = ["All roles", "Investment Team", "Head of Portfolio", "CFO"];
+  document.getElementById("formsBody").innerHTML = `
+    <div class="section-title">
+      <select class="select" id="formRole" style="width:auto;min-width:180px;">${roles.map((r) => `<option ${r === formRole ? "selected" : ""}>${r}</option>`).join("")}</select>
+      <div style="display:flex;gap:8px;">
+        <a class="btn btn-muted" href="./collect.html?company=Alterno" target="_blank" rel="noopener">Founder portal ↗</a>
+        <button class="btn btn-primary" type="button">+ New submission</button>
+      </div>
+    </div>
+    <div class="grid grid-3" id="formGrid"></div>`;
+  renderFormGrid();
+  document.getElementById("formRole").addEventListener("change", (e) => { formRole = e.target.value; renderFormGrid(); });
+}
+function renderFormGrid() {
+  const can = (f) => formRole === "All roles" || f[3].includes(formRole) || f[3].includes("Any role");
+  document.getElementById("formGrid").innerHTML = formDefs.map((f) => `
+    <section class="panel" style="opacity:${can(f) ? 1 : 0.5};">
+      <div class="panel-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span class="chip">Form ${f[0]}</span>${can(f) ? `<button class="btn btn-muted" type="button">Open</button>` : `<span class="meta">No access</span>`}</div>
+        <h3 style="margin-top:12px;font-size:15px;">${f[1]}</h3>
+        <p class="meta" style="margin-top:6px;line-height:1.5;">${f[2]}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">${f[3].map((r) => `<span class="chip">${r}</span>`).join("")}</div>
+      </div>
+    </section>`).join("");
+}
+
+/* ---------- Documents ---------- */
+const docTypes = ["Management Accounts", "Board Deck", "Cap Table", "SAFE Agreement", "Pitch Deck"];
+const docs = companies.slice(0, 8).map((c, i) => ({ name: `${c.name} — ${docTypes[i % docTypes.length]}`, company: c.name, type: docTypes[i % docTypes.length], date: ["12 May 2026", "08 May 2026", "30 Apr 2026", "22 Apr 2026"][i % 4], shared: i % 2 === 0, views: [12, 4, 23, 7, 31, 2, 15, 9][i] }));
+let docState = { q: "", type: "All types" };
+function renderDocuments() {
+  document.getElementById("documentsBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[[String(docs.length), "Documents", "this quarter"], [String(docs.filter((d) => d.shared).length), "Shared links", "active"], [String(docs.reduce((s, d) => s + d.views, 0)), "Total views", "tracked"], ["10", "Companies", "covered"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <section class="panel"><div class="panel-head" style="flex-wrap:wrap;gap:12px;"><div><h2>Document Library</h2><p class="meta">Secure sharing links with page-level view tracking</p></div>
+      <div class="toolbar"><input class="input" id="docSearch" type="search" placeholder="Search…" /><select class="select" id="docType"></select></div></div>
+      <div class="panel-body table-scroll"><table class="tbl" id="docTable"></table></div>
+    </section>`;
+  const sel = document.getElementById("docType");
+  sel.innerHTML = ["All types", ...docTypes].map((t) => `<option>${t}</option>`).join("");
+  document.getElementById("docSearch").addEventListener("input", (e) => { docState.q = e.target.value; renderDocTable(); });
+  sel.addEventListener("change", (e) => { docState.type = e.target.value; renderDocTable(); });
+  renderDocTable();
+}
+function renderDocTable() {
+  const list = docs.filter((d) => (!docState.q || d.name.toLowerCase().includes(docState.q.toLowerCase())) && (docState.type === "All types" || d.type === docState.type));
+  document.getElementById("docTable").innerHTML = `
+    <thead><tr><th>Document</th><th>Company</th><th>Type</th><th>Date</th><th class="num">Views</th><th>Link</th></tr></thead>
+    <tbody>${list.map((d, i) => `<tr><td><strong>${d.name}</strong></td><td>${d.company}</td><td>${d.type}</td><td class="meta">${d.date}</td><td class="num">${d.views}</td><td>${d.shared ? `<button class="btn btn-muted copy" type="button">Copy link</button>` : `<span class="chip">Private</span>`}</td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("#docTable .copy").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Copied ✓"; setTimeout(() => { e.currentTarget.textContent = "Copy link"; }, 1400); }));
+}
+
+/* ---------- Intelligence ---------- */
+/* Signals are derived from base data via computeSignals() (see engine above),
+   recomputed on fund switch; resolve/reopen state lives on this array. */
+let signals = [];
+let sevFilter = "all";
+function renderIntelligence() {
+  const counts = { critical: signals.filter((s) => s.sev === "critical").length, warning: signals.filter((s) => s.sev === "warning").length, info: signals.filter((s) => s.sev === "info").length };
+  document.getElementById("intelligenceBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[[String(signals.length), "Active signals", "all"], [String(counts.critical), "Critical", "critical"], [String(counts.warning), "Warning", "warning"], [String(signals.filter((s) => s.resolved).length), "Resolved", "all"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span>${k[2] === "critical" ? status("red", "RAG") : k[2] === "warning" ? status("amber", "RAG") : `<span class="chip">Q1'26</span>`}</div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <div class="section-title">
+      <div class="seg" id="sevSeg">${[["all", "All"], ["critical", "Critical"], ["warning", "Warning"], ["info", "Info"]].map((s) => `<button class="${s[0] === sevFilter ? "is-active" : ""}" data-sev="${s[0]}" type="button">${s[1]}</button>`).join("")}</div>
+    </div>
+    <section class="panel"><div class="panel-head"><div><h2>Risk Signals</h2><p class="meta">Deduced by Yellow from base data (runway, burn, revenue, MOIC) — independent of submitted reports · daily cron</p></div><span class="chip">${fund.id}</span></div>
+      <div class="panel-body"><div class="alert-list" id="sigList"></div></div>
+    </section>`;
+  renderSignals();
+  document.querySelectorAll("#sevSeg button").forEach((b) => b.addEventListener("click", () => { sevFilter = b.dataset.sev; document.querySelectorAll("#sevSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderSignals(); }));
+}
+function renderSignals() {
+  const tone = (s) => (s === "critical" ? "red" : s === "warning" ? "amber" : "blue");
+  const list = signals.filter((s) => sevFilter === "all" || s.sev === sevFilter);
+  document.getElementById("sigList").innerHTML = list.map((s) => { const i = signals.indexOf(s); return `
+    <div class="alert-row" style="${s.resolved ? "opacity:0.55;" : ""}">
+      <span class="alert-icon status-${tone(s.sev)}">${s.co.slice(0, 2).toUpperCase()}</span>
+      <div><h3>${s.co} · <span class="meta" style="font-weight:700;">${s.type}</span></h3><p class="meta">${s.why}</p></div>
+      <div style="display:flex;gap:8px;align-items:center;">${status(tone(s.sev), s.sev)}<button class="btn btn-muted res" data-sig="${i}" type="button">${s.resolved ? "Reopen" : "Resolve"}</button></div>
+    </div>`; }).join("") || `<div class="meta" style="padding:20px;text-align:center;">No signals at this severity.</div>`;
+  document.querySelectorAll("#sigList .res").forEach((b) => b.addEventListener("click", () => { signals[+b.dataset.sig].resolved = !signals[+b.dataset.sig].resolved; renderIntelligence(); }));
+}
+
+/* ---------- Audit ---------- */
+const auditStages = ["DRAFT", "SENT_TO_COMPANY", "RECEIVED", "SENT_TO_AUDITOR"];
+const auditRows = companies.map((c, i) => ({ co: c.name, stage: [0, 1, 2, 3, 1, 2, 0, 1, 2, 0][i] }));
+function renderAudit() {
+  const done = auditRows.filter((r) => r.stage === 3).length;
+  document.getElementById("auditBody").innerHTML = `
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      ${[["FY2025", "Audit year", "Moore"], [`${done}/${auditRows.length}`, "Sent to auditor", "complete"], ["31 Mar", "Year-end", "quarter close"], ["45", "Days to deadline", "countdown"]].map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+    </div>
+    <section class="panel"><div class="panel-head"><div><h2>Confirmation Letters</h2><p class="meta">Auto-generated from investment terms · addressed to Moore</p></div></div>
+      <div class="panel-body table-scroll"><table class="tbl" id="auditTable"></table></div>
+    </section>`;
+  renderAuditTable();
+}
+function renderAuditTable() {
+  const tone = (s) => (s === 3 ? "green" : s === 0 ? "blue" : "amber");
+  document.getElementById("auditTable").innerHTML = `
+    <thead><tr><th>Company</th><th>Letter status</th><th>Stage</th><th></th></tr></thead>
+    <tbody>${auditRows.map((r, i) => `<tr><td><div class="company-cell"><span class="avatar">${monogram(r.co)}</span><strong>${r.co}</strong></div></td><td>${status(tone(r.stage), auditStages[r.stage].replace(/_/g, " "))}</td><td class="meta">${r.stage + 1} of 4</td><td>${r.stage < 3 ? `<button class="btn btn-muted adv" data-row="${i}" type="button">Advance →</button>` : `<span class="chip">Complete</span>`}</td></tr>`).join("")}</tbody>`;
+  document.querySelectorAll("#auditTable .adv").forEach((b) => b.addEventListener("click", () => { const r = auditRows[+b.dataset.row]; r.stage = Math.min(3, r.stage + 1); renderAudit(); }));
+}
+
+/* ---------- Deal Flow ---------- */
+const funnelData = [["Total pipeline", 950], ["Pre-intro & intro", 162], ["Screening", 6], ["Due diligence", 2], ["Portfolio", 10]];
+const kanban = {
+  "Initial Review": [["Helios Grid", "Energy · SG"], ["Loop Materials", "Circular · MY"]],
+  "Deep Dive": [["BlueCarbonX", "NbS · ID"]],
+  "Term Sheet": [["Aleph Technologies", "Infra Intel · SG"], ["N&E Innovations", "Low-Carbon · SG"]],
+  "Closed": [["Farmio", "Agri-Food · SG"]],
+  "Passed": [["—", "2 this quarter"]],
+};
+function renderDealflow() {
+  const max = funnelData[0][1];
+  document.getElementById("dealflowBody").innerHTML = `
+    <div class="grid grid-2">
+      <section class="panel"><div class="panel-head"><h2>Pipeline Funnel</h2><span class="chip">Q1 2026</span></div>
+        <div class="panel-body"><div class="funnel">${funnelData.map((f, i) => `<div class="funnel-row"><span class="meta">${f[0]}</span><div class="funnel-bar" style="width:${Math.max((f[1] / max) * 100, 8)}%;background:${i === funnelData.length - 1 ? "var(--green)" : "var(--orange)"};">${f[1]}</div><span class="num" style="font-weight:800;">${Math.round((f[1] / max) * 100)}%</span></div>`).join("")}</div></div>
+      </section>
+      <section class="panel"><div class="panel-head"><h2>Pipeline Mix</h2><span class="chip">by stage</span></div>
+        <div class="panel-body"><div class="legend">${[["Pre-Seed", 40, "#f2691e"], ["Seed", 40, "#ff9a2e"], ["Pre-Series A", 11, "#ffc233"], ["Series A", 9, "#ded9d0"]].map((s) => `<div class="legend-row"><span class="dot" style="background:${s[2]}"></span><span>${s[0]}</span><strong>${s[1]}%</strong></div>`).join("")}</div>
+        <h3 style="margin-top:18px;">Top sectors</h3><div class="legend" style="margin-top:10px;">${[["Food & Agriculture", 22], ["Waste Mgmt & Circularity", 18], ["Clean Mobility", 11], ["Energy Transition", 10]].map((s) => `<div class="legend-row"><span class="dot" style="background:var(--orange)"></span><span>${s[0]}</span><strong>${s[1]}%</strong></div>`).join("")}</div></div>
+      </section>
+    </div>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Prospect Pipeline</h2><p class="meta">Q2 2026 sidecar investments with QDB · IC approved, pending QDB</p></div></div>
+      <div class="panel-body"><div class="kanban">${Object.entries(kanban).map(([col, cards]) => `<div class="kan-col"><h3>${col}<span class="chip">${cards.length}</span></h3>${cards.map((c) => `<div class="kan-card"><strong>${c[0]}</strong><div class="meta">${c[1]}</div></div>`).join("")}</div>`).join("")}</div></div>
+    </section>`;
+}
+
+/* ============================================================
+   Exports (CSV + chart PNG) — gap #4
+   ============================================================ */
+function downloadFile(name, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function toCSV(headers, rows) {
+  const esc = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  return [headers.map(esc).join(","), ...rows.map((r) => r.map(esc).join(","))].join("\n");
+}
+function exportCSV(name, headers, rows) { downloadFile(name, toCSV(headers, rows), "text/csv;charset=utf-8"); }
+
+function seriesSVG(series, fmt, title) {
+  const W = 1280, H = 720, pad = 90, max = Math.max(...series.map((s) => s[1])) * 1.15 || 1;
+  const bw = ((W - pad * 2) / series.length) * 0.55;
+  const gap = ((W - pad * 2) / series.length);
+  const bars = series.map((s, i) => {
+    const h = (s[1] / max) * (H - pad * 2);
+    const x = pad + i * gap + (gap - bw) / 2, y = H - pad - h;
+    return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="10" fill="#f2691e"/>
+      <text x="${x + bw / 2}" y="${y - 12}" font-size="20" font-weight="700" text-anchor="middle" fill="#1b1a18" font-family="Manrope,Arial">${fmt(s[1])}</text>
+      <text x="${x + bw / 2}" y="${H - pad + 28}" font-size="18" text-anchor="middle" fill="#6b6863" font-family="Manrope,Arial">${s[0]}</text>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <rect width="${W}" height="${H}" fill="#ffffff"/>
+    <text x="${pad}" y="56" font-size="30" font-weight="800" fill="#1b1a18" font-family="Manrope,Arial">${title}</text>
+    <line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="rgba(28,27,26,0.12)"/>
+    ${bars}</svg>`;
+}
+function exportPNG(name, svgString) {
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([svgString], { type: "image/svg+xml" }));
+  img.onload = () => {
+    const c = document.createElement("canvas"); c.width = 1280; c.height = 720;
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0);
+    c.toBlob((b) => { const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); });
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+/* ============================================================
+   Compliance — gap #2 (climate & impact + gender 2X, Q4 lock)
+   ============================================================ */
+let compTab = "climate";
+let compAgg = "fund"; // "fund" | "all" | "cumulative"
+const climateRows = [
+  ["Arkadiah", "GHG monitored (MRV/dMRV)", "~4.5M ha addressable pipeline"],
+  ["Alterno", "GHG avoided via TES deployment", "8 batteries deployed"],
+  ["Okapi", "Clean energy financed", "473 solar leases"],
+  ["Waterhub", "CO₂ prevented + plastic avoided", "420K L/mo served"],
+  ["Sirsak", "Waste recovered", "177 tonnes cumulative"],
+];
+const twoXCriteria = [
+  ["Entrepreneurship", "≥51% women-founded", "partial"],
+  ["Leadership", "≥30% women in senior leadership", "partial"],
+  ["Employment", "≥30%–40% women in workforce", "green"],
+  ["Consumption", "Product/service benefits women", "green"],
+  ["Investment", "Fund commits to 2X criteria", "green"],
+];
+/* Aggregate views: each mode → 4 climate KPIs. */
+const climateAgg = {
+  fund:       [["~62K",  "tCO₂e avoided", "fund aggregate"], ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 10", "Companies reporting", "Q1 2026"]],
+  all:        [["~62K",  "tCO₂e avoided", "URAF + UMEF"],    ["4.5M ha", "Under MRV pipeline", "Arkadiah"], ["1,240", "Households reached", "est."], ["5 / 11", "Companies reporting", "All funds"]],
+  cumulative: [["~145K", "tCO₂e avoided", "lifetime"],       ["5.2M ha", "Under MRV (cumul.)", "since 2023"], ["3,800", "Households reached", "lifetime"], ["8",   "Companies reporting", "ever"]],
+};
+const genderAgg = {
+  fund:       [["38%", "Women in workforce"], ["29%", "Women in leadership"]],
+  all:        [["41%", "Women in workforce"], ["31%", "Women in leadership"]],
+  cumulative: [["36%", "Women in workforce"], ["27%", "Women in leadership"]],
+};
+function renderCompliance() {
+  const aggLabel = { fund: `This fund (${activeFund})`, all: "All funds", cumulative: "Cumulative" };
+  const locked = false;
+  document.getElementById("complianceBody").innerHTML = `
+    <section class="panel" style="margin-bottom:16px;background:var(--orange-soft);border-color:rgba(242,105,30,0.2);"><div class="panel-body" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div><h3>Form F — Climate & Impact KPIs</h3><p class="meta" style="margin-top:4px;">Mandatory at Q4 · current quarter Q1 2026 — submissions open. Q4 lock date: 31 Dec 2026.</p></div>
+      ${status(locked ? "red" : "green", locked ? "Locked" : "Open")}
+    </div></section>
+    <div class="section-title">
+      <div class="seg" id="compSeg">
+        <button class="${compTab === "climate" ? "is-active" : ""}" data-tab="climate" type="button">Climate & Impact</button>
+        <button class="${compTab === "gender" ? "is-active" : ""}" data-tab="gender" type="button">Gender (2X)</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span class="meta" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--soft);">Aggregate</span>
+        <div class="seg" id="compAggSeg">
+          <button class="${compAgg === "fund" ? "is-active" : ""}" data-agg="fund" type="button">This fund</button>
+          <button class="${compAgg === "all" ? "is-active" : ""}" data-agg="all" type="button">All funds</button>
+          <button class="${compAgg === "cumulative" ? "is-active" : ""}" data-agg="cumulative" type="button">Cumulative</button>
+        </div>
+        <button class="btn btn-muted" id="compExport" type="button">Export CSV</button>
+      </div>
+    </div>
+    <div id="compContent"></div>`;
+  document.querySelectorAll("#compSeg button").forEach((b) => b.addEventListener("click", () => { compTab = b.dataset.tab; renderCompliance(); }));
+  document.querySelectorAll("#compAggSeg button").forEach((b) => b.addEventListener("click", () => { compAgg = b.dataset.agg; renderCompliance(); }));
+  if (compTab === "climate") {
+    const ks = climateAgg[compAgg];
+    document.getElementById("compContent").innerHTML = `
+      <div class="grid grid-4" style="margin-bottom:16px;">
+        ${ks.map((k) => `<section class="panel kpi"><div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div><div><div class="kpi-value num">${k[0]}</div></div></section>`).join("")}
+      </div>
+      <section class="panel"><div class="panel-head"><h2>Climate & impact by company</h2><span class="chip">Form F · ${aggLabel[compAgg]}</span></div>
+        <div class="panel-body table-scroll"><table class="tbl"><thead><tr><th>Company</th><th>Metric</th><th>Latest</th></tr></thead>
+        <tbody>${climateRows.map((r) => `<tr class="clickable" data-company="${r[0]}"><td><div class="company-cell"><span class="avatar">${monogram(r[0])}</span><strong>${r[0]}</strong></div></td><td>${r[1]}</td><td class="num">${r[2]}</td></tr>`).join("")}</tbody></table></div>
+      </section>
+      <p class="meta" style="margin-top:12px;">Methodology: climate KPIs aggregated across reporting companies with per-company audit trail. Scope 1–2 and Scope 4 (avoided) tracked where available.</p>`;
+    bindCompanyClicks();
+  } else {
+    const g = genderAgg[compAgg];
+    document.getElementById("compContent").innerHTML = `
+      <div class="grid grid-2">
+        <section class="panel"><div class="panel-head"><h2>2X Criteria</h2><span class="status status-amber">3 of 5 met</span></div>
+          <div class="panel-body"><div class="alert-list">${twoXCriteria.map((c) => `<div class="alert-row"><span class="alert-icon status-${c[2]}">${c[2] === "green" ? "✓" : "~"}</span><div><h3>${c[0]}</h3><p class="meta">${c[1]}</p></div>${status(c[2], c[2] === "green" ? "Met" : "Partial")}</div>`).join("")}</div></div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Workforce gender</h2><span class="chip">${aggLabel[compAgg]}</span></div>
+          <div class="panel-body">
+            <div class="hero-stats" style="gap:28px;color:var(--text);">
+              <div class="hero-stat"><strong style="font-size:20px;">${g[0][0]}</strong><span style="color:var(--muted);">${g[0][1]}</span></div>
+              <div class="hero-stat"><strong style="font-size:20px;">${g[1][0]}</strong><span style="color:var(--muted);">${g[1][1]}</span></div>
+            </div>
+            <table class="tbl" style="margin-top:14px;"><thead><tr><th>Company</th><th class="num">Female HC</th><th class="num">Total HC</th><th class="num">%</th></tr></thead>
+            <tbody>
+              <tr><td>Sirsak</td><td class="num">11</td><td class="num">20</td><td class="num">55%</td></tr>
+              <tr><td>Okapi</td><td class="num">2</td><td class="num">6</td><td class="num">33%</td></tr>
+              <tr><td>Alterno</td><td class="num">5</td><td class="num">22</td><td class="num">23%</td></tr>
+            </tbody></table>
+          </div>
+        </section>
+      </div>`;
+  }
+  document.getElementById("compExport").addEventListener("click", () => {
+    if (compTab === "climate") exportCSV("climate-impact-Q1-2026.csv", ["Company", "Metric", "Latest"], climateRows);
+    else exportCSV("gender-2x-Q1-2026.csv", ["Criterion", "Definition", "Status"], twoXCriteria);
+  });
+}
+
+/* ============================================================
+   Design System — gap #5 (brand token reference)
+   ============================================================ */
+function renderDesignSystem() {
+  if (window.renderDesignSystemInto) window.renderDesignSystemInto("designsystemBody");
+}
+
+/* ---------- Router ---------- */
+function go(id) {
+  const item = nav.flatMap((g) => g.items).find((i) => i.id === id);
+  if (!item) return;
+  if (!allowed(item.view)) { showUnauthorized(item.label); return; }
+  currentView = id;
+  document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("is-active", b.dataset.nav === id));
+  document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+  document.getElementById(item.view).classList.add("is-active");
+
+  if (item.view === "placeholder") {
+    document.getElementById("phTitle").textContent = item.label + " — coming soon";
+    document.getElementById("phBody").textContent = "This section is wired into the navigation and will be built next. Dashboard, Portfolio and Settings are live in this pass.";
+    document.getElementById("phRoute").textContent = item.route;
+    setMeta({ eyebrow: "Module", title: item.label, sub: "Wired into navigation · build pending." });
+  } else {
+    setMeta(pageMeta[item.view]);
+  }
+  if (renderers[item.view]) renderers[item.view]();
+  closeNav();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+const renderers = {
+  portfolio: renderPortfolioPage,
+  exposure: renderExposure,
+  performance: renderPerformance,
+  summary: renderSummary,
+  reporting: renderReporting,
+  forms: renderForms,
+  documents: renderDocuments,
+  intelligence: renderIntelligence,
+  audit: renderAudit,
+  compliance: renderCompliance,
+  dealflow: renderDealflow,
+  designsystem: renderDesignSystem,
+};
+
+function setMeta(m) {
+  if (!m) return;
+  const eyebrow = (m.eyebrow || "").replace("$FUND", `${fund.id} · ${fund.fullName}`);
+  document.getElementById("pageEyebrow").textContent = eyebrow;
+  document.getElementById("pageTitle").textContent = m.title;
+  document.getElementById("pageSub").textContent = m.sub;
+}
+
+function bindCompanyClicks() {
+  document.querySelectorAll("[data-company]").forEach((el) => {
+    if (!el.hasAttribute("tabindex")) { el.setAttribute("tabindex", "0"); el.setAttribute("role", "button"); el.setAttribute("aria-label", "Open " + el.dataset.company + " overview"); }
+    el.addEventListener("click", () => openCompany(el.dataset.company));
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCompany(el.dataset.company); } });
+  });
+}
+
+/* ---------- Portfolio page ---------- */
+const pfState = { q: "", sector: "All sectors", country: "All countries", sort: "ltm-desc" };
+
+function renderPortfolioKpis() {
+  const critical = companies.filter((c) => c.runwayMo <= 6).length;
+  const items = [
+    [String(companies.length), "Portfolio companies", "Q1 2026"],
+    [moneyM(fund.deployed), "Capital deployed", "cost basis"],
+    [fund.moic.toFixed(2) + "x", "Gross portfolio MOIC", "GAV " + moneyM(fund.gav)],
+    [String(critical), "Critical runway", "≤ 6 months"],
+  ];
+  document.getElementById("portfolioKpis").innerHTML = items.map((k) => `
+    <section class="panel kpi">
+      <div class="kpi-label"><span>${k[1]}</span><span class="chip">${k[2]}</span></div>
+      <div><div class="kpi-value num">${k[0]}</div></div>
+    </section>`).join("");
+}
+
+function filteredCompanies() {
+  const q = pfState.q.toLowerCase();
+  let list = companies.filter((c) => {
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.sector.toLowerCase().includes(q) || c.country.toLowerCase().includes(q);
+    const matchS = pfState.sector === "All sectors" || c.sector === pfState.sector;
+    const matchC = pfState.country === "All countries" || c.country === pfState.country;
+    return matchQ && matchS && matchC;
+  });
+  const [key, dir] = pfState.sort.split("-");
+  const val = (c) => key === "name" ? c.name : key === "ltm" ? c.ltm : key === "moic" ? parseFloat(c.moic) : key === "runway" ? c.runwayMo : key === "invested" ? c.invested : c.health;
+  list.sort((a, b) => { const va = val(a), vb = val(b); return typeof va === "string" ? (dir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va)) : (dir === "asc" ? va - vb : vb - va); });
+  return list;
+}
+
+function renderPortfolioTableFull() {
+  const list = filteredCompanies();
+  document.getElementById("pfTable").innerHTML = `
+    <thead><tr><th>Company</th><th>Sector</th><th>Country</th><th class="num">Invested</th><th class="num">Own.</th><th class="num">LTM Rev</th><th class="num">MOIC</th><th>Runway</th><th>Health</th><th>Fundraise</th></tr></thead>
+    <tbody>${list.map((c) => `
+      <tr class="clickable" data-company="${c.name}">
+        <td><div class="company-cell"><span class="avatar">${monogram(c.name)}</span><strong>${c.name}</strong></div></td>
+        <td>${c.sector}</td><td>${c.country}</td>
+        <td class="num">${moneyK(c.invested)}</td>
+        <td class="num">${c.ownership}</td>
+        <td class="num">${c.ltm === 0 ? "Pre-rev" : fmtUSD(c.ltm)}</td>
+        <td class="num">${c.moic}</td>
+        <td>${status(c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green", c.runway)}</td>
+        <td>${ring(c.health, healthColor(c.health), 40)}</td>
+        <td class="meta">${c.fundraise}</td>
+      </tr>`).join("")}${list.length === 0 ? `<tr><td colspan="10"><div class="meta" style="padding:24px;text-align:center;">No companies match your filters.</div></td></tr>` : ""}</tbody>`;
+  bindCompanyClicks();
+}
+
+function renderPortfolioPage() {
+  renderPortfolioKpis();
+  const sectorSel = document.getElementById("pfSector");
+  if (!sectorSel.dataset.ready) {
+    sectorSel.innerHTML = ["All sectors", ...new Set(companies.map((c) => c.sector))].map((s) => `<option>${s}</option>`).join("");
+    const countrySel = document.getElementById("pfCountry");
+    countrySel.innerHTML = ["All countries", ...new Set(companies.map((c) => c.country))].map((s) => `<option>${s}</option>`).join("");
+    document.getElementById("pfSort").innerHTML = [["ltm-desc", "LTM revenue ↓"], ["moic-desc", "MOIC ↓"], ["runway-asc", "Runway ↑"], ["invested-desc", "Invested ↓"], ["health-desc", "Health ↓"], ["name-asc", "Name A–Z"]].map((o) => `<option value="${o[0]}">${o[1]}</option>`).join("");
+    document.getElementById("pfSearch").addEventListener("input", (e) => { pfState.q = e.target.value; renderPortfolioTableFull(); });
+    sectorSel.addEventListener("change", (e) => { pfState.sector = e.target.value; renderPortfolioTableFull(); });
+    countrySel.addEventListener("change", (e) => { pfState.country = e.target.value; renderPortfolioTableFull(); });
+    document.getElementById("pfSort").addEventListener("change", (e) => { pfState.sort = e.target.value; renderPortfolioTableFull(); });
+    document.getElementById("pfExport").addEventListener("click", () => {
+      exportCSV("URAF-portfolio.csv", ["Company", "Sector", "Country", "Invested", "Ownership", "LTM Revenue", "MOIC", "Runway", "Health", "Fundraise"],
+        filteredCompanies().map((c) => [c.name, c.sector, c.country, moneyK(c.invested), c.ownership, c.ltm === 0 ? "Pre-revenue" : c.ltm, c.moic, c.runway, c.health, c.fundraise]));
+    });
+    sectorSel.dataset.ready = "1";
+  }
+  renderPortfolioTableFull();
+}
+
+/* ---------- Company overview (tabbed deep-dive) ---------- */
+let currentCompany = null, companyTab = "overview";
+
+function openCompany(name) {
+  if (!companies.find((x) => x.name === name)) return;
+  if (!allowed("company")) { showUnauthorized("Company overview"); return; }
+  currentCompany = name; companyTab = "overview"; currentView = "company";
+  heroStop();
+  document.querySelectorAll(".view").forEach((v) => v.classList.remove("is-active"));
+  document.getElementById("company").classList.add("is-active");
+  document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("is-active", b.dataset.nav === "portfolio"));
+  renderCompany();
+  closeNav();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ---------- Mobile drawer nav ---------- */
+function openNav() {
+  document.querySelector(".sidebar").classList.add("is-open");
+  document.getElementById("navScrim").classList.add("is-open");
+  const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "true");
+  const m = document.querySelector(".main"); if (m) m.style.overflow = "hidden";
+}
+function closeNav() {
+  const sb = document.querySelector(".sidebar"); if (sb) sb.classList.remove("is-open");
+  const sc = document.getElementById("navScrim"); if (sc) sc.classList.remove("is-open");
+  const t = document.getElementById("navToggle"); if (t) t.setAttribute("aria-expanded", "false");
+  const m = document.querySelector(".main"); if (m) m.style.overflow = "";
+}
+
+function gauge(months) {
+  const pct = Math.min(months / 24, 1) * 100;
+  const color = months < 6 ? "#e0564c" : months < 12 ? "#ff9a2e" : "#2faa63";
+  const r = 40, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
+  return `<div class="ring" style="--size:110px">
+    <svg viewBox="0 0 110 110" style="transform:rotate(-90deg)"><circle cx="55" cy="55" r="${r}" fill="none" stroke="rgba(28,27,26,0.08)" stroke-width="9"></circle><circle cx="55" cy="55" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle></svg>
+    <div style="text-align:center;line-height:1.02;max-width:76px;"><strong style="font-size:21px;font-weight:800;">${months}</strong><div class="meta" style="font-size:9.5px;font-weight:700;margin-top:1px;">months</div></div></div>`;
+}
+
+function revSeries(c) {
+  if (c.ltm === 0) return null;
+  const q = Math.round(c.ltm / 4);
+  const periods = ["Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26"];
+  const ramp = [0.55, 0.68, 0.8, 0.9, 1.0];
+  return periods.map((p, i) => [p, Math.round(q * ramp[i])]);
+}
+
+/* ---------- Per-company time series + fundraising (deep-dive) ---------- */
+let companyMetric = "revenue";
+const fin = {
+  "3Cat": { rev: 4750000, ebitda: -120000, burn: 90000, cash: 432000, hc: 113, op: "Stores", opVal: 22 },
+  "Farmio": { rev: 1800000, ebitda: -94600, burn: 94600, cash: 1100000, hc: 12, op: "ARR ($M)", opVal: 10.2 },
+  "Dash": { rev: 1000000, ebitda: -110000, burn: 40000, cash: 65000, hc: 59, op: "Active workers", opVal: 1224 },
+  "Alterno": { rev: 39000, ebitda: -90000, burn: 39000, cash: 180000, hc: 22, op: "Batteries deployed", opVal: 8 },
+  "Alicia Bots": { rev: 105000, ebitda: -200000, burn: 103000, cash: 710000, hc: 26, op: "Robots deployed", opVal: 61 },
+  "Okapi": { rev: 131000, ebitda: -10000, burn: 10000, cash: 313000, hc: 6, op: "Leases closed", opVal: 473 },
+  "Arkadiah": { rev: 23000, ebitda: -150000, burn: 158000, cash: 3400000, hc: 15, op: "Signed clients", opVal: 9 },
+  "Sirsak": { rev: 27700, ebitda: -15000, burn: 17000, cash: 366000, hc: 20, op: "Collection points", opVal: 670 },
+  "Waterhub": { rev: 16000, ebitda: -6000, burn: 6400, cash: 36000, hc: 15, op: "Litres/mo (K)", opVal: 420 },
+  "Terra Oleo": { rev: 0, ebitda: -67000, burn: 67000, cash: 900000, hc: 6, op: "Pilots signed", opVal: 8 },
+};
+const finPeriods = ["Q4'24", "Q1'25", "Q2'25", "Q3'25", "Q4'25", "Q1'26"];
+function metricSeries(name, metric) {
+  const f = fin[name]; if (!f) return null;
+  const cur = { revenue: f.rev, ebitda: f.ebitda, burn: f.burn, cash: f.cash, headcount: f.hc, op: f.opVal }[metric];
+  const shape = metric === "cash" ? [1.5, 1.35, 1.25, 1.15, 1.06, 1]
+    : metric === "burn" ? [0.78, 0.84, 0.9, 0.94, 0.98, 1]
+    : metric === "ebitda" ? [1.7, 1.5, 1.35, 1.2, 1.08, 1]
+    : [0.5, 0.62, 0.74, 0.84, 0.92, 1];
+  return finPeriods.map((p, i) => { let v = cur * shape[i]; if (metric === "ebitda") v = Math.abs(v); v = Math.abs(cur) >= 100 ? Math.round(v) : Math.round(v * 10) / 10; return [p, v]; });
+}
+
+/* Synthesize a 6-quarter runway history per company, anchored on the current runwayMo. */
+function runwayHistorySeries(c) {
+  // Synthetic deltas tuned per company so it doesn't look like every co has the same trajectory.
+  const seedMap = { "Dash": [4, 5, 6, 8, 12, c.runwayMo], "Alterno": [12, 10, 8, 7, 5, c.runwayMo], "3Cat": [10, 9, 8, 7, 6, c.runwayMo], "Okapi": [14, 16, 18, 19, 20, c.runwayMo] };
+  const seed = seedMap[c.name];
+  if (seed) return finPeriods.map((p, i) => [p, seed[i]]);
+  // Default: slight downward drift over time ending at current
+  const r = c.runwayMo;
+  const shape = [r * 1.4, r * 1.25, r * 1.15, r * 1.08, r * 1.02, r];
+  return finPeriods.map((p, i) => [p, Math.max(1, Math.round(shape[i] * 10) / 10)]);
+}
+function runwayHistoryChart(c) {
+  const s = runwayHistorySeries(c);
+  const max = Math.max(24, ...s.map((d) => d[1])) * 1.1;
+  return `<div class="chart" style="height:120px;">${s.map((d, i) => {
+    const h = (d[1] / max) * 100;
+    const tone = d[1] < 6 ? "" : d[1] < 12 ? "warm" : "hot"; // visual cue: green-ish (hot=amber/orange used elsewhere); we want healthy=hot (orange), warning=warm (amber), critical=track-only
+    // override: critical -> plain (no fill class) so we color via inline
+    const fillStyle = d[1] < 6 ? "background:linear-gradient(180deg,#E0564C,#FF8A7E);" : "";
+    return `<div class="chart-col"><div class="chart-barwrap"><span class="chart-v num">${d[1]}</span><div class="chart-bar"><span class="chart-fill ${fillStyle ? "" : tone}" style="height:${Math.max(h, 6)}%;${fillStyle}"></span></div></div><div class="chart-x">${d[0]}</div></div>`;
+  }).join("")}</div>`;
+}
+
+/* QoQ / YoY % for a company metric — computed from the synthesized series. */
+function metricDeltas(name, metric) {
+  const s = metricSeries(name, metric); if (!s || s.length < 5) return null;
+  const cur = s[s.length - 1][1], prev = s[s.length - 2][1], yearAgo = s[s.length - 5][1];
+  const pct = (a, b) => { if (!b || !isFinite(b)) return null; return Math.round(((a - b) / Math.abs(b)) * 1000) / 10; };
+  return { qoq: pct(cur, prev), yoy: pct(cur, yearAgo) };
+}
+function deltaBadge(d, opts) {
+  if (d === null || d === undefined) return "";
+  // opts.inverse=true: lower-is-better (burn/ebitda absolute)
+  const positive = opts && opts.inverse ? d <= 0 : d >= 0;
+  const tone = positive ? "green" : "red";
+  const arrow = d >= 0 ? "▲" : "▼";
+  return `<span class="delta-badge ${tone}">${arrow} ${Math.abs(d).toFixed(1)}%</span>`;
+}
+const metricFmt = {
+  revenue: (v) => fmtUSD(v), ebitda: (v) => "−" + fmtUSD(v), burn: (v) => fmtUSD(v), cash: (v) => fmtUSD(v),
+  headcount: (v) => String(v), op: (v) => String(v),
+};
+function capsuleChart(data, fmt) {
+  const max = Math.max(...data.map((d) => d[1])) * 1.15 || 1;
+  return `<div class="chart">${data.map((d, i) => { const h = (d[1] / max) * 100; const cls = i === data.length - 1 ? "hot" : i >= data.length - 2 ? "warm" : ""; return `<div class="chart-col" title="${d[0]} · ${fmt(d[1])}"><div class="chart-barwrap"><span class="chart-v num">${fmt(d[1])}</span><div class="chart-bar"><span class="chart-fill ${cls}" style="height:${Math.max(h, 6)}%"></span></div></div><div class="chart-x">${d[0]}</div></div>`; }).join("")}</div>`;
+}
+function companyChart(data) { return capsuleChart(data, fmtUSD); }
+/* Finance-standard time-series: data-point markers ("dots") on a connecting
+   line + a dashed linear-regression trend line, gridlines and axis labels.
+   Returns an <svg> string sized to its container. */
+function dotLineChart(data, opts) {
+  opts = opts || {};
+  const fmt = opts.fmt || ((v) => String(v));
+  const axisFmt = opts.axisFmt || fmt;
+  const color = opts.color || "#F2691E";
+  const W = 760, H = opts.h || 248, L = 58, R = 20, T = 20, Bm = 34;
+  const n = data.length, ys = data.map((d) => d[1]);
+  let lo = opts.min, hi = opts.max;
+  if (lo === undefined || hi === undefined) {
+    const mn = Math.min(...ys), mx = Math.max(...ys);
+    const pad = (mx - mn) * 0.2 || Math.abs(mx) * 0.12 || 1;
+    if (lo === undefined) lo = mn - pad;
+    if (hi === undefined) hi = mx + pad;
+  }
+  if (hi === lo) hi = lo + 1;
+  const px = (i) => L + (W - L - R) * (n <= 1 ? 0.5 : i / (n - 1));
+  const py = (v) => T + (H - T - Bm) * (1 - (v - lo) / (hi - lo));
+  let grid = "";
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + (hi - lo) * (k / 4), y = py(v).toFixed(1);
+    grid += `<line x1="${L}" y1="${y}" x2="${W - R}" y2="${y}" stroke="rgba(28,27,26,0.07)"/><text x="${L - 9}" y="${(+y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#8a8884" font-family="Manrope,Arial">${axisFmt(v)}</text>`;
+  }
+  const xlab = data.map((d, i) => `<text x="${px(i).toFixed(1)}" y="${H - 11}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6b6863" font-family="Manrope,Arial">${d[0]}</text>`).join("");
+  // least-squares trend line over index → value
+  const meanX = (n - 1) / 2, meanY = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) { num += (i - meanX) * (ys[i] - meanY); den += (i - meanX) ** 2; }
+  const slope = den ? num / den : 0, b0 = meanY - slope * meanX;
+  const trend = `<line x1="${px(0).toFixed(1)}" y1="${py(b0).toFixed(1)}" x2="${px(n - 1).toFixed(1)}" y2="${py(b0 + slope * (n - 1)).toFixed(1)}" stroke="#b8b4ac" stroke-width="2" stroke-dasharray="6 5" stroke-linecap="round"><title>Trend</title></line>`;
+  const line = `<polyline points="${data.map((d, i) => `${px(i).toFixed(1)},${py(d[1]).toFixed(1)}`).join(" ")}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const dots = data.map((d, i) => `<g><circle cx="${px(i).toFixed(1)}" cy="${py(d[1]).toFixed(1)}" r="11" fill="transparent"><title>${d[0]} · ${fmt(d[1])}</title></circle><circle cx="${px(i).toFixed(1)}" cy="${py(d[1]).toFixed(1)}" r="4.5" fill="#fff" stroke="${color}" stroke-width="2.5" pointer-events="none"/></g>`).join("");
+  const vlabs = opts.valueLabels ? data.map((d, i) => `<text x="${px(i).toFixed(1)}" y="${(py(d[1]) - 13).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="800" fill="${color}" font-family="Manrope,Arial">${fmt(d[1])}</text>`).join("") : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;" role="img" aria-label="${opts.label || "time series"}"><rect width="${W}" height="${H}" fill="transparent"/>${grid}${trend}${line}${dots}${vlabs}${xlab}</svg>`;
+}
+function renderCoChart(c) {
+  const elc = document.getElementById("coChart"); if (!elc) return;
+  const elD = document.getElementById("coDeltas");
+  const s = metricSeries(c.name, companyMetric);
+  if (!s || (companyMetric === "revenue" && c.ltm === 0)) {
+    elc.innerHTML = `<div class="meta" style="padding:34px;text-align:center;">${companyMetric === "revenue" ? "Pre-revenue — no revenue to chart yet." : "No data for this metric."}</div>`;
+    if (elD) elD.innerHTML = "";
+    return;
+  }
+  elc.innerHTML = dotLineChart(s, { fmt: metricFmt[companyMetric], valueLabels: true, label: "Performance over time" });
+  if (elD) {
+    const d = metricDeltas(c.name, companyMetric);
+    const inverse = (companyMetric === "burn" || companyMetric === "ebitda");
+    const cur = s[s.length - 1][1];
+    const metricLabel = { revenue: "Revenue", ebitda: "EBITDA (abs)", burn: "Burn", cash: "Cash", headcount: "Headcount", op: (fin[c.name] && fin[c.name].op) || "KPI" }[companyMetric] || "";
+    elD.innerHTML = d ? `
+      <div class="co-delta"><span class="lab">Latest</span><strong class="num">${metricFmt[companyMetric](cur)}</strong></div>
+      <div class="co-delta"><span class="lab">QoQ</span>${deltaBadge(d.qoq, { inverse })}</div>
+      <div class="co-delta"><span class="lab">YoY</span>${deltaBadge(d.yoy, { inverse })}</div>
+      <div class="co-delta co-delta-meta meta">${metricLabel}</div>` : "";
+  }
+}
+
+/* Fundraising history (dummy, anchored to URAF Q1 2026 known facts). */
+const funding = {
+  "Alterno": [["Seed (SAFE)", "Mar 2024", "$2.0M", "$250K", "$12M cap", "Wavemaker, angels"], ["Series A2 (target)", "H1 2027", "$5.0M", "TBD", "$25M", "Synexia Ventures, NTT CVC (DD)"]],
+  "Okapi": [["Pre-Seed", "2023", "$0.8M", "—", "—", "Angels"], ["Seed (SAFE)", "Mar 2024", "$1.5M", "$175K", "$8M cap", "Wavemaker"], ["Seed extension", "2026 · raising", "$3.0M", "TBD", "—", "Iterative (in talks)"]],
+  "Dash": [["Seed", "Jul 2024", "$2.0M", "$150K", "$10M", "Existing investors"], ["Seed top-up", "H2 2025", "$1.0M", "$100K", "$12M", "Existing investors"], ["Bridge", "Apr 2026", "$0.8M", "$200K", "SAFE", "Existing investors"], ["Series A (pipeline)", "2026", "$8.0M", "TBD", "—", "Intudo, Beacon VC, Twynam"]],
+  "3Cat": [["Seed (SAFE)", "May 2025", "$1.5M", "$150K", "$12M cap", "Existing investors"], ["Series A (closing)", "15 Jun 2026", "$4.0M", "TBD", "—", "Foxmont (lead), ADB Ventures, GGV"]],
+  "Alicia Bots": [["Seed", "Jul 2024", "$3.0M", "$250K", "$15M", "Existing investors"], ["Series A (advanced)", "2026", "—", "TBD", "—", "In diligence"]],
+  "Arkadiah": [["Seed (SAFE)", "Sep 2023", "$2.5M", "$250K", "$16M cap", "Wavemaker, angels"], ["Series A (closed)", "Q4 2025", "$6.0M", "Follow-on", "$30M", "Existing + new"]],
+  "Sirsak": [["Seed (SAFE)", "May 2025", "$1.0M", "$50K", "$6M cap", "Angels"], ["Seed bridge (prep)", "2026", "$1.0M", "TBD", "—", "Impact investors (sought)"]],
+  "Waterhub": [["Pre-seed (SAFE)", "Jul 2025", "$0.5M", "$50K", "$4M cap", "Angels"], ["Pre-seed extension", "2026 · planning", "—", "TBD", "—", "—"]],
+  "Terra Oleo": [["Seed", "Jun 2024", "$2.0M", "$150K", "$10M", "Breakthrough Energy Fellows"], ["EnterpriseSG grant", "Feb 2026", "SGD 0.8M", "—", "Non-dilutive", "EnterpriseSG"]],
+  "Farmio": [["Seed (SAFE)", "Oct 2025", "$3.0M", "$300K", "$18M cap", "Existing investors"], ["Pre-Series A (prep)", "2026", "—", "TBD", "—", "Food / supply-chain strategics"]],
+};
+function valueAdd(c) {
+  const round = (c.fundraise || "").split("·")[0].trim() || "its next round";
+  return [
+    ["Fundraising & network", `Introduced ${c.name} to investors for ${round} and ongoing rounds.`],
+    ["Market expansion", `Hands-on GTM support scaling across Southeast Asia from ${c.country}.`],
+    ["Portfolio intelligence", `Benchmarking and best-practice sharing with comparable ${c.sector} companies.`],
+  ];
+}
+function fundingSection(c) {
+  const rounds = funding[c.name] || [];
+  return `<section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>URAF in ${c.name}'s rounds</h2><p class="meta">Round history · our participation, valuation and co-investors</p></div><span class="chip">${rounds.length} rounds</span></div>
+    <div class="panel-body"><div class="grid grid-2" style="align-items:start;">
+      <div class="table-scroll"><table class="tbl">
+        <thead><tr><th>Round</th><th>Date</th><th class="num">Size</th><th class="num">URAF</th><th class="num">Valuation</th><th>Lead / co-investors</th></tr></thead>
+        <tbody>${rounds.length ? rounds.map((r) => `<tr><td><span class="round-tag">${r[0]}</span></td><td class="meta">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3] === "—" || r[3] === "TBD" ? `<span class="meta">${r[3]}</span>` : `<strong>${r[3]}</strong>`}</td><td class="num">${r[4]}</td><td class="meta">${r[5]}</td></tr>`).join("") : `<tr><td colspan="6"><div class="meta" style="padding:18px;text-align:center;">No round history.</div></td></tr>`}</tbody>
+      </table></div>
+      <div class="narr"><h3>How URAF adds value</h3><ul>${valueAdd(c).map((v) => `<li><strong style="color:var(--text);">${v[0]}</strong> — ${v[1]}</li>`).join("")}</ul></div>
+    </div></div>
+  </section>`;
+}
+/* Per-company media & brand assets (placeholders — wired for real assets,
+   feeds the future LP view): founder photos, media ticker, brand logos. */
+function mediaSection(c) {
+  const founders = [["Founder name", "Founder & CEO"], ["Founder name", "Co-founder & CTO"]];
+  const press = [
+    ["TechCrunch", `${c.name} scales its ${c.sector.toLowerCase()} platform`, "Press · placeholder"],
+    ["DealStreetAsia", `Inside ${c.name}'s expansion across ${c.country}`, "Feature · placeholder"],
+    ["e27", `${c.name} named one to watch in ${c.sector}`, "List · placeholder"],
+    ["Tech in Asia", `${c.name} on building in ${c.country}`, "Interview · placeholder"],
+  ];
+  return `
+    <section class="panel"><div class="panel-head"><div><h2>Media &amp; brand assets</h2><p class="meta">Founder photos, press and logos — feeds the LP view</p></div><span class="chip">Placeholder</span></div>
+      <div class="panel-body">
+        <p class="meta media-note">Asset files to be supplied — the layout and ticker are wired so real founder photos, logos and press links drop straight in.</p>
+        <h3 style="margin-top:14px;">Founders</h3>
+        <div class="founder-row">${founders.map((f) => `<div class="founder"><span class="founder-photo">${monogram(c.name)}</span><div><strong>${f[0]}</strong><div class="meta">${f[1]}</div></div></div>`).join("")}</div>
+        <h3 style="margin-top:18px;">Brand assets</h3>
+        <div class="brand-tile"><span class="avatar" style="width:48px;height:48px;font-size:16px;border-radius:13px;">${monogram(c.name)}</span><div style="flex:1;"><strong>${c.name} logomark</strong><div class="meta">SVG / PNG · placeholder</div></div><button class="btn btn-muted" type="button" disabled>Download</button></div>
+      </div>
+    </section>
+    <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Media ticker</h2><p class="meta">Recent mentions &amp; coverage</p></div><span class="chip">${press.length} mentions</span></div>
+      <div class="panel-body"><div class="media-ticker">${press.map((p) => `<div class="media-card"><div class="media-outlet">${p[0]}</div><div class="media-head">${p[1]}</div><div class="meta">${p[2]}</div></div>`).join("")}</div></div>
+    </section>`;
+}
+
+
+function renderCompany() {
+  const c = companies.find((x) => x.name === currentCompany);
+  const d = details[c.name] || {};
+  const runwayTone = c.runwayMo <= 6 ? "red" : c.runwayMo <= 9 ? "amber" : "green";
+  const tabs = [["overview", "Overview"], ["valuations", "Valuations"], ["funding", "Funding"], ["media", "Media"], ["documents", "Documents"]];
+  document.getElementById("companyBody").innerHTML = `
+    <button class="btn btn-ghost" type="button" data-nav="portfolio" style="margin-bottom:14px;">← Back to portfolio</button>
+    <section class="panel"><div class="panel-body">
+      <div class="co-header">
+        <div class="co-id">
+          <span class="avatar" style="width:54px;height:54px;border-radius:15px;font-size:17px;">${monogram(c.name)}</span>
+          <div>
+            <h2>${c.name}</h2>
+            <div class="co-chips">
+              <span class="chip">${c.sector}</span><span class="chip">${c.country}</span>
+              ${d.stage ? `<span class="chip">${d.stage}</span>` : ""}${d.security ? `<span class="chip">${d.security}</span>` : ""}
+              ${status(runwayTone, c.runway + " runway")}
+            </div>
+          </div>
+        </div>
+        <div class="co-side">
+          <div class="big num">${c.moic}</div><div class="meta">MOIC · ${c.ownership} owned</div>
+          <div class="num" style="margin-top:10px;font-weight:800;font-size:16px;">${d.holding || moneyK(c.invested)}</div><div class="meta">Current holding value</div>
+        </div>
+      </div>
+    </div></section>
+    <div class="tabbar">${tabs.map((t) => `<button class="tab ${t[0] === companyTab ? "is-active" : ""}" data-tab="${t[0]}" type="button">${t[1]}</button>`).join("")}</div>
+    <div id="companyTab"></div>`;
+  document.querySelectorAll("#companyBody [data-nav]").forEach((b) => b.addEventListener("click", () => go(b.dataset.nav)));
+  document.querySelectorAll("#companyBody .tab").forEach((b) => b.addEventListener("click", () => { companyTab = b.dataset.tab; renderCompany(); }));
+  renderCompanyTab(c, d);
+}
+
+function renderCompanyTab(c, d) {
+  const el = document.getElementById("companyTab");
+  const metrics = d.metrics || [["—", "No metrics"]];
+  if (companyTab === "overview") {
+    const opLabel = (fin[c.name] && fin[c.name].op) || "KPI";
+    const metricDefs = [["revenue", "Revenue"], ["ebitda", "EBITDA"], ["burn", "Burn"], ["cash", "Cash"], ["headcount", "Headcount"], ["op", opLabel]];
+    if (!fin[c.name]) companyMetric = "revenue";
+    const hp = c._health || [];
+    const healthTip = `Yellow health score · ${hp.map((p) => `${p[0]} ${p[1]} (${p[2]}/100, w${p[3]}%)`).join(" · ")}`;
+    el.innerHTML = `
+      <div class="grid grid-2" style="align-items:start;">
+        <section class="panel"><div class="panel-head"><h2>About</h2><span class="chip">${d.invested ? "Invested " + d.invested : "URAF"}</span></div>
+          <div class="panel-body">
+            <p class="meta" style="font-size:13px;line-height:1.65;">${d.desc || "—"}</p>
+            ${d.model ? `<h3 style="margin-top:16px;">Business model</h3><p class="meta" style="font-size:13px;line-height:1.65;margin-top:6px;">${d.model}</p>` : ""}
+            <div style="display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;">
+              <div><div class="num" style="font-weight:800;font-size:16px;">${moneyK(c.invested)}</div><div class="meta">Invested</div></div>
+              <div><div class="num" style="font-weight:800;font-size:16px;">${c.ownership}</div><div class="meta">Ownership</div></div>
+              <div><div style="font-weight:800;font-size:13.5px;">${c.fundraise}</div><div class="meta">Fundraise status</div></div>
+            </div>
+          </div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Key Metrics</h2><span class="chip" title="${healthTip}">Health ${c.health}/100</span></div>
+          <div class="panel-body">
+            <div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div>
+            ${d.rag && d.rag.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">${d.rag.map((r) => status(r[0], r[1])).join("")}</div>` : ""}
+          </div>
+        </section>
+      </div>
+      ${(d.highlights || d.lowlights || d.goals) ? `<section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Notable Updates</h2><span class="chip">Q1 2026</span></div>
+        <div class="panel-body"><div class="narr-grid">
+          <div class="narr"><h3>Highlights</h3><ul>${(d.highlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+          <div class="narr"><h3>Low-lights</h3><ul>${(d.lowlights || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+          <div class="narr"><h3>Goals</h3><ul>${(d.goals || []).map((x) => `<li>${x}</li>`).join("") || "<li>—</li>"}</ul></div>
+        </div></div></section>` : ""}
+      <section class="panel" style="margin-top:16px;"><div class="panel-head"><div><h2>Performance over time</h2><p class="meta">Financial &amp; operational metrics · last 6 quarters</p></div>
+        <div class="seg" id="coMetricSeg">${metricDefs.map((m) => `<button class="${m[0] === companyMetric ? "is-active" : ""}" data-metric="${m[0]}" type="button">${m[1]}</button>`).join("")}</div></div>
+        <div class="panel-body"><div id="coDeltas" class="co-deltas"></div><div id="coChart"></div></div>
+      </section>
+      <div class="grid grid-2" style="margin-top:16px;align-items:start;">
+        <section class="panel"><div class="panel-head"><h2>Runway</h2><span class="chip">threshold 6 / 12 mo</span></div>
+          <div class="panel-body">
+            <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
+              ${gauge(c.runwayMo)}
+              <div style="display:grid;gap:10px;">
+                <div><div class="num" style="font-weight:800;font-size:16px;">${c.burn}</div><div class="meta">Monthly burn</div></div>
+                <div><div class="num" style="font-weight:800;font-size:16px;">${fin[c.name] ? fmtUSD(fin[c.name].cash) : "—"}</div><div class="meta">Cash on hand</div></div>
+              </div>
+            </div>
+            <div class="runway-history">
+              <div class="lab">Runway · last 6 quarters (mo)</div>
+              ${runwayHistoryChart(c)}
+            </div>
+          </div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Financial snapshot</h2><span class="chip">Q1 2026</span></div>
+          <div class="panel-body"><div class="metric-grid">${metrics.map((m) => `<div class="metric"><strong class="num">${m[0]}</strong><span>${m[1]}</span></div>`).join("")}</div></div>
+        </section>
+      </div>`;
+    renderCoChart(c);
+    document.querySelectorAll("#coMetricSeg button").forEach((b) => b.addEventListener("click", () => { companyMetric = b.dataset.metric; document.querySelectorAll("#coMetricSeg button").forEach((x) => x.classList.toggle("is-active", x === b)); renderCoChart(c); }));
+  } else if (companyTab === "media") {
+    el.innerHTML = mediaSection(c);
+  } else if (companyTab === "funding") {
+    el.innerHTML = fundingSection(c);
+  } else if (companyTab === "valuations") {
+    const cost = c.invested, cur = Math.round(c.invested * parseFloat(c.moic));
+    const step = [["Entry", cost * 1000], ["Q2'25", cost * 1000], ["Q3'25", cost * 1000], ["Q4'25", Math.round((cost + (cur - cost) * 0.6) * 1000)], ["Q1'26", cur * 1000]];
+    el.innerHTML = `
+      <div class="grid grid-2" style="align-items:start;">
+        <section class="panel"><div class="panel-head"><h2>Position</h2><span class="chip">${d.security || "—"}</span></div>
+          <div class="panel-body" style="display:flex;gap:30px;flex-wrap:wrap;">
+            <div><div class="num" style="font-weight:800;font-size:22px;">${moneyK(cost)}</div><div class="meta">Invested (cost)</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${d.holding || moneyK(cur)}</div><div class="meta">Current holding</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${c.moic}</div><div class="meta">MOIC</div></div>
+            <div><div class="num" style="font-weight:800;font-size:22px;">${c.ownership}</div><div class="meta">Ownership</div></div>
+          </div>
+        </section>
+        <section class="panel"><div class="panel-head"><h2>Carrying value</h2><span class="status status-green">${c.moic}</span></div>
+          <div class="panel-body">${companyChart(step)}</div>
+        </section>
+      </div>
+      <section class="panel" style="margin-top:16px;"><div class="panel-head"><h2>Valuation history</h2></div>
+        <div class="panel-body table-scroll"><table class="tbl">
+          <thead><tr><th>As of</th><th class="num">Holding value</th><th>Method</th><th>Event</th><th class="num">MOIC</th><th>Committee</th></tr></thead>
+          <tbody>
+            <tr><td>Q1 2026</td><td class="num">${d.holding || moneyK(cur)}</td><td>${parseFloat(c.moic) > 1 ? "Last Round" : "Cost"}</td><td>${parseFloat(c.moic) > 1 ? "Follow-on / uplift" : "No change"}</td><td class="num">${c.moic}</td><td>${status("green", "Approved")}</td></tr>
+            <tr><td>Entry</td><td class="num">${moneyK(cost)}</td><td>Cost</td><td>Initial investment</td><td class="num">1.00x</td><td>${status("green", "Approved")}</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+      ${fundingSection(c)}`;
+  } else {
+    const cdocs = [["Management Accounts — Q1 2026", "Financials", "12 May 2026", true], [c.name + " Board Deck", "Update", "08 May 2026", true], ["Cap Table", "Legal", "30 Apr 2026", false], [(d.security || "SAFE") + " Agreement", "Legal", "—", false]];
+    el.innerHTML = `<section class="panel"><div class="panel-head"><h2>Documents</h2><span class="chip">${c.name}</span></div>
+      <div class="panel-body table-scroll"><table class="tbl">
+        <thead><tr><th>Document</th><th>Type</th><th>Date</th><th>Link</th></tr></thead>
+        <tbody>${cdocs.map((x) => `<tr><td><strong>${x[0]}</strong></td><td>${x[1]}</td><td class="meta">${x[2]}</td><td>${x[3] ? `<button class="btn btn-muted copy" type="button">Copy link</button>` : `<span class="chip">Private</span>`}</td></tr>`).join("")}</tbody>
+      </table></div></section>`;
+    el.querySelectorAll(".copy").forEach((b) => b.addEventListener("click", (e) => { e.currentTarget.textContent = "Copied ✓"; setTimeout(() => { e.currentTarget.textContent = "Copy link"; }, 1400); }));
+  }
+}
+
+/* ---------- Dashboard render wrapper (so fund switch can re-render it) ---------- */
+function renderDashboard() {
+  renderHero();
+  renderAllocation();
+  renderHealthList();
+  renderKpis();
+  renderSectorDonut();
+  renderMoicChart();
+  renderAlerts();
+  renderWorkflow();
+  renderPortfolioTable();
+  renderInvestSummary();
+}
+renderers.dashboard = renderDashboard;
+
+/* ---------- Fund switcher ---------- */
+function setActiveFund(id) {
+  if (!fundDatasets[id]) return;
+  activeFund = id;
+  fund = fundDatasets[id];
+  companies   = (id === "URAF") ? urafCompanies  : umefCompanies;
+  upcoming    = (id === "URAF") ? urafUpcoming   : umefUpcoming;
+  sectors     = (id === "URAF") ? urafSectors    : umefSectors;
+  geos        = ((id === "URAF") ? urafGeoLenses : umefGeoLenses)[geoLens];
+  moicTrend   = (id === "URAF") ? urafMoicTrend  : umefMoicTrend;
+  signals     = computeSignals(companies);
+  try { localStorage.setItem("yelloFund", id); } catch (e) {}
+  // refresh the switcher UI + page eyebrow + re-render current view
+  renderFundSwitcher();
+  // Company view: if the current company isn't in the new fund, route to Portfolio.
+  if (currentView === "company") {
+    if (companies.find((c) => c.name === currentCompany)) {
+      renderCompany();
+    } else {
+      go("portfolio");
+    }
+    setMeta(pageMeta[currentView]);
+    return;
+  }
+  setMeta(pageMeta[currentView]);
+  if (renderers[currentView]) renderers[currentView](); else renderDashboard();
+}
+function renderFundSwitcher() {
+  const el = document.getElementById("fundSwitch"); if (!el) return;
+  el.innerHTML = fundsCatalog.map((f) => `<button class="${f.id === activeFund ? "is-active" : ""}" data-fund="${f.id}" type="button" role="radio" aria-checked="${f.id === activeFund}">${f.id}</button>`).join("");
+  el.querySelectorAll("[data-fund]").forEach((b) => b.addEventListener("click", () => setActiveFund(b.dataset.fund)));
+}
+
+/* ---------- Init ---------- */
+computeHealth();                       // derive health scores from base data
+signals = computeSignals(companies);  // derive risk signals from base data
+renderFundSwitcher();
+renderDashboard();
+setSettingsTab("workspace");
+
+document.querySelectorAll("[data-settings-tab]").forEach((b) => b.addEventListener("click", () => setSettingsTab(b.dataset.settingsTab)));
+document.getElementById("refreshBtn").addEventListener("click", (e) => {
+  e.currentTarget.textContent = "Refreshed ✓";
+  setTimeout(() => { e.currentTarget.textContent = "Refresh data"; }, 1400);
+});
+
+/* Restore saved active fund (after listeners attached). */
+const savedFund = (() => { try { return localStorage.getItem("yelloFund"); } catch (e) { return null; } })();
+if (savedFund && fundDatasets[savedFund] && savedFund !== activeFund) setActiveFund(savedFund);
+
+/* ---------- Mobile drawer wiring ---------- */
+document.getElementById("navToggle").addEventListener("click", () => {
+  document.querySelector(".sidebar").classList.contains("is-open") ? closeNav() : openNav();
+});
+document.getElementById("navScrim").addEventListener("click", closeNav);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
+
+/* ---------- Auth bootstrap ---------- */
+renderAuthGate();
+const savedUser = (() => { try { return localStorage.getItem("yelloUser"); } catch (e) { return null; } })();
+if (savedUser && users.find((u) => u.name === savedUser)) signIn(savedUser);

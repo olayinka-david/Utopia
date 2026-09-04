@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yellow — Utopia Radical</title>
+    <meta name="description" content="Yellow operating system for Utopia Radical — fund intelligence, portfolio monitoring, and LP reporting." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./reasoning.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- ============ SIDEBAR (full application navigation) ============ -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark"><img class="yl-mark" src="./yellow-river-mark.png" alt="Yellow River" /><span class="yl-word">Yellow River</span></div>
+          <div class="brand-sub">Utopia Radical · URAF</div>
+        </div>
+
+        <nav class="nav-scroll" id="nav"></nav>
+
+        <div class="sidebar-foot" id="sidebarFoot"></div>
+      </aside>
+
+      <!-- ============ MAIN ============ -->
+      <main class="main">
+        <div class="mobile-topbar">
+          <button class="hamburger" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+          <div style="display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;"><img class="yl-mark" src="./yellow-river-mark.png" alt="Yellow River" style="height:26px;" /><span class="yl-word">Yellow River</span></div>
+        </div>
+        <div class="topbar">
+          <div>
+            <p class="eyebrow" id="pageEyebrow">URAF · The Radical Fund</p>
+            <h1 id="pageTitle">Fund Dashboard</h1>
+            <p class="subcopy" id="pageSub">Portfolio performance, capital deployment, and quarterly reporting health for Q1 2026.</p>
+          </div>
+          <div class="actions">
+            <div class="fund-switch" id="fundSwitch" role="radiogroup" aria-label="Active fund"></div>
+            <button class="control" type="button">Q1 2026 ▾</button>
+            <button class="btn btn-muted" id="refreshBtn" type="button">Refresh data</button>
+            <button class="btn btn-primary" type="button">+ New entry</button>
+          </div>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <section class="view is-active" id="dashboard">
+          <!-- Hero banner (full width) -->
+          <div class="hero" id="hero"></div>
+
+          <div class="grid grid-2" style="margin-top:16px;align-items:start;">
+            <section class="panel">
+              <div class="panel-head"><h2>Capital Allocation</h2><span class="chip">USD</span></div>
+              <div class="panel-body" id="allocation"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head"><h2>Portfolio Health</h2><span class="chip">10 companies</span></div>
+              <div class="panel-body"><div class="health-list" id="healthList"></div></div>
+            </section>
+          </div>
+
+          <!-- KPI row -->
+          <div class="grid grid-4" id="kpiGrid" style="margin-top:16px;"></div>
+          <p class="meta source-note">Headline fund figures (committed, drawn, deployed, GAV, MOIC) are authoritative <strong>reporting inputs</strong>; health scores, runway and risk signals are <strong>derived by Yellow</strong> from base company data.</p>
+
+          <!-- Composition + Performance -->
+          <div class="grid grid-2" style="margin-top:16px;">
+            <section class="panel">
+              <div class="panel-head"><h2>Sector Composition</h2><span class="chip">by capital</span></div>
+              <div class="panel-body"><div class="donut-wrap"><div class="donut" id="sectorDonut"><div class="donut-center"><strong>$1.88M</strong><span>deployed</span></div></div><div class="legend" id="sectorLegend"></div></div></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head"><div><h2>MOIC Development</h2><p class="meta">Gross portfolio multiple to date</p></div><span class="status status-green">▲ +0.10x to date</span></div>
+              <div class="panel-body"><div class="line-chart" id="moicChart"></div></div>
+            </section>
+          </div>
+
+          <!-- Risk + Workflow -->
+          <div class="grid grid-2" style="margin-top:16px;">
+            <section class="panel">
+              <div class="panel-head"><h2>Risk Signals</h2><span class="status status-red">Action needed</span></div>
+              <div class="panel-body"><div class="alert-list" id="alertList"></div></div>
+            </section>
+            <section class="panel">
+              <div class="panel-head"><div><h2>Quarterly Reporting</h2><p class="meta">Q1 2026 cycle · target Day 60 LP distribution</p></div></div>
+              <div class="panel-body"><div class="timeline" id="workflow"></div></div>
+            </section>
+          </div>
+
+          <!-- Portfolio health detail table -->
+          <section class="panel" style="margin-top:16px;">
+            <div class="panel-head"><div><h2>Portfolio — Q1 2026</h2><p class="meta">In order of LTM revenue · click a company for the overview</p></div><button class="btn btn-ghost" type="button" data-nav="portfolio">View all ↗</button></div>
+            <div class="panel-body table-scroll"><table class="tbl" id="portfolioTable"></table></div>
+          </section>
+
+          <!-- Upcoming investments -->
+          <section class="panel" style="margin-top:16px;">
+            <div class="panel-head"><div><h2>Upcoming Investments · Q2 2026</h2><p class="meta">From the Quarterly Investment Summary</p></div><span class="chip">Sidecar w/ QDB</span></div>
+            <div class="panel-body" id="investSummary"></div>
+          </section>
+        </section>
+
+        <!-- ===== SETTINGS ===== -->
+        <section class="view" id="settings">
+          <div class="settings-layout">
+            <div class="settings-tabs" id="settingsTabs">
+              <button class="settings-tab is-active" data-settings-tab="workspace" type="button">Workspace</button>
+              <button class="settings-tab" data-settings-tab="reporting" type="button">Reporting</button>
+              <button class="settings-tab" data-settings-tab="roles" type="button">Roles &amp; Permissions</button>
+              <button class="settings-tab" data-settings-tab="forms" type="button">Forms Taxonomy</button>
+              <button class="settings-tab" data-settings-tab="visuals" type="button">Visual System</button>
+            </div>
+            <section class="panel" id="settingsPanel"></section>
+          </div>
+        </section>
+
+        <!-- ===== PORTFOLIO ===== -->
+        <section class="view" id="portfolio">
+          <div class="grid grid-4" id="portfolioKpis" style="margin-bottom:16px;"></div>
+          <section class="panel">
+            <div class="panel-head" style="flex-wrap:wrap;gap:12px;">
+              <div><h2>Portfolio Companies</h2><p class="meta">URAF · Q1 2026 · click a company for the full overview</p></div>
+              <div class="toolbar">
+                <input class="input" id="pfSearch" type="search" placeholder="Search…" />
+                <select class="select" id="pfSector"></select>
+                <select class="select" id="pfCountry"></select>
+                <select class="select" id="pfSort"></select>
+                <button class="btn btn-muted" id="pfExport" type="button">Export CSV</button>
+              </div>
+            </div>
+            <div class="panel-body table-scroll"><table class="tbl" id="pfTable"></table></div>
+          </section>
+        </section>
+
+        <!-- ===== COMPANY OVERVIEW ===== -->
+        <section class="view" id="company"><div id="companyBody"></div></section>
+
+        <!-- ===== MODULE PAGES ===== -->
+        <section class="view" id="summary"><div id="summaryBody"></div></section>
+        <section class="view" id="exposure"><div id="exposureBody"></div></section>
+        <section class="view" id="performance"><div id="performanceBody"></div></section>
+        <section class="view" id="reporting"><div id="reportingBody"></div></section>
+        <section class="view" id="forms"><div id="formsBody"></div></section>
+        <section class="view" id="documents"><div id="documentsBody"></div></section>
+        <section class="view" id="intelligence"><div id="intelligenceBody"></div></section>
+        <section class="view" id="reasoning"><div id="reasoningBody"></div></section>
+        <section class="view" id="audit"><div id="auditBody"></div></section>
+        <section class="view" id="compliance"><div id="complianceBody"></div></section>
+        <section class="view" id="dealflow"><div id="dealflowBody"></div></section>
+        <section class="view" id="designsystem"><div id="designsystemBody"></div></section>
+
+        <!-- ===== UNAUTHORIZED ===== -->
+        <section class="view" id="unauthorized">
+          <div class="placeholder panel" style="padding:40px;">
+            <div>
+              <div class="ph-icon">⊘</div>
+              <h2>Unauthorized</h2>
+              <p id="unauthBody">Your role doesn’t have access to this section.</p>
+              <div class="ph-tag"><button class="btn btn-muted" data-nav="dashboard" type="button">Back to dashboard</button></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== PLACEHOLDER (shared by not-yet-built sections) ===== -->
+        <section class="view" id="placeholder">
+          <div class="placeholder panel" style="padding:40px;">
+            <div>
+              <div class="ph-icon">◔</div>
+              <h2 id="phTitle">Coming soon</h2>
+              <p id="phBody">This section is wired into the navigation and will be built out next.</p>
+              <div class="ph-tag"><span class="chip" id="phRoute">/</span></div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <div class="scrim" id="navScrim"></div>
+    </div>
+
+    <div id="authgate" class="authgate"></div>
+    <div id="modalRoot" class="modal-root"></div>
+
+    <script src="./design-system.js"></script>
+    <script src="./app.js"></script>
+    <script src="./reasoning.js"></script>
+  </body>
+</html>

@@ -1,0 +1,133 @@
+/* ============================================================
+   Data Reasoning Trail — styles (matches Yellow warm light theme)
+   ============================================================ */
+:root {
+  --tr-red: var(--red, #e0564c);
+  --tr-amber: var(--amber, #ff9a2e);
+  --tr-green: var(--green, #2faa63);
+}
+
+/* ---- Brand logo (the real marketing-website lockup: Yellow River glyph + "Yellow River" wordmark in Poppins) ---- */
+.yl-mark { height: 30px; width: auto; display: block; flex: none; }
+.yl-word { font-family: "Poppins", "Manrope", system-ui, sans-serif; font-weight: 600; letter-spacing: -0.02em; }
+
+/* ---- "Why?" inline affordance ---- */
+.tr-why-wrap { margin-left: 8px; align-self: center; flex: none; }
+.health-row .tr-why-wrap { margin-left: 10px; }
+.tr-why {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--line); background: var(--surface);
+  color: var(--muted); font: inherit; font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 999px; cursor: pointer; line-height: 1;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.tr-why:hover { color: var(--orange); border-color: var(--orange); background: var(--orange-soft); }
+.tr-why svg { opacity: .85; }
+
+/* ---- Drawer + scrim (mount in #modalRoot) ---- */
+.modal-root.tr-open { position: fixed; inset: 0; z-index: 120; }
+.tr-scrim {
+  position: fixed; inset: 0; background: rgba(24, 22, 20, .42);
+  backdrop-filter: blur(2px); animation: tr-fade .18s ease;
+}
+.tr-drawer {
+  position: fixed; top: 0; right: 0; height: 100%; width: min(560px, 94vw);
+  background: var(--bg); border-left: 1px solid var(--line);
+  box-shadow: -18px 0 48px rgba(24, 22, 20, .18);
+  overflow-y: auto; padding: 22px 22px 40px; animation: tr-slide .24s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes tr-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes tr-slide { from { transform: translateX(24px); opacity: .4 } to { transform: none; opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .tr-drawer, .tr-scrim { animation: none } }
+
+.tr-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.tr-head h2 { margin: 2px 0 0; font-size: 22px; letter-spacing: -.02em; }
+.tr-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--orange); }
+.tr-sub { margin: 3px 0 0; font-size: 13px; color: var(--muted); }
+.tr-close {
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
+  width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 15px; flex: none;
+}
+.tr-close:hover { color: var(--text); border-color: var(--soft); }
+
+.tr-scorecard {
+  display: flex; gap: 14px; align-items: center;
+  margin: 18px 0; padding: 14px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+.tr-score-ring {
+  flex: none; width: 58px; height: 58px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; font-size: 20px; color: var(--text);
+  background:
+    radial-gradient(closest-side, var(--surface) 74%, transparent 75%),
+    conic-gradient(var(--c) calc(var(--v, 1) * 360deg), var(--neutral) 0);
+}
+.tr-score-ring span { position: relative; }
+.tr-score-label { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.tr-scorecard p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+/* ---- Layers ---- */
+.tr-layer { margin-top: 20px; }
+.tr-layer-h { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
+.tr-layer-h h3 { margin: 0; font-size: 15px; }
+.tr-layer-h .tr-muted { margin-left: auto; font-size: 12px; }
+.tr-num {
+  flex: none; width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+  background: var(--orange); color: #fff; font-size: 12px; font-weight: 800;
+}
+.tr-mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12px; }
+.tr-muted { color: var(--muted); }
+
+/* Derivation rows */
+.tr-derivation { display: grid; gap: 10px; }
+.tr-drow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 11px 12px; }
+.tr-drow-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 13.5px; }
+.tr-formula { color: var(--muted); margin: 5px 0 7px; }
+.tr-bar { height: 7px; border-radius: 5px; background: var(--neutral); overflow: hidden; }
+.tr-bar-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--amber), var(--orange)); }
+.tr-drow-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; }
+.tr-contrib { font-weight: 800; color: var(--orange); }
+.tr-total { margin-top: 10px; text-align: right; font-size: 13px; color: var(--muted); }
+.tr-total strong { color: var(--text); font-size: 15px; }
+
+/* Reasoning trace */
+.tr-trace { display: grid; gap: 8px; position: relative; }
+.tr-rule { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; background: var(--surface); }
+.tr-rule.is-quiet { opacity: .6; }
+.tr-rule.is-fired { border-left: 3px solid var(--amber); }
+.tr-rule-top { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.tr-rule-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neutral); flex: none; }
+.tr-rule.is-fired .tr-rule-dot { background: var(--amber); }
+.tr-rule-cond { color: var(--muted); margin: 5px 0 4px; }
+.tr-rule-ev { font-size: 12.5px; line-height: 1.5; }
+.tr-pass { font-size: 11px; font-weight: 700; color: var(--green-ink); margin-left: auto; }
+.tr-sev { margin-left: auto; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.tr-sev-critical { background: #fdeae8; color: var(--red-ink); }
+.tr-sev-warning { background: var(--orange-soft); color: var(--amber-ink); }
+.tr-sev-info { background: #eaf1f8; color: var(--blue); }
+
+/* Provenance table */
+.tr-prov { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tr-prov th { text-align: left; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tr-prov td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tr-prov tr:last-child td { border-bottom: 0; }
+
+/* ---- Dedicated reasoning view ---- */
+.tr-intro .tr-legend { display: flex; gap: 18px; margin-top: 14px; font-size: 13px; font-weight: 600; }
+.tr-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.tr-key { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; color: #fff; font-style: normal; font-size: 11px; font-weight: 800; }
+.tr-key-1 { background: var(--orange); } .tr-key-2 { background: var(--amber); } .tr-key-3 { background: var(--blue); }
+
+.tr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.tr-card { text-align: left; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; font: inherit; transition: border-color .15s, box-shadow .15s, transform .1s; }
+.tr-card:hover { border-color: var(--orange); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.tr-card-top { display: flex; align-items: center; gap: 10px; }
+.tr-card-score { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 16px; color: #fff; background: var(--c); }
+.tr-card-id { display: flex; flex-direction: column; line-height: 1.25; }
+.tr-card-id strong { font-size: 14.5px; }
+.tr-card-id .tr-muted { font-size: 11.5px; }
+.tr-card-open { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--orange); }
+.tr-card-factors { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+.tr-factor { font-size: 11px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; color: var(--muted); }
+.tr-factor em { font-style: normal; font-weight: 700; color: var(--text); }
+.tr-card-sigs { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
