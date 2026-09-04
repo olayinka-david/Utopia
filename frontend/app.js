@@ -260,6 +260,7 @@ const nav = [
   ]},
   { group: "Intelligence", items: [
     { id: "intelligence", label: "Intelligence", view: "intelligence", route: "/intelligence", icon: "intelligence" },
+    { id: "reasoning", label: "Reasoning Trail", view: "reasoning", route: "/intelligence/reasoning", icon: "reasoning" },
     { id: "audit", label: "Audit", view: "audit", route: "/audit", icon: "audit" },
     { id: "compliance", label: "Impact Reporting", view: "compliance", route: "/impact", icon: "compliance" },
     { id: "dealflow", label: "Deal Flow", view: "dealflow", route: "/dealflow", icon: "dealflow" },
@@ -281,6 +282,7 @@ const icons = {
   forms: '<path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5"/><polyline points="14 2 14 8 20 8"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l.99-3.95 5.43-5.44Z"/>',
   documents: '<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
   intelligence: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/>',
+  reasoning: '<circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h6a3 3 0 0 1 3 3v6"/>',
   audit: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
   compliance: '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
   dealflow: '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
@@ -301,7 +303,7 @@ const users = [
 ];
 const access = {
   "Admin": null, // null = all views
-  "Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "compliance", "dealflow"],
+  "Portfolio": ["dashboard", "portfolio", "company", "exposure", "performance", "summary", "reporting", "forms", "documents", "intelligence", "reasoning", "compliance", "dealflow"],
 };
 let currentUser = null;
 let currentRole = null;
@@ -318,6 +320,7 @@ const pageMeta = {
   forms: { eyebrow: "Workflow", title: "Forms Hub", sub: "Platform-wide form taxonomy (A–G) with role-based submission permissions." },
   documents: { eyebrow: "Workflow", title: "Documents", sub: "Document library with secure sharing links and view analytics." },
   intelligence: { eyebrow: "Intelligence", title: "Risk Intelligence", sub: "Automated risk signals across the portfolio — filter by severity and track resolution." },
+  reasoning: { eyebrow: "Intelligence", title: "Reasoning Trail", sub: "Every derived number — health scores, risk signals, runway posture — traced to its inputs, rules, and provenance." },
   audit: { eyebrow: "Intelligence", title: "Audit", sub: "Per-company audit confirmation letters and their status with Moore." },
   compliance: { eyebrow: "Impact Reporting", title: "Impact Reporting", sub: "Climate & impact and gender (2X) reporting · aggregate views are toggleable · Form F locks at Q4." },
   dealflow: { eyebrow: "Intelligence", title: "Deal Flow", sub: "Pipeline funnel, prospect pipeline, and upcoming Q2 2026 investments." },
