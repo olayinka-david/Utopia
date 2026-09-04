@@ -7,9 +7,9 @@
   --tr-green: var(--green, #2faa63);
 }
 
-/* ---- Brand logo (matches marketing/landing lockup: orange "Y" mark + "Yellow." wordmark in Poppins) ---- */
+/* ---- Brand logo (the real marketing-website lockup: Yellow River glyph + "Yellow River" wordmark in Poppins) ---- */
+.yl-mark { height: 30px; width: auto; display: block; flex: none; }
 .yl-word { font-family: "Poppins", "Manrope", system-ui, sans-serif; font-weight: 600; letter-spacing: -0.02em; }
-.brand-icon { font-family: "Poppins", "Manrope", system-ui, sans-serif; }
 
 /* ---- "Why?" inline affordance ---- */
 .tr-why-wrap { margin-left: 8px; align-self: center; flex: none; }
